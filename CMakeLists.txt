@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(team_3_pure_pursuit)
+project(milestone-3)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 set(CMAKE_CXX_STANDARD 11)
@@ -134,7 +134,7 @@ target_link_libraries(
   ${catkin_LIBRARIES}
   stdc++fs
 )
-add_executable(hrhc_node node/hrhc_node.cpp src/hrhc.cpp )
+add_executable(hrhc_node node/hrhc_node.cpp src/hrhc.cpp src/occgrid.cpp)
 add_dependencies(hrhc_node ${f110_hrhc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   hrhc_node
