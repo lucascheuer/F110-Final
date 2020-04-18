@@ -63,7 +63,7 @@ public:
 
     void getWaypoints()
     {
-        string path = ros::package::getPath("team_3_pure_pursuit")+"/fooxx.csv";
+        string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
         // string path = string(fs::current_path()) + "/src/f110_ros/team_3_pure_pursuit/src/foo.csv";
         cout << path << endl;
         ifstream input(path);

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
   <include file="$(find f1tenth_gym_ros)/launch/gym_bridge_host.launch"/>
-  <node pkg="milestone-3" type="purepursuit" name="dummy_agent" output="screen"/>
+  <node pkg="milestone-3" type="hrhc" name="dummy_agent" output="screen"/>
 </launch>
