@@ -3,8 +3,8 @@
 RRT::RRT(OccGrid occ_grid): occ_grid_(occ_grid)
 {   
     int divide = 3;
-    x_distribution_ = uniform_real_distribution<double>(0.4,occ_grid_.size()/divide);
-    y_distribution_ = uniform_real_distribution<double>(-occ_grid_.size()/divide,occ_grid_.size()/divide);
+    x_distribution_ = std::uniform_real_distribution<double>(0.4,occ_grid_.size()/divide);
+    y_distribution_ = std::uniform_real_distribution<double>(-occ_grid_.size()/divide,occ_grid_.size()/divide);
     ROS_INFO("rrt created");
 }
 

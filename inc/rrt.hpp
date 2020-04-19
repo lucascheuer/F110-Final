@@ -6,7 +6,6 @@
 
 #include <random>
 
-#include "pursuit.hpp"
 #include "occgrid.hpp"
 #include "transforms.hpp"
 
@@ -44,7 +43,7 @@ class RRT
         float goal_epsilon_;
         geometry_msgs::Pose current_pose_;
 
-        std::vector<pair<float,float>> rrt_path_;
+        std::vector<std::pair<float,float>> rrt_path_;
 
         std::mt19937 gen_;
         std::uniform_real_distribution<double> x_distribution_;
