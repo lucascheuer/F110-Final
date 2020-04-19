@@ -7,7 +7,7 @@ OccGrid::OccGrid(ros::NodeHandle &nh, int size, float discrete): size_(size),dis
     grid_blocks_ = size_/discrete_;
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
-    occ_pub_ = nh.advertise<visualization_msgs::Marker>("occ_grid_marker", 1 );
+    occ_pub_ = nh.advertise<visualization_msgs::Marker>("occ_grid_marker", 100);
     
 }
 OccGrid::~OccGrid()
@@ -44,6 +44,7 @@ std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
 
 void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_msgs::LaserScan::ConstPtr &scan_msg, float obstacle_dilation)
 {
+    grid_ = Eigen::MatrixXf::Zero(grid_blocks_,grid_blocks_);
     float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
     occ_offset_.first = current_pose.position.x + 0.275 * cos(current_angle);
     occ_offset_.second = current_pose.position.y + 0.275 * sin(current_angle);
@@ -52,11 +53,15 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
     {   
         float angle = scan_msg->angle_min + ii * scan_msg->angle_increment + current_angle;
         std::pair<float, float> cartesian = PolarToCartesian(scan_msg->ranges[ii], angle);
+        cartesian.first += occ_offset_.first;
+        cartesian.second += occ_offset_.second;
         for (float x_off = -obstacle_dilation; x_off <= obstacle_dilation; x_off += discrete_)
         {
             for (float y_off = -obstacle_dilation; y_off <= obstacle_dilation; y_off += discrete_)
             {
                 //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
+                
+                
                 std::pair<int, int> grid_point = CartesianToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
                 if (InGrid(grid_point))
                 {
@@ -216,7 +221,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
 
 void OccGrid::Visualize()
 {
+
     std::vector<geometry_msgs::Point> occ_points;
+    // occ_points.erase(occ_points.begin(),occ_points.end());
     for (int row = 0; row < grid_.rows(); ++row)
     {
         for (int col = 0; col < grid_.cols(); ++col)
@@ -231,6 +238,7 @@ void OccGrid::Visualize()
             }
         }
     }
+
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
     marker.header.stamp = ros::Time();

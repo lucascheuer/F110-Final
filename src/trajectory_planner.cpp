@@ -114,7 +114,7 @@ void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_
 }
 void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose)
 {   
-    trajectories_world.clear();;
+    trajectories_world.clear();
     for (int i=0; i<trajectories.size();i++)
     {
         trajectories_world.push_back(carPoint2World(trajectories[i].first, trajectories[i].second,current_pose));
@@ -179,15 +179,15 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
     for (int ii= 0;ii<num_traj;ii++)
     {   bool collision = false;
-        for (int l=0; l<len_traj-1;l++)
-        {   
-            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
-            if (collision)
-            {
-                cout<<ii<<" collision"<<endl;
-                break;
-            }
-        }
+        // for (int l=0; l<len_traj-1;l++)
+        // {   
+        //     collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
+        //     if (collision)
+        //     {
+        //         cout<<ii<<" collision"<<endl;
+        //         break;
+        //     }
+        // }
         if (!collision)
         {
             cout<<ii<<" no_collision"<<endl;
@@ -200,7 +200,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             }
         }
     }
-    cout<<best<<endl;
+    cout<<best<<"is the best"<<endl;
     return best;
 }
 

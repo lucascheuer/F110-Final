@@ -25,6 +25,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 10,0.1)
     current_pose.orientation.w = 1;
     trajp = TrajectoryPlanner();
     trajp.getTrajectories();
+    trajp.trajectory2world(current_pose);
     trajp.trajectory2miniworld(current_pose);
     trajp.getCmaes();
     ROS_INFO("Created HRHC");
@@ -36,8 +37,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     firstPoseEstimate = true;
     trajp.trajectory2miniworld(current_pose);
     trajp.trajectory2world(current_pose);
-    visualization_msgs::MarkerArray local_traj_markers = trajp.gen_markers(trajp.trajectories_world);
-    vis_pub_mult.publish( local_traj_markers );
+    
 
 }
 
@@ -45,9 +45,18 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
     if (firstPoseEstimate)
     {   
+
         occgrid.FillOccGrid(current_pose, scan_msg, 0.1f);
         occgrid.Visualize();
         int best_traj_index = trajp.best_traj(occgrid,current_pose);
+        std::vector<pair<float,float>> best_traj;
+        for (int i = 10*best_traj_index; i<10*best_traj_index+10;i++)
+        {
+            best_traj.push_back(trajp.trajectories_world[i]);
+        }
+
+        visualization_msgs::MarkerArray local_traj_markers = trajp.gen_markers(best_traj);
+        vis_pub_mult.publish( local_traj_markers );
     }
 }
 
