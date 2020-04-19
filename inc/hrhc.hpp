@@ -3,11 +3,11 @@
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/PoseStamped.h>
 #include "occgrid.hpp"
-#include <geometry_msgs/Pose.h>
+#include <nav_msgs/Odometry.h>
 #include "trajectory_planner.hpp"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
-
+#include <cmath>
 class HRHC
 {
     public:
@@ -24,6 +24,6 @@ class HRHC
         TrajectoryPlanner trajp;
         ros::Publisher vis_pub_mult;
 
-        void pf_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg);
+        void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
 };
