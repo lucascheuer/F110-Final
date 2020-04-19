@@ -16,7 +16,16 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh),occgrid(10,0.1)
     pf_sub_ = nh_.subscribe(pose_topic, 10, &HRHC::pf_callback, this);
     scan_sub_ = nh_.subscribe(scan_topic, 10, &HRHC::scan_callback, this);
     vis_pub_mult = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1 );
+    current_pose.position.x = 0;
+    current_pose.position.y = 0;
+    current_pose.position.z = 0;
+    current_pose.orientation.x = 0;
+    current_pose.orientation.y = 0;
+    current_pose.orientation.z = 0;
+    current_pose.orientation.w = 1;
+    trajp = TrajectoryPlanner();
     trajp.getTrajectories();
+    trajp.trajectory2world(current_pose);
     trajp.getCmaes();
 }
 
