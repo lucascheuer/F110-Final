@@ -65,6 +65,25 @@ void TrajectoryPlanner::getCmaes()
     }
 }
 
+pair<float,float> TrajectoryPlanner::carPoint2miniWorld(float x, float y, const geometry_msgs::Pose &current_pose)
+{
+    tf2::Transform car_to_world;
+    geometry_msgs::Transform car_to_world_msg;
+    geometry_msgs::TransformStamped car_to_world_stamped;
+    tf2::fromMsg(current_pose, car_to_world);
+    car_to_world_msg = tf2::toMsg(car_to_world);
+    car_to_world_stamped.transform = car_to_world_msg;
+    geometry_msgs::Vector3 carPoint;
+    geometry_msgs::Vector3 worldPoint;
+    carPoint.x = x;
+    carPoint.y = y;
+    carPoint.z = 0;
+    tf2::doTransform(carPoint, worldPoint, car_to_world_stamped);
+    float carPoseX = current_pose.position.x;
+    float carPoseY = current_pose.position.y;
+    return pair<float,float>(worldPoint.x, worldPoint.y);
+}
+
 pair<float,float> TrajectoryPlanner::carPoint2World(float x, float y, const geometry_msgs::Pose &current_pose)
 {
     tf2::Transform car_to_world;
@@ -84,6 +103,15 @@ pair<float,float> TrajectoryPlanner::carPoint2World(float x, float y, const geom
     return pair<float,float>(worldPoint.x+carPoseX, worldPoint.y+carPoseY);
 }
 
+void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_pose)
+{   
+    trajectories_mini_world.clear();;
+    for (int i=0; i<trajectories.size();i++)
+    {
+        trajectories_mini_world.push_back(carPoint2miniWorld(trajectories[i].first, trajectories[i].second,current_pose));
+    }
+    // ROS_INFO("trajectories in world frame");
+}
 void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose)
 {   
     trajectories_world.clear();;
@@ -93,7 +121,6 @@ void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose
     }
     // ROS_INFO("trajectories in world frame");
 }
-
 visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair<float,float>> &points, float r, float g, float b)
 {
     visualization_msgs::MarkerArray markerArray;
@@ -150,29 +177,30 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     float min_distance = BIG_FLOAT;
     int best = -1;
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
-    for (int i= 0;i<num_traj;i++)
+    for (int ii= 0;ii<num_traj;ii++)
     {   bool collision = false;
         for (int l=0; l<len_traj-1;l++)
         {   
-            cout<<10*i+l+1;
-            collision = occ_grid.CheckCollision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
+            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
             if (collision)
             {
+                cout<<ii<<" collision"<<endl;
                 break;
             }
         }
         if (!collision)
         {
-            if (calcDist(car_pose,trajectories_world[10*i + len_traj-1])<min_distance)
+            cout<<ii<<" no_collision"<<endl;
+            if (calcDist(car_pose,trajectories_world[10*ii + len_traj-1])<min_distance)
             {
-                pair<float,float> end_point = trajectories_world[10*i + len_traj-1];
+                pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
                 pair<float,float> temp = findClosest(end_point);
                 min_distance = calcDist(car_pose,temp);
-                best = i;
+                best = ii;
             }
         }
     }
-    cout<<best;
+    cout<<best<<endl;
     return best;
 }
 

@@ -25,7 +25,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh),occgrid(10,0.1)
     current_pose.orientation.w = 1;
     trajp = TrajectoryPlanner();
     trajp.getTrajectories();
-    trajp.trajectory2world(current_pose);
+    trajp.trajectory2miniworld(current_pose);
     trajp.getCmaes();
 }
 
@@ -33,6 +33,7 @@ void HRHC::pf_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
 {   
     current_pose = pose_msg->pose;
     firstPoseEstimate = true;
+    trajp.trajectory2miniworld(current_pose);
     trajp.trajectory2world(current_pose);
     visualization_msgs::MarkerArray local_traj_markers = trajp.gen_markers(trajp.trajectories_world);
     vis_pub_mult.publish( local_traj_markers );
