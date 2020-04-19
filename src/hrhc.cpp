@@ -27,6 +27,7 @@ void HRHC::pf_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
     trajp.trajectory2world(current_pose);
     visualization_msgs::MarkerArray local_traj_markers = trajp.gen_markers(trajp.trajectories_world);
     vis_pub_mult.publish( local_traj_markers );
+
 }
 
 void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
@@ -34,6 +35,8 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
     if (firstPoseEstimate)
     {   
         occgrid.FillOccGrid(current_pose, scan_msg, 0.1f);
+        int best_traj_index = trajp.best_traj(occgrid,current_pose);
+
     }
 }
 

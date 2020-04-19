@@ -25,7 +25,8 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::getTrajectories()
 {
-    string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    // string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    string path = "/home/saumya/team3_ws/src/F110-Final/local_traj.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -34,7 +35,7 @@ void TrajectoryPlanner::getTrajectories()
             getline(input,coordY);
             trajectories.push_back(pair<float,float>(stof(coordY),stof(coordX)));
         }
-        cout<<"got trajectories";
+        cout<<"got trajectories \n";
         cout<<trajectories.size();
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
     } else {
@@ -45,7 +46,8 @@ void TrajectoryPlanner::getTrajectories()
 
 void TrajectoryPlanner::getCmaes()
 {
-    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    // string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -152,6 +154,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     {   bool collision = false;
         for (int l=0; l<len_traj-1;l++)
         {   
+            cout<<10*i+l+1;
             collision = occ_grid.CheckCollision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
             if (collision)
             {
@@ -162,13 +165,14 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         {
             if (calcDist(car_pose,trajectories_world[10*i + len_traj-1])<min_distance)
             {
-                pair<float,float> end_point = trajectories_world[10*i + len_traj-1])
-                min_distance = calcDist(car_pose,findClosest(end_point);
+                pair<float,float> end_point = trajectories_world[10*i + len_traj-1];
+                pair<float,float> temp = findClosest(end_point);
+                min_distance = calcDist(car_pose,temp);
                 best = i;
             }
         }
     }
-    ROS_INFO("%d",best)
+    cout<<best;
     return best;
 }
 

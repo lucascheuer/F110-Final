@@ -5,6 +5,7 @@ OccGrid::OccGrid(int size, float discrete): size_(size),discrete_(discrete)
 {
     ROS_INFO("occgrid created");
     grid_blocks_ = size_/discrete_;
+    grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
     
 }
