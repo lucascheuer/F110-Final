@@ -80,8 +80,131 @@ bool OccGrid::CartesianInGrid(float x, float y)
     {
         return true;
     }
-    
 }
+bool OccGrid::CartesianInGrid(std::pair<float, float> grid_point)
+{
+    return CartesianInGrid(grid_point.first, grid_point.second);
+}
+bool OccGrid::CheckCollision(float x1, float y1, float x2, float y2)
+{
+    return CheckCollision(std::pair<float, float>(x1, y1), std::pair<float, float>(x2, y2));
+}
+
+bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<float, float> second_point)
+{
+    if (!(CartesianInGrid(first_point) &&
+          CartesianInGrid(second_point)))
+    {
+            ROS_ERROR("Out of grid!");
+            return false;
+    }
+    int start_x = first_point.first;
+    int start_y = first_point.second;
+    int end_x = second_point.first;
+    int end_y = second_point.second;
+    std::swap(start_x, start_y);
+    std::swap(end_x,end_y);
+    std::vector<std::pair<float,float>> linePoints;
+    if (start_x > end_x)
+    {
+        std::swap(start_x, end_x);
+        std::swap(start_y, end_y);
+    }
+    int dx = end_x - start_x;
+    int dy = end_y - start_y;
+
+    if (std::abs(dy) > std::abs(dx))
+    {
+        if (dy > 0)
+        { // When line has m>1 && m<infinity
+            int p = -2*dx + dy; // Initial delta
+            int northDelta = -2*dx;
+            int northEastDelta = 2*dy - 2*dx;
+            for (int x = start_x, y = start_y; y<= end_y; y++)
+            {
+                if (p > 0)
+                {
+                    p = p + northDelta;
+                } else {
+                    p = p + northEastDelta;
+                    x++;
+                }
+                if (grid_(x,y))
+                {
+                    //line_pub.publish(gen_path_marker(linePoints,0,0,1));
+                    return false;
+                }
+                linePoints.push_back(GetWorldPoint(x,y));
+            }
+        } else { // When it spills over to second quadrant, but still has abs(m) > 1
+            int p = 2*dx - dy; // Initial delta
+            int southDelta = 2*dx;
+            int southEastDelta = 2*(dy + dx);
+            for (int x = start_x, y = start_y; y >= end_y; y--)
+            {
+                if (p < 0)
+                {
+                    p = p + southDelta;
+                } else {
+                    p = p + southEastDelta;
+                    x++;
+                }
+                if (grid_(x,y))
+                {
+                    //line_pub.publish(gen_path_marker(linePoints,0,0,1));
+                    return false;
+                }
+                linePoints.push_back(GetWorldPoint(x,y));
+            }
+        }
+    } else {
+        if (dy > 0)
+        {
+            int p = 2*dy - dx;
+            int eastDelta = 2*dy;
+            int northEastDelta = 2*(dy - dx);
+            for (int x = start_x, y = start_y; x<= end_x; x++)
+            {
+                if (p < 0)
+                {
+                    p = p + eastDelta;
+                } else {
+                    p = p + northEastDelta;
+                    y++;
+                }
+                if (grid_(x,y))
+                {
+                    //line_pub.publish(gen_path_marker(linePoints,0,0,1));
+                    return false;
+                }
+                linePoints.push_back(GetWorldPoint(x,y));
+            }
+        } else {
+            int p = 2*dy + dx; // Initial delta
+            int eastDelta = 2*dy;
+            int southEastDelta = 2*(dy + dx);
+            for (int x = start_x, y = start_y; x<= end_x; x++)
+            {
+                if (p > 0)
+                {
+                    p = p + eastDelta;
+                } else {
+                    p = p + southEastDelta;
+                    y--;
+                }
+                if (grid_(x,y))
+                {
+                    // line_pub.publish(gen_path_marker(linePoints,0,0,1));
+                    return false;
+                }
+                linePoints.push_back(GetWorldPoint(x,y));
+            }
+        }
+    }
+    // line_pub.publish(gen_path_marker(linePoints,0,0,1));
+    return true;
+}
+
 
 int OccGrid::size()
 {
