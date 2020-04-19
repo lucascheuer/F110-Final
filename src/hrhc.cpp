@@ -7,7 +7,7 @@ HRHC::~HRHC()
     ROS_INFO("Killing HRHC");
 }
 
-HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 10,0.1)
+HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 20,0.5)
 {
     
     std::string pose_topic, scan_topic;
