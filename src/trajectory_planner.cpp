@@ -152,7 +152,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     {   bool collision = false;
         for (int l=0; l<len_traj-1;l++)
         {   
-            collision = occ_grid.check_collision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
+            collision = occ_grid.CheckCollision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
             if (collision)
             {
                 break;
@@ -162,11 +162,13 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         {
             if (calcDist(car_pose,trajectories_world[10*i + len_traj-1])<min_distance)
             {
-                min_distance = calcDist(car_pose,trajectories_world[10*i + len_traj-1]);
+                pair<float,float> end_point = trajectories_world[10*i + len_traj-1])
+                min_distance = calcDist(car_pose,findClosest(end_point);
                 best = i;
             }
         }
     }
+    ROS_INFO("%d",best)
     return best;
 }
 

@@ -11,7 +11,7 @@ class OccGrid
         OccGrid(int size,float discrete);
         virtual ~OccGrid();
         std::pair<int, int> GridPoint(float x, float y);
-        std::pair<float,float> OccGrid::GetWorldPoint(int row, int col);
+        std::pair<float,float> GetWorldPoint(int row, int col);
         std::pair<float, float> PolarToCartesian(float range, float angle);
         void CartesianToOccupancy(float x, float y);
         void FillOccGrid(const geometry_msgs::Pose &pose_msg,const sensor_msgs::LaserScan::ConstPtr& scan_msg, float obstacle_dilation);
