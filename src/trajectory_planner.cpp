@@ -1,6 +1,7 @@
 #include "trajectory_planner.hpp"
 #include <experimental/filesystem>
 #include <fstream>
+#include <cmath>
 #include <ros/package.h>
 #include <tf2/transform_datatypes.h>
 #include <tf/transform_datatypes.h>
@@ -24,7 +25,8 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::getTrajectories()
 {
-    string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    // string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    string path = "/home/saumya/team3_ws/src/F110-Final/local_traj.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -33,7 +35,7 @@ void TrajectoryPlanner::getTrajectories()
             getline(input,coordY);
             trajectories.push_back(pair<float,float>(stof(coordY),stof(coordX)));
         }
-        cout<<"got trajectories";
+        cout<<"got trajectories \n";
         cout<<trajectories.size();
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
     } else {
@@ -44,7 +46,8 @@ void TrajectoryPlanner::getTrajectories()
 
 void TrajectoryPlanner::getCmaes()
 {
-    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    // string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -122,17 +125,55 @@ visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair
     return markerArray;
 }
 
-int TrajectoryPlanner::best_traj(OccGrid &occ_grid)
-{   
-    int min_dist = BIG_FLOAT;
-    for (int i= 0;i<num_traj;i++)
-    {
-        for (int l=0; l<len_traj-1;l++)
-        {
+float TrajectoryPlanner::calcDist(pair<float,float> &p1, pair<float,float> &p2)
+{
+    float dist = sqrt(pow((p1.first - p2.first),2) + pow((p1.second-p2.second),2));
+    return dist;
+}
 
+pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
+{   pair<float,float> closest;
+    float min_dist = BIG_FLOAT;
+    for (int i=0; i < cmaes_traj.size();i++)
+    {
+        if (calcDist(p1,cmaes_traj[i])<min_dist)
+        {
+            closest = cmaes_traj[i];
+            min_dist = calcDist(p1,cmaes_traj[i]);
         }
     }
-    return 0;
+    return closest;
+}
+
+int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
+{   
+    float min_distance = BIG_FLOAT;
+    int best = -1;
+    pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
+    for (int i= 0;i<num_traj;i++)
+    {   bool collision = false;
+        for (int l=0; l<len_traj-1;l++)
+        {   
+            cout<<10*i+l+1;
+            collision = occ_grid.CheckCollision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
+            if (collision)
+            {
+                break;
+            }
+        }
+        if (!collision)
+        {
+            if (calcDist(car_pose,trajectories_world[10*i + len_traj-1])<min_distance)
+            {
+                pair<float,float> end_point = trajectories_world[10*i + len_traj-1];
+                pair<float,float> temp = findClosest(end_point);
+                min_distance = calcDist(car_pose,temp);
+                best = i;
+            }
+        }
+    }
+    cout<<best;
+    return best;
 }
 
 

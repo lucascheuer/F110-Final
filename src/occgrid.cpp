@@ -5,6 +5,7 @@ OccGrid::OccGrid(int size, float discrete): size_(size),discrete_(discrete)
 {
     ROS_INFO("occgrid created");
     grid_blocks_ = size_/discrete_;
+    grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
     
 }
@@ -13,11 +14,15 @@ OccGrid::~OccGrid()
     ROS_INFO("killing the occgrid");
 }
 
-std::pair<int, int> OccGrid::GridPoint(float x, float y)
+std::pair<int, int> OccGrid::CartesianToOccupancy(std::pair<float, float> point)
+{
+    return CartesianToOccupancy(point.first, point.second);
+}
+std::pair<int, int> OccGrid::CartesianToOccupancy(float x, float y)
 {
     int occ_col = (x-occ_offset_.first) / discrete_ + grid_blocks_ / 2;
     int occ_row = (y-occ_offset_.second) / discrete_ + grid_blocks_ / 2;
-    return std::pair<int, int>(occ_row,occ_col);
+    return std::pair<int, int>(occ_col,occ_row);
 }
 
 
@@ -35,44 +40,35 @@ std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
     return cartesian;
 }
 
-void OccGrid::CartesianToOccupancy(float x, float y)
-{
-
-    int occ_col = x / discrete_ + grid_blocks_ / 2;
-    int occ_row = y / discrete_ + grid_blocks_ / 2;
-    if (occ_row >= 0 && occ_row < grid_.rows() && occ_col >= 0 && occ_col < grid_.cols())
-    {
-        grid_(occ_row, occ_col) = 1;
-    }
-}
 
 void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_msgs::LaserScan::ConstPtr &scan_msg, float obstacle_dilation)
 {
     float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
-        occ_offset_.first = current_pose.position.x + 0.275 * cos(current_angle);
-        occ_offset_.second = current_pose.position.y + 0.275 * sin(current_angle);
-        int num_scans = (scan_msg->angle_max - scan_msg->angle_min) / scan_msg->angle_increment + 1;
-        for (int ii = 0; ii < num_scans; ++ii)
-        {   
-            float angle = scan_msg->angle_min + ii * scan_msg->angle_increment + current_angle;
-            std::pair<float, float> cartesian = PolarToCartesian(scan_msg->ranges[ii], angle);
-
-            for (float x_off = -obstacle_dilation; x_off <= obstacle_dilation; x_off += discrete_)
+    occ_offset_.first = current_pose.position.x + 0.275 * cos(current_angle);
+    occ_offset_.second = current_pose.position.y + 0.275 * sin(current_angle);
+    int num_scans = (scan_msg->angle_max - scan_msg->angle_min) / scan_msg->angle_increment + 1;
+    for (int ii = 0; ii < num_scans; ++ii)
+    {   
+        float angle = scan_msg->angle_min + ii * scan_msg->angle_increment + current_angle;
+        std::pair<float, float> cartesian = PolarToCartesian(scan_msg->ranges[ii], angle);
+        for (float x_off = -obstacle_dilation; x_off <= obstacle_dilation; x_off += discrete_)
+        {
+            for (float y_off = -obstacle_dilation; y_off <= obstacle_dilation; y_off += discrete_)
             {
-                for (float y_off = -obstacle_dilation; y_off <= obstacle_dilation; y_off += discrete_)
+                //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
+                std::pair<int, int> grid_point = CartesianToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
+                if (InGrid(grid_point))
                 {
-                    //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
-                    CartesianToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
+                    grid_(grid_point.second, grid_point.first) = true;
                 }
             }
         }
+    }
 }
-
-bool OccGrid::CartesianInGrid(float x, float y)
+bool OccGrid::InGrid(int col, int row)
 {
-    std::pair<int, int> grid_point = GridPoint(x, y);
-    if (grid_point.first  >= grid_blocks_ || grid_point.first  < 0 ||
-        grid_point.second >= grid_blocks_ || grid_point.second < 0)
+    if (col >= grid_blocks_ || col < 0 ||
+        row >= grid_blocks_ || row < 0)
     {
         return false;
     }
@@ -80,6 +76,15 @@ bool OccGrid::CartesianInGrid(float x, float y)
     {
         return true;
     }
+}
+bool OccGrid::InGrid(std::pair<int, int> grid_point)
+{
+    return InGrid(grid_point.first, grid_point.second);
+}
+bool OccGrid::CartesianInGrid(float x, float y)
+{
+    std::pair<int, int> grid_point = CartesianToOccupancy(x, y);
+    return InGrid(grid_point);
 }
 bool OccGrid::CartesianInGrid(std::pair<float, float> grid_point)
 {
@@ -98,10 +103,12 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
             ROS_ERROR("Out of grid!");
             return false;
     }
-    int start_x = first_point.first;
-    int start_y = first_point.second;
-    int end_x = second_point.first;
-    int end_y = second_point.second;
+    std::pair<int, int> first_point_grid = CartesianToOccupancy(first_point);
+    std::pair<int, int> second_point_grid = CartesianToOccupancy(second_point);
+    int start_x = first_point_grid.first;
+    int start_y = first_point_grid.second;
+    int end_x = second_point_grid.first;
+    int end_y = second_point_grid.second;
     std::swap(start_x, start_y);
     std::swap(end_x,end_y);
     std::vector<std::pair<float,float>> linePoints;
