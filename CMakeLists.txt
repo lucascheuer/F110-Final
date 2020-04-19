@@ -134,7 +134,7 @@ target_link_libraries(
   ${catkin_LIBRARIES}
   stdc++fs
 )
-add_executable(hrhc_node node/hrhc_node.cpp src/constraints.cpp src/cost.cpp src/hrhc.cpp src/input.cpp src/model.cpp src/mpc.cpp src/occgrid.cpp src/rrt.cpp src/state.cpp src/trajectory_planner.cpp)
+add_executable(hrhc_node node/hrhc_node.cpp src/constraints.cpp src/cost.cpp src/hrhc.cpp src/input.cpp src/model.cpp src/mpc.cpp src/occgrid.cpp src/rrt.cpp src/state.cpp src/trajectory_planner.cpp src/transforms.cpp)
 add_dependencies(hrhc_node ${f110_hrhc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   hrhc_node
