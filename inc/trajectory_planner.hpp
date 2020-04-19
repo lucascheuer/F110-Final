@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class TrajectoryPlanner
 {
     public:
-        MPC();
-        virtual ~MPC();
+        TrajectoryPlanner();
+        virtual ~TrajectoryPlanner();
     private:
 
         // mode

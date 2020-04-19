@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class State
 {
     public:
-        MPC();
-        virtual ~MPC();
+        State();
+        virtual ~State();
     private:
 
         // mode

@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class Constraints
 {
     public:
-        MPC();
-        virtual ~MPC();
+        Constraints();
+        virtual ~Constraints();
     private:
 
         // mode

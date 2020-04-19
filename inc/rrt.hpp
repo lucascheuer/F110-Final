@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class RRT
 {
     public:
-        MPC();
-        virtual ~MPC();
+        RRT();
+        virtual ~RRT();
     private:
 
         // mode

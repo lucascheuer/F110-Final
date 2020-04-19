@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class Cost
 {
     public:
-        MPC();
-        virtual ~MPC();
+        Cost();
+        virtual ~Cost();
     private:
 
         // mode

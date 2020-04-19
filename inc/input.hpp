@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
-class MPC
+class Input
 {
     public:
-        MPC();
-        virtual ~MPC();
+        Input();
+        virtual ~Input();
     private:
 
         // mode
