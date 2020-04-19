@@ -8,7 +8,9 @@
 
 using namespace std;
 namespace fs = experimental::filesystem;
-
+int num_traj = 10;
+int len_traj = 10;
+float BIG_FLOAT = 999999.0f;
 TrajectoryPlanner::TrajectoryPlanner()
 {
     successfulRead = false;
@@ -33,6 +35,26 @@ void TrajectoryPlanner::getTrajectories()
         }
         cout<<"got trajectories";
         cout<<trajectories.size();
+    // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
+    } else {
+        cout << "Please run this from the root catkin_ws directory" << endl;
+        exit(0);
+    }
+}
+
+void TrajectoryPlanner::getCmaes()
+{
+    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    cout << path << endl;
+    ifstream input(path);
+    string coordX, coordY;
+    if (input.is_open()) {
+        while(getline(input,coordX,',')) {
+            getline(input,coordY);
+            cmaes_traj.push_back(pair<float,float>(stof(coordY),stof(coordX)));
+        }
+        // cout<<"got trajectories";
+        // cout<<cmaes_traj.size();
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
     } else {
         cout << "Please run this from the root catkin_ws directory" << endl;
@@ -99,3 +121,18 @@ visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair
     }
     return markerArray;
 }
+
+int TrajectoryPlanner::best_traj(OccGrid &occ_grid)
+{   
+    int min_dist = BIG_FLOAT;
+    for (int i= 0;i<num_traj;i++)
+    {
+        for (int l=0; l<len_traj-1;l++)
+        {
+
+        }
+    }
+    return 0;
+}
+
+

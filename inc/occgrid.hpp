@@ -1,3 +1,5 @@
+#ifndef OCC_H
+#define OCC_H
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
@@ -13,6 +15,8 @@ class OccGrid
         std::pair<float, float> PolarToCartesian(float range, float angle);
         void CartesianToOccupancy(float x, float y);
         bool CartesianInGrid(float x, float y);
+        std::pair<float,float> OccGrid::GetWorldPoint(int row, int col);
+
         // accessors
         int size();
     private:
@@ -26,3 +30,4 @@ class OccGrid
         
         
 };
+#endif
