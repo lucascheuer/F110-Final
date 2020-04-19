@@ -1,12 +1,13 @@
 #include "occgrid.hpp"
 #include <cmath>
 
-OccGrid::OccGrid(int size, float discrete): size_(size),discrete_(discrete)
+OccGrid::OccGrid(ros::NodeHandle &nh, int size, float discrete): size_(size),discrete_(discrete)
 {
     ROS_INFO("occgrid created");
     grid_blocks_ = size_/discrete_;
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
+    occ_pub_ = nh.advertise<visualization_msgs::Marker>("occ_grid_marker", 1 );
     
 }
 OccGrid::~OccGrid()
@@ -97,14 +98,15 @@ bool OccGrid::CheckCollision(float x1, float y1, float x2, float y2)
 
 bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<float, float> second_point)
 {
-    if (!(CartesianInGrid(first_point) &&
-          CartesianInGrid(second_point)))
+
+    std::pair<int, int> first_point_grid = CartesianToOccupancy(first_point);
+    std::pair<int, int> second_point_grid = CartesianToOccupancy(second_point);
+    if (!(InGrid(first_point_grid) &&
+          InGrid(second_point_grid)))
     {
             ROS_ERROR("Out of grid!");
             return false;
     }
-    std::pair<int, int> first_point_grid = CartesianToOccupancy(first_point);
-    std::pair<int, int> second_point_grid = CartesianToOccupancy(second_point);
     int start_x = first_point_grid.first;
     int start_y = first_point_grid.second;
     int end_x = second_point_grid.first;
@@ -212,6 +214,44 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
     return true;
 }
 
+void OccGrid::Visualize()
+{
+    std::vector<geometry_msgs::Point> occ_points;
+    for (int row = 0; row < grid_.rows(); ++row)
+    {
+        for (int col = 0; col < grid_.cols(); ++col)
+        {
+            if (grid_(row, col) == 1)
+            {
+                geometry_msgs::Point curr;
+                curr.x = (col - grid_blocks_/2) * discrete_ + occ_offset_.first;
+                curr.y = (row - grid_blocks_/2) * discrete_ + occ_offset_.second;
+                curr.z = 0.1;
+                occ_points.push_back(curr);
+            }
+        }
+    }
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros::Time();
+    marker.ns = "current";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::CUBE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.points = occ_points;
+    marker.scale.x = discrete_;
+    marker.scale.y = discrete_;
+    marker.scale.z = 0.1;
+    marker.color.a = 0.6; // Don't forget to set the alpha!
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    occ_pub_.publish(marker);
+}
 
 int OccGrid::size()
 {

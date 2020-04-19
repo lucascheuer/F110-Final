@@ -3,12 +3,14 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
 #include <sensor_msgs/LaserScan.h>
+#include <visualization_msgs/Marker.h>
 
 class OccGrid
 {
     public:
-        OccGrid(int size,float discrete);
+        OccGrid(ros::NodeHandle &nh, int size,float discrete);
         virtual ~OccGrid();
         std::pair<int, int> CartesianToOccupancy(std::pair<float, float> point);
         std::pair<int, int> CartesianToOccupancy(float x, float y);
@@ -22,6 +24,7 @@ class OccGrid
         bool CheckCollision(float x1, float y1, float x2, float y2);
         bool CheckCollision(std::pair<float, float> first_point, std::pair<float, float> second_point);
         
+        void Visualize();
 
 
         // accessors
@@ -32,7 +35,7 @@ class OccGrid
         int grid_blocks_;
         std::pair<float, float> occ_offset_;
         Eigen::MatrixXf grid_;
-
+        ros::Publisher occ_pub_;
         
         
         
