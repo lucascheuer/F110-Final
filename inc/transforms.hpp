@@ -7,6 +7,8 @@
 class Transforms
 {
     public:
-        static std::pair<float, float> CarPointToWorldPoint(float x, float y, geometry_msgs::Pose::ConstPtr &current_pose);
+        static std::pair<float, float> CarPointToWorldPoint(float x, float y, geometry_msgs::Pose &current_pose);
+        static geometry_msgs::TransformStamped WorldToCarTransform(const geometry_msgs::Pose &pose);
+        static std::pair<float, float> TransformPoint(std::pair<float, float> point, geometry_msgs::TransformStamped &transform_msg);
 };
 #endif
