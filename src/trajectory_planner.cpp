@@ -1,6 +1,7 @@
 #include "trajectory_planner.hpp"
 #include <experimental/filesystem>
 #include <fstream>
+#include <cmath>
 #include <ros/package.h>
 #include <tf2/transform_datatypes.h>
 #include <tf/transform_datatypes.h>
@@ -122,17 +123,31 @@ visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair
     return markerArray;
 }
 
-pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
+float TrajectoryPlanner::calcDist(pair<float,float> &p1, pair<float,float> &p2)
 {
-    for (int i=0; i < cmaes_traj.size();i++)
-    {
-        
-    }
+    float dist = sqrt(pow((p1.first - p2.first),2) + pow((p1.second-p2.second),2));
+    return dist;
 }
 
-int TrajectoryPlanner::best_traj(OccGrid &occ_grid)
+pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
+{   pair<float,float> closest;
+    float min_dist = BIG_FLOAT;
+    for (int i=0; i < cmaes_traj.size();i++)
+    {
+        if (calcDist(p1,cmaes_traj[i])<min_dist)
+        {
+            closest = cmaes_traj[i];
+            min_dist = calcDist(p1,cmaes_traj[i]);
+        }
+    }
+    return closest;
+}
+
+int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
 {   
-    int min_dist = BIG_FLOAT;
+    float min_distance = BIG_FLOAT;
+    int best = -1;
+    pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
     for (int i= 0;i<num_traj;i++)
     {   bool collision = false;
         for (int l=0; l<len_traj-1;l++)
@@ -145,10 +160,14 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid)
         }
         if (!collision)
         {
-
+            if (calcDist(car_pose,trajectories_world[10*i + len_traj-1])<min_distance)
+            {
+                min_distance = calcDist(car_pose,trajectories_world[10*i + len_traj-1]);
+                best = i;
+            }
         }
     }
-    return 0;
+    return best;
 }
 
 

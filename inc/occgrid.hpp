@@ -15,7 +15,7 @@ class OccGrid
         std::pair<float, float> PolarToCartesian(float range, float angle);
         void CartesianToOccupancy(float x, float y);
         bool CartesianInGrid(float x, float y);
-        std::pair<float,float> OccGrid::GetWorldPoint(int row, int col);
+        std::pair<float,float> GetWorldPoint(int row, int col);
 
         // accessors
         int size();
