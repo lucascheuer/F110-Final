@@ -27,12 +27,17 @@ std::pair<int, int> OccGrid::CartesianToOccupancy(float x, float y)
 }
 
 
-std::pair<float,float> OccGrid::GetWorldPoint(int row, int col)
+std::pair<float,float> OccGrid::OccupancyToWorld(int row, int col)
 {
     float x = discrete_*(col-grid_blocks_/2)+occ_offset_.first;
     float y = discrete_*(row-grid_blocks_/2)+occ_offset_.second;
     return std::pair<float,float>(x,y);
 }
+std::pair<float,float> OccGrid::OccupancyToWorld(std::pair<int,int> grid_point)
+{
+    return OccupancyToWorld(grid_point.second, grid_point.first);
+}
+
 
 std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
     std::pair<float, float> cartesian;
@@ -44,9 +49,11 @@ std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
 
 void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_msgs::LaserScan::ConstPtr &scan_msg, float obstacle_dilation)
 {
+    grid_ = Eigen::MatrixXf::Zero(grid_blocks_,grid_blocks_);
     float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
     occ_offset_.first = current_pose.position.x + 0.275 * cos(current_angle);
     occ_offset_.second = current_pose.position.y + 0.275 * sin(current_angle);
+    std::cout << occ_offset_.first << "\t" << occ_offset_.second << std::endl;
     int num_scans = (scan_msg->angle_max - scan_msg->angle_min) / scan_msg->angle_increment + 1;
     for (int ii = 0; ii < num_scans; ++ii)
     {   
@@ -60,7 +67,7 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
                 std::pair<int, int> grid_point = CartesianToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
                 if (InGrid(grid_point))
                 {
-                    grid_(grid_point.second, grid_point.first) = true;
+                    grid_(grid_point.second, grid_point.first) = 1;
                 }
             }
         }
@@ -143,7 +150,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     //line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
                 }
-                linePoints.push_back(GetWorldPoint(x,y));
+                linePoints.push_back(OccupancyToWorld(x,y));
             }
         } else { // When it spills over to second quadrant, but still has abs(m) > 1
             int p = 2*dx - dy; // Initial delta
@@ -163,7 +170,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     //line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
                 }
-                linePoints.push_back(GetWorldPoint(x,y));
+                linePoints.push_back(OccupancyToWorld(x,y));
             }
         }
     } else {
@@ -186,7 +193,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     //line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
                 }
-                linePoints.push_back(GetWorldPoint(x,y));
+                linePoints.push_back(OccupancyToWorld(x,y));
             }
         } else {
             int p = 2*dy + dx; // Initial delta
@@ -206,7 +213,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     // line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
                 }
-                linePoints.push_back(GetWorldPoint(x,y));
+                linePoints.push_back(OccupancyToWorld(x,y));
             }
         }
     }
@@ -223,9 +230,11 @@ void OccGrid::Visualize()
         {
             if (grid_(row, col) == 1)
             {
+
                 geometry_msgs::Point curr;
-                curr.x = (col - grid_blocks_/2) * discrete_ + occ_offset_.first;
-                curr.y = (row - grid_blocks_/2) * discrete_ + occ_offset_.second;
+                std::pair<float, float> world_point = OccupancyToWorld(row, col);
+                curr.x = world_point.first;
+                curr.y = world_point.second;
                 curr.z = 0.1;
                 occ_points.push_back(curr);
             }
