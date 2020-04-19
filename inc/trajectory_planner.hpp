@@ -27,7 +27,8 @@ class TrajectoryPlanner
         bool successfulRead;
         void publish_marker(float x, float y);
         vector<pair<float,float>> trajectories;
-        
+        float calcDist(pair<float,float> &p1, pair<float,float> &p2);
+        pair<float,float> findClosest(pair<float,float> &p1);
         // mode
 };
 

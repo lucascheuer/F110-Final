@@ -122,12 +122,28 @@ visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair
     return markerArray;
 }
 
+pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
+{
+    for (int i=0; i < cmaes_traj.size();i++)
+    {
+        
+    }
+}
+
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid)
 {   
     int min_dist = BIG_FLOAT;
     for (int i= 0;i<num_traj;i++)
-    {
+    {   bool collision = false;
         for (int l=0; l<len_traj-1;l++)
+        {   
+            collision = occ_grid.check_collision(trajectories_world[10*i+l],trajectories_world[10*i+l+1]);
+            if (collision)
+            {
+                break;
+            }
+        }
+        if (!collision)
         {
 
         }
