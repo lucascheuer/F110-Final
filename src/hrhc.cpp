@@ -30,9 +30,9 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 10,0.1)
     ROS_INFO("Created HRHC");
 }
 
-void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
+void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
 {   
-    current_pose = pose_msg->pose;
+    current_pose = odom_msg->pose.pose;
     firstPoseEstimate = true;
     trajp.trajectory2world(current_pose);
     visualization_msgs::MarkerArray local_traj_markers = trajp.gen_markers(trajp.trajectories_world);
