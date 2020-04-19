@@ -19,6 +19,13 @@ std::pair<int, int> OccGrid::GridPoint(float x, float y)
     int occ_row = (y-occ_offset.second) / discrete_ + grid_blocks / 2;
     return std::pair<int, int>(occ_row,occ_col);
 }
+std::pair<float,float> OccGrid::get_world_point(int row, int col)
+{
+    float x = discrete_*(col-grid_blocks/2)+occ_offset.first;
+    float y = discrete_*(row-grid_blocks/2)+occ_offset.second;
+    return std::pair<float,float>(x,y);
+}
+
 std::pair<float, float> OccGrid::polar_to_cartesian(float range, float angle)
 {
     std::pair<float, float> cartesian;

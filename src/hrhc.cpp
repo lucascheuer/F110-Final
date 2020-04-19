@@ -17,6 +17,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh),occgrid(10,0.1)
     scan_sub_ = nh_.subscribe(scan_topic, 10, &HRHC::scan_callback, this);
     vis_pub_mult = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1 );
     trajp.getTrajectories();
+    trajp.getCmaes();
 }
 
 void HRHC::pf_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
