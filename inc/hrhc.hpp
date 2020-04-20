@@ -3,6 +3,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/PoseStamped.h>
 #include "occgrid.hpp"
+#include "visualizer.hpp"
 #include <nav_msgs/Odometry.h>
 #include "trajectory_planner.hpp"
 #include <visualization_msgs/MarkerArray.h>
