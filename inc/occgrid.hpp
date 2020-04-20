@@ -12,8 +12,8 @@ class OccGrid
     public:
         OccGrid(ros::NodeHandle &nh, int size,float discrete);
         virtual ~OccGrid();
-        std::pair<int, int> CartesianToOccupancy(std::pair<float, float> point);
-        std::pair<int, int> CartesianToOccupancy(float x, float y);
+        std::pair<int, int> WorldToOccupancy(std::pair<float, float> point);
+        std::pair<int, int> WorldToOccupancy(float x, float y);
         std::pair<float,float> OccupancyToWorld(int row, int col);
         std::pair<float,float> OccupancyToWorld(std::pair<int,int> grid_point);
         std::pair<float, float> PolarToCartesian(float range, float angle);
