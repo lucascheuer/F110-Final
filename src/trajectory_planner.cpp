@@ -15,7 +15,7 @@ float BIG_FLOAT = 999999.0f;
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {
     successfulRead = false;
-    cmaes_pub = nh.advertise<visualization_msgs::MarkerArray>("cmaes_path_marker", 1 );
+    cmaes_pub = nh.advertise<visualization_msgs::Marker>("cmaes_path_marker", 1 );
     closest_cmaes_pub = nh.advertise<visualization_msgs::Marker>("goal_marker", 1 );
     ROS_INFO("planner created");
 }
@@ -27,8 +27,8 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::getTrajectories()
 {
-    // string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
-    string path = "/home/saumya/team3_ws/src/F110-Final/local_traj.csv";
+    string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    // string path = "/home/saumya/team3_ws/src/F110-Final/local_traj.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -48,8 +48,8 @@ void TrajectoryPlanner::getTrajectories()
 
 void TrajectoryPlanner::getCmaes()
 {
-    // string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
-    string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
+    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -71,8 +71,7 @@ void TrajectoryPlanner::getCmaes()
 }
 void TrajectoryPlanner::visualizeCmaes()
 {
-    visualization_msgs::MarkerArray cmaes_traj_markers = gen_markers(cmaes_traj,1,0,0);
-    cmaes_pub.publish( cmaes_traj_markers );
+    cmaes_pub.publish(Visualizer::GenerateSphereList(cmaes_traj, 1, 0 , 0));
 }
 
 
@@ -132,36 +131,7 @@ void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose
     }
     // ROS_INFO("trajectories in world frame");
 }
-visualization_msgs::MarkerArray TrajectoryPlanner::gen_markers(const vector<pair<float,float>> &points, float r, float g, float b)
-{
-    visualization_msgs::MarkerArray markerArray;
-    for (int ii = 0; ii < points.size(); ii += 1)
-    {
-        visualization_msgs::Marker marker;
-        marker.header.frame_id = "map";
-        marker.header.stamp = ros::Time();
-        marker.ns = "my_namespace";
-        marker.id = ii;
-        marker.type = visualization_msgs::Marker::SPHERE;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.pose.position.x = points[ii].first;
-        marker.pose.position.y = points[ii].second;
-        marker.pose.position.z = 0.1;
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-        marker.pose.orientation.w = 1.0;
-        marker.scale.x = 0.1;
-        marker.scale.y = 0.1;
-        marker.scale.z = 0.1;
-        marker.color.a = 1.0; // Don't forget to set the alpha!
-        marker.color.r = r;
-        marker.color.g = g;
-        marker.color.b = b;
-        markerArray.markers.push_back(marker);
-    }
-    return markerArray;
-}
+
 
 float TrajectoryPlanner::calcDist(pair<float,float> &p1, pair<float,float> &p2)
 {
@@ -192,17 +162,21 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     pair<float,float> closest_cmaes;
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
     for (int ii= 0;ii<num_traj;ii++)
-    {   bool collision = false;
-        // for (int l=0; l<len_traj-1;l++)
-        // {   
-        //     collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
-        //     if (collision)
-        //     {
-        //         cout<<ii<<" collision"<<endl;
-        //         break;
-        //     }
-        // }
-        if (!collision)
+    {
+        bool collision = true;
+        
+        for (int l=0; l<len_traj - 1;l++)
+        {   
+            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
+            if (!collision)
+            {
+                //cout<<ii<<" collision"<<endl;
+                break;
+            }
+            //cout << l << ",";
+        }
+        
+        if (collision)
         {
             cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
@@ -214,6 +188,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
                 best = ii;
             }
         }
+        
     }
     publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
     cout<<best<<"is the best"<<endl;
@@ -237,8 +212,8 @@ void TrajectoryPlanner::publish_cmaes_closest_marker(float x, float y)
         marker.pose.orientation.y = 0.0;
         marker.pose.orientation.z = 0.0;
         marker.pose.orientation.w = 1.0;
-        marker.scale.x = 1;
-        marker.scale.y = 1;
+        marker.scale.x = 0.2;
+        marker.scale.y = 0.2;
         marker.scale.z = 0.1;
         marker.color.a = 1.0; // Don't forget to set the alpha!
         marker.color.r = 1.0;

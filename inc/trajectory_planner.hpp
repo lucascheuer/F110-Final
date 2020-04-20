@@ -6,6 +6,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include "occgrid.hpp"
+#include "visualizer.hpp"
 using namespace std;
 
 class TrajectoryPlanner
@@ -19,7 +20,6 @@ class TrajectoryPlanner
         pair<float,float> carPoint2World(float x, float y, const geometry_msgs::Pose &current_pose);
         void trajectory2miniworld(const geometry_msgs::Pose &current_pose);
         void trajectory2world(const geometry_msgs::Pose &current_pose);
-        visualization_msgs::MarkerArray gen_markers(const vector<pair<float,float>> &points, float r=0, float g=1, float b=0);
         vector<pair<float,float>> trajectories_mini_world;
         vector<pair<float,float>> trajectories_world;
         int best_traj(OccGrid &occ_grid,const geometry_msgs::Pose &current_pose);
