@@ -9,6 +9,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+message(HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHH)
+message( ${OsqpEigen_DIR} )
+include_directories(
+  inc
+  ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${OsqpEigen_DIR}
+)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
@@ -20,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   tf2_ros
   roslib
+  OsqpEigen
 )
 
 ## System dependencies are found with CMake's conventions
@@ -122,17 +131,14 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(
-  inc
-  ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-)
+
 
 add_executable(purepursuit src/team_3_pure_pursuit.cpp)
 target_link_libraries(
   purepursuit
   ${catkin_LIBRARIES}
   stdc++fs
+  OsqpEigen::OsqpEigen osqp::osqp Eigen3::Eigen
 )
 add_executable(hrhc_node node/hrhc_node.cpp src/constraints.cpp src/cost.cpp src/hrhc.cpp src/input.cpp src/model.cpp src/mpc.cpp src/occgrid.cpp src/rrt.cpp src/state.cpp src/trajectory_planner.cpp src/transforms.cpp src/visualizer.cpp)
 add_dependencies(hrhc_node ${f110_hrhc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -140,6 +146,7 @@ target_link_libraries(
   hrhc_node
   ${catkin_LIBRARIES}
   stdc++fs
+  OsqpEigen::OsqpEigen osqp::osqp Eigen3::Eigen
 )
 
 

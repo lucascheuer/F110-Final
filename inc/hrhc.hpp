@@ -9,6 +9,8 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <cmath>
+#include "OsqpEigen/OsqpEigen.h"
+
 class HRHC
 {
     public:
