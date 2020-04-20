@@ -12,9 +12,11 @@ namespace fs = experimental::filesystem;
 int num_traj = 10;
 int len_traj = 10;
 float BIG_FLOAT = 999999.0f;
-TrajectoryPlanner::TrajectoryPlanner()
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {
     successfulRead = false;
+    cmaes_pub = nh.advertise<visualization_msgs::MarkerArray>("cmaes_path_marker", 1 );
+    closest_cmaes_pub = nh.advertise<visualization_msgs::Marker>("goal_marker", 1 );
     ROS_INFO("planner created");
 }
 
@@ -54,16 +56,25 @@ void TrajectoryPlanner::getCmaes()
     if (input.is_open()) {
         while(getline(input,coordX,',')) {
             getline(input,coordY);
-            cmaes_traj.push_back(pair<float,float>(stof(coordY),stof(coordX)));
+            cmaes_traj.push_back(pair<float,float>(stof(coordX),stof(coordY)));
         }
+    }
+    else {
+        cout << "Please run this from the root catkin_ws directory" << endl;
+        exit(0);
+    }    
         // cout<<"got trajectories";
         // cout<<cmaes_traj.size();
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
-    } else {
-        cout << "Please run this from the root catkin_ws directory" << endl;
-        exit(0);
-    }
+    
+
 }
+void TrajectoryPlanner::visualizeCmaes()
+{
+    visualization_msgs::MarkerArray cmaes_traj_markers = gen_markers(cmaes_traj,1,0,0);
+    cmaes_pub.publish( cmaes_traj_markers );
+}
+
 
 pair<float,float> TrajectoryPlanner::carPoint2miniWorld(float x, float y, const geometry_msgs::Pose &current_pose)
 {
@@ -172,36 +183,66 @@ pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
     return closest;
 }
 
+
+
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
 {   
-    float min_distance = BIG_FLOAT;
+    float max_distance = -BIG_FLOAT;
     int best = -1;
+    pair<float,float> closest_cmaes;
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
     for (int ii= 0;ii<num_traj;ii++)
     {   bool collision = false;
-        // for (int l=0; l<len_traj-1;l++)
-        // {   
-        //     collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
-        //     if (collision)
-        //     {
-        //         cout<<ii<<" collision"<<endl;
-        //         break;
-        //     }
-        // }
+        for (int l=0; l<len_traj-1;l++)
+        {   
+            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
+            if (collision)
+            {
+                cout<<ii<<" collision"<<endl;
+                break;
+            }
+        }
         if (!collision)
         {
             cout<<ii<<" no_collision"<<endl;
-            if (calcDist(car_pose,trajectories_world[10*ii + len_traj-1])<min_distance)
+            pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
+            pair<float,float> temp = findClosest(end_point);
+            if (calcDist(car_pose,temp)>max_distance)
             {
-                pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
-                pair<float,float> temp = findClosest(end_point);
-                min_distance = calcDist(car_pose,temp);
+                max_distance = calcDist(car_pose,temp);
+                closest_cmaes = temp;
                 best = ii;
             }
         }
     }
+    publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
     cout<<best<<"is the best"<<endl;
     return best;
 }
 
 
+void TrajectoryPlanner::publish_cmaes_closest_marker(float x, float y)
+{
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "map";
+        marker.header.stamp = ros::Time();
+        marker.ns = "current";
+        marker.id = 0;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.pose.position.x = x;
+        marker.pose.position.y = y;
+        marker.pose.position.z = 0.1;
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.z = 0.0;
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = 1;
+        marker.scale.y = 1;
+        marker.scale.z = 0.1;
+        marker.color.a = 1.0; // Don't forget to set the alpha!
+        marker.color.r = 1.0;
+        marker.color.g = 0.0;
+        marker.color.b = 1.0;
+        closest_cmaes_pub.publish(marker);
+}

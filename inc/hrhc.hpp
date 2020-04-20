@@ -17,6 +17,7 @@ class HRHC
         ros::NodeHandle nh_;
         ros::Subscriber scan_sub_;
         ros::Subscriber pf_sub_;
+
         bool firstPoseEstimate;
         geometry_msgs::Pose current_pose;
         std::pair<float, float> occ_offset;

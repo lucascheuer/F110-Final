@@ -11,7 +11,7 @@ using namespace std;
 class TrajectoryPlanner
 {
     public:
-        TrajectoryPlanner();
+        TrajectoryPlanner(ros::NodeHandle &nh);
         virtual ~TrajectoryPlanner();
         void getTrajectories();
         void getCmaes();
@@ -24,11 +24,14 @@ class TrajectoryPlanner
         vector<pair<float,float>> trajectories_world;
         int best_traj(OccGrid &occ_grid,const geometry_msgs::Pose &current_pose);
         vector<pair<float,float>> cmaes_traj;
+        void visualizeCmaes();
         
 
     private:
+        ros::Publisher closest_cmaes_pub;
+        ros::Publisher cmaes_pub;
         bool successfulRead;
-        void publish_marker(float x, float y);
+        void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories;
         float calcDist(pair<float,float> &p1, pair<float,float> &p2);
         pair<float,float> findClosest(pair<float,float> &p1);

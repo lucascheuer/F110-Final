@@ -7,7 +7,7 @@ HRHC::~HRHC()
     ROS_INFO("Killing HRHC");
 }
 
-HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 20,0.5)
+HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 20,0.05), trajp(nh)
 {
     
     std::string pose_topic, scan_topic;
@@ -23,7 +23,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occgrid(nh, 20,0.5)
     current_pose.orientation.y = 0;
     current_pose.orientation.z = 0;
     current_pose.orientation.w = 1;
-    trajp = TrajectoryPlanner();
+    // trajp = TrajectoryPlanner(nh);
     trajp.getTrajectories();
     trajp.trajectory2world(current_pose);
     trajp.trajectory2miniworld(current_pose);
@@ -48,6 +48,7 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 
         occgrid.FillOccGrid(current_pose, scan_msg, 0.1f);
         occgrid.Visualize();
+        trajp.visualizeCmaes();
         int best_traj_index = trajp.best_traj(occgrid,current_pose);
         std::vector<pair<float,float>> best_traj;
         for (int i = 10*best_traj_index; i<10*best_traj_index+10;i++)
