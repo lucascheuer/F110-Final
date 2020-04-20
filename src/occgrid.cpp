@@ -15,11 +15,11 @@ OccGrid::~OccGrid()
     ROS_INFO("killing the occgrid");
 }
 
-std::pair<int, int> OccGrid::CartesianToOccupancy(std::pair<float, float> point)
+std::pair<int, int> OccGrid::WorldToOccupancy(std::pair<float, float> point)
 {
-    return CartesianToOccupancy(point.first, point.second);
+    return WorldToOccupancy(point.first, point.second);
 }
-std::pair<int, int> OccGrid::CartesianToOccupancy(float x, float y)
+std::pair<int, int> OccGrid::WorldToOccupancy(float x, float y)
 {
     int occ_col = (x-occ_offset_.first) / discrete_ + grid_blocks_ / 2;
     int occ_row = (y-occ_offset_.second) / discrete_ + grid_blocks_ / 2;
@@ -68,7 +68,7 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
                 //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
                 
                 
-                std::pair<int, int> grid_point = CartesianToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
+                std::pair<int, int> grid_point = WorldToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
                 if (InGrid(grid_point))
                 {
                     grid_(grid_point.second, grid_point.first) = 1;
@@ -95,7 +95,7 @@ bool OccGrid::InGrid(std::pair<int, int> grid_point)
 }
 bool OccGrid::CartesianInGrid(float x, float y)
 {
-    std::pair<int, int> grid_point = CartesianToOccupancy(x, y);
+    std::pair<int, int> grid_point = WorldToOccupancy(x, y);
     return InGrid(grid_point);
 }
 bool OccGrid::CartesianInGrid(std::pair<float, float> grid_point)
@@ -110,8 +110,8 @@ bool OccGrid::CheckCollision(float x1, float y1, float x2, float y2)
 bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<float, float> second_point)
 {
 
-    std::pair<int, int> first_point_grid = CartesianToOccupancy(first_point);
-    std::pair<int, int> second_point_grid = CartesianToOccupancy(second_point);
+    std::pair<int, int> first_point_grid = WorldToOccupancy(first_point);
+    std::pair<int, int> second_point_grid = WorldToOccupancy(second_point);
     if (!(InGrid(first_point_grid) &&
           InGrid(second_point_grid)))
     {
