@@ -24,7 +24,7 @@ class HRHC
         std::pair<float, float> occ_offset;
         OccGrid occgrid;
         TrajectoryPlanner trajp;
-        ros::Publisher vis_pub_mult;
+        
 
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);

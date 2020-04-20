@@ -14,9 +14,10 @@ int len_traj = 10;
 float BIG_FLOAT = 999999.0f;
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {
-    successfulRead = false;
-    cmaes_pub = nh.advertise<visualization_msgs::Marker>("cmaes_path_marker", 1 );
-    closest_cmaes_pub = nh.advertise<visualization_msgs::Marker>("goal_marker", 1 );
+    successfulRead_ = false;
+    cmaes_pub_ = nh.advertise<visualization_msgs::Marker>("cmaes_path", 1);
+    closest_cmaes_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_goal", 1);
+    best_traj_pub_ = nh.advertise<visualization_msgs::Marker>("best_trajectory", 1);
     ROS_INFO("planner created");
 }
 
@@ -35,10 +36,10 @@ void TrajectoryPlanner::getTrajectories()
     if (input.is_open()) {
         while(getline(input,coordX,',')) {
             getline(input,coordY);
-            trajectories.push_back(pair<float,float>(stof(coordY),stof(coordX)));
+            trajectories_.push_back(pair<float,float>(stof(coordY),stof(coordX)));
         }
         cout<<"got trajectories \n";
-        cout<<trajectories.size();
+        cout<<trajectories_.size();
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
     } else {
         cout << "Please run this from the root catkin_ws directory" << endl;
@@ -71,7 +72,7 @@ void TrajectoryPlanner::getCmaes()
 }
 void TrajectoryPlanner::visualizeCmaes()
 {
-    cmaes_pub.publish(Visualizer::GenerateSphereList(cmaes_traj, 1, 0 , 0));
+    cmaes_pub_.publish(Visualizer::GenerateSphereList(cmaes_traj, 1, 0 , 0));
 }
 
 
@@ -116,18 +117,18 @@ pair<float,float> TrajectoryPlanner::carPoint2World(float x, float y, const geom
 void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_pose)
 {   
     trajectories_mini_world.clear();;
-    for (int i=0; i<trajectories.size();i++)
+    for (int i=0; i<trajectories_.size();i++)
     {
-        trajectories_mini_world.push_back(carPoint2miniWorld(trajectories[i].first, trajectories[i].second,current_pose));
+        trajectories_mini_world.push_back(carPoint2miniWorld(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
     // ROS_INFO("trajectories in world frame");
 }
 void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose)
 {   
     trajectories_world.clear();
-    for (int i=0; i<trajectories.size();i++)
+    for (int i=0; i<trajectories_.size();i++)
     {
-        trajectories_world.push_back(carPoint2World(trajectories[i].first, trajectories[i].second,current_pose));
+        trajectories_world.push_back(carPoint2World(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
     // ROS_INFO("trajectories in world frame");
 }
@@ -219,5 +220,22 @@ void TrajectoryPlanner::publish_cmaes_closest_marker(float x, float y)
         marker.color.r = 1.0;
         marker.color.g = 0.0;
         marker.color.b = 1.0;
-        closest_cmaes_pub.publish(marker);
+        closest_cmaes_pub_.publish(marker);
+}
+void TrajectoryPlanner::Visualize()
+{
+    std::vector<pair<float,float>> best_traj;
+    for (int i = 10*best_traj_index_; i<10*best_traj_index_+10;i++)
+    {
+        best_traj.push_back(trajectories_world[i]);
+    }
+    best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
+    visualizeCmaes();
+}
+void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid &occ_grid)
+{
+    //trajectory2miniworld(current_pose);
+    trajectory2world(current_pose);
+    best_traj_index_ = best_traj(occ_grid, current_pose);
+    
 }
