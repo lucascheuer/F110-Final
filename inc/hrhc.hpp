@@ -6,6 +6,7 @@
 #include "visualizer.hpp"
 #include <nav_msgs/Odometry.h>
 #include "trajectory_planner.hpp"
+#include "mpc.hpp"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <cmath>
@@ -22,8 +23,9 @@ class HRHC
         bool firstPoseEstimate;
         geometry_msgs::Pose current_pose;
         std::pair<float, float> occ_offset;
-        OccGrid occgrid;
-        TrajectoryPlanner trajp;
+        OccGrid occ_grid_;
+        TrajectoryPlanner trajp_;
+        MPC mpc_;
         
 
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
