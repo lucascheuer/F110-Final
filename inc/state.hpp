@@ -1,3 +1,6 @@
+#ifndef STATE_H
+#define STATE_H
+
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
@@ -10,13 +13,18 @@ class State
         // setters
         void set_x(double x);
         void set_y(double y);
+        void set_ori(double z);
 
         // getters
         double x();
         double y();
+        double ori();
         
     private:
         double x_;
         double y_;
+        double ori_;
         //... fill with state variables
 };
+
+#endif

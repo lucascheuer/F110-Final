@@ -19,7 +19,12 @@ void State::set_x(double x)
 
 void State::set_y(double y)
 {
-    x_ = y;
+    y_ = y;
+}
+
+void State::set_ori(double ori)
+{
+    ori_ = ori;
 }
 
 // Accessors
@@ -31,4 +36,9 @@ double State::x()
 double State::y()
 {
     return y_;
+}
+
+double State::ori()
+{
+    return ori_;
 }

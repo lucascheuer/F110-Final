@@ -193,15 +193,15 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
     for (int ii= 0;ii<num_traj;ii++)
     {   bool collision = false;
-        for (int l=0; l<len_traj-1;l++)
-        {   
-            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
-            if (collision)
-            {
-                cout<<ii<<" collision"<<endl;
-                break;
-            }
-        }
+        // for (int l=0; l<len_traj-1;l++)
+        // {   
+        //     collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
+        //     if (collision)
+        //     {
+        //         cout<<ii<<" collision"<<endl;
+        //         break;
+        //     }
+        // }
         if (!collision)
         {
             cout<<ii<<" no_collision"<<endl;
