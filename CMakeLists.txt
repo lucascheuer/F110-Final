@@ -21,6 +21,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   roslib
 )
+set(CMAKE_PREFIX_PATH /usr/local/lib/cmake)
+find_package(
+  OsqpEigen
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -121,11 +125,11 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
 include_directories(
   inc
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  /usr/local/include/eigen3/Eigen
 )
 
 add_executable(purepursuit src/team_3_pure_pursuit.cpp)
@@ -140,6 +144,7 @@ target_link_libraries(
   hrhc_node
   ${catkin_LIBRARIES}
   stdc++fs
+  OsqpEigen::OsqpEigen osqp::osqp
 )
 
 
