@@ -8,12 +8,15 @@ class State
 {
     public:
         State();
+        State(double x, double y, double ori);
         virtual ~State();
 
+        Eigen::VectorXd ToVector();
+
         // setters
-        void set_x(double x);
-        void set_y(double y);
-        void set_ori(double z);
+        void SetX(double x);
+        void SetY(double y);
+        void SetOri(double z);
 
         // getters
         double x();
