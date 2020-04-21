@@ -14,7 +14,7 @@ void MPC::Update()
     CreateHessianMatrix();
 }
 
-void MPC::Update(State &current_state, State &desired_state, Input &last_input, Model &model, Cost &cost)
+void MPC::Update(State current_state, State desired_state, Input last_input, Model model, Cost cost, Constraints constraints)
 {
 
     // constraints_ = constraints;
@@ -23,10 +23,15 @@ void MPC::Update(State &current_state, State &desired_state, Input &last_input, 
     cost_ = cost;
     desired_state_ = desired_state;
     model_ = model;
+    constraints_ = constraints;
     model_.linearize(current_state, last_input, 0.1);
+    constraints_.set_state(current_state_);
     CreateHessianMatrix();
     CreateGradientVector();
     CreateLinearConstraintMatrix();
+    CreateLowerBound();
+    CreateUpperBound();
+    std::cout << lower_bound_ << std::endl << std::endl << upper_bound_ << std::endl;
 }
 
 void MPC::CreateHessianMatrix()
@@ -51,7 +56,7 @@ void MPC::CreateGradientVector()
 
 void MPC::CreateLinearConstraintMatrix()
 {
-    linear_matrix_.setZero(); // here for steering angle vs throttle
+    // here for steering angle vs throttle
     linear_matrix_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_, state_size_ * (horizon_ + 1) + input_size_ * horizon_);
     int input_col_start = state_size_ * (horizon_+ 1);
     
@@ -73,12 +78,14 @@ void MPC::CreateLinearConstraintMatrix()
 
 void MPC::CreateLowerBound()
 {
-
+    lower_bound_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_);
+    lower_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMin().replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
 }
 
 void MPC::CreateUpperBound()
 {
-
+    upper_bound_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_);
+    upper_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMax().replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
 }
 
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)

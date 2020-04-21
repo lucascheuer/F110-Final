@@ -16,7 +16,7 @@ class MPC
         MPC(int horizon);
         virtual ~MPC();
         void Update();
-        void Update(State &current_state, State &desired_state, Input &last_input, Model &model, Cost &cost);
+        void Update(State current_state, State desired_state, Input last_input, Model model, Cost cost, Constraints constraints);
 
     private:
         int horizon_;

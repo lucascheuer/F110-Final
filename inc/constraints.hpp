@@ -1,29 +1,38 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
+#include "state.hpp"
+#include <OsqpEigen/OsqpEigen.h>
+
 
 class Constraints
 {
     public:
         Constraints();
         virtual ~Constraints();
-        Eigen::MatrixXf x_max();
-        Eigen::MatrixXf u_max();
-        Eigen::MatrixXf x_min();
-        Eigen::MatrixXf u_min();
+        Eigen::VectorXd x_max();
+        Eigen::VectorXd u_max();
+        Eigen::VectorXd x_min();
+        Eigen::VectorXd u_min();
 
-        void set_x_max(Eigen::MatrixXf xmax);
-        void set_u_max(Eigen::MatrixXf umax);
-        void set_x_min(Eigen::MatrixXf xmin);
-        void set_u_min(Eigen::MatrixXf umin);
+        Eigen::VectorXd MovedXMax();
+        Eigen::VectorXd MovedXMin();
 
-        void SetXLims(float x,float y); // sets xmax, xmin at +-d
+        void set_x_max(Eigen::VectorXd xmax);
+        void set_u_max(Eigen::VectorXd umax);
+        void set_x_min(Eigen::VectorXd xmin);
+        void set_u_min(Eigen::VectorXd umin);
+        void set_state(State state);
+        void SetXLims(State x); // sets xmax, xmin at +-d
+        // Eigen::VectorXd
         // void setUlims(float x,float y); 
 
     private:
-        Eigen::MatrixXf x_max_;
-        Eigen::MatrixXf u_max_;
-        Eigen::MatrixXf x_min_;
-        Eigen::MatrixXf u_min_;
+        Eigen::VectorXd x_max_;
+        Eigen::VectorXd u_max_;
+        Eigen::VectorXd x_min_;
+        Eigen::VectorXd u_min_;
+
+        State state_;
         float d;
         // mode
 };

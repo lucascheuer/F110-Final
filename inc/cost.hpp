@@ -10,8 +10,8 @@ class Cost
         Cost(Eigen::MatrixXd q, Eigen::MatrixXd r);
         virtual ~Cost();
 
-        void SetQ(Eigen::MatrixXd &q);
-        void SetR(Eigen::MatrixXd &r);
+        void SetQ(Eigen::MatrixXd q);
+        void SetR(Eigen::MatrixXd r);
         Eigen::MatrixXd q();
         Eigen::MatrixXd r();
     private:

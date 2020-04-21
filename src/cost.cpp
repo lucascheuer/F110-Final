@@ -13,12 +13,12 @@ Cost::~Cost()
     ROS_INFO("killing the cost");
 }
 
-void Cost::SetQ(Eigen::MatrixXd &q)
+void Cost::SetQ(Eigen::MatrixXd q)
 {
     q_ = q;
 }
 
-void Cost::SetR(Eigen::MatrixXd &r)
+void Cost::SetR(Eigen::MatrixXd r)
 {
     r_ = r;
 }

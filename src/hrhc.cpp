@@ -36,7 +36,8 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh), mp
     State desired(1, 1, 1);
     Input input(2, 0.5);
     Model model;
-    mpc_.Update(current, desired, input, model, cost);
+    Constraints constraints;
+    mpc_.Update(current, desired, input, model, cost, constraints);
     ROS_INFO("Created HRHC");
 }
 

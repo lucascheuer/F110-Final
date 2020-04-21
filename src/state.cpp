@@ -1,6 +1,6 @@
 #include "state.hpp"
 
-State::State()
+State::State(): x_(0), y_(0), ori_(0), size_(3)
 {
     ROS_INFO("state created");
 }
