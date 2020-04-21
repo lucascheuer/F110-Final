@@ -24,7 +24,7 @@ void MPC::Update(State &current_state, State &desired_state, Input &last_input, 
     cost_ = cost;
     desired_state_ = desired_state;
     model_ = model;
-    model-.linearize(current_state, last_input, 0.1);
+    model_.linearize(current_state, last_input, 0.1);
     CreateHessianMatrix();
     CreateGradientVector();
 }
