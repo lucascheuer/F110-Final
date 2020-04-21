@@ -11,15 +11,15 @@ class Model
 {
     public:
         Model();
-        Eigen::MatrixXf getA();
-        Eigen::MatrixXf getB();
-        Eigen::MatrixXf getC();
+        Eigen::MatrixXd a();
+        Eigen::MatrixXd b();
+        Eigen::MatrixXd c();
         void linearize(State &S, Input &I, double dt);
         virtual ~Model();
     private:
-        Eigen::MatrixXf a_;
-        Eigen::MatrixXf b_;
-        Eigen::MatrixXf c_;
+        Eigen::MatrixXd a_;
+        Eigen::MatrixXd b_;
+        Eigen::MatrixXd c_;
         double time_step_;
         // mode
 };

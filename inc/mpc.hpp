@@ -38,6 +38,9 @@ class MPC
         void CreateLinearConstraintMatrix();
         void CreateLowerBound();
         void CreateUpperBound();
+        void SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
+        void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start);
+
         // mode
 };
 #endif

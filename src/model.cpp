@@ -11,19 +11,19 @@ Model::~Model()
     ROS_INFO("killing the model");
 }
 
-Eigen::MatrixXf Model::getA()
+Eigen::MatrixXd Model::a()
 {
     return a_;
 }
 
 
-Eigen::MatrixXf Model::getB()
+Eigen::MatrixXd Model::b()
 {
     return b_;
 }
 
 
-Eigen::MatrixXf Model::getC()
+Eigen::MatrixXd Model::c()
 {
     return c_;
 }
@@ -32,13 +32,13 @@ void Model::linearize(State &S, Input &I, double dt)
 {
     float L = 0.3302f;
     a_.resize(3,3);
-    a_ = Eigen::MatrixXf::Zero(3, 3);
+    a_ = Eigen::MatrixXd::Zero(3, 3);
 
     b_.resize(3,2);
-    b_ = Eigen::MatrixXf::Zero(3, 2);
+    b_ = Eigen::MatrixXd::Zero(3, 2);
 
     c_.resize(3,1);
-    c_ = Eigen::MatrixXf::Zero(3, 1);
+    c_ = Eigen::MatrixXd::Zero(3, 1);
 
     a_(0,2) = -1*I.v()*sin(S.ori())*dt;
     a_(1,2) = I.v()*cos(S.ori())*dt;

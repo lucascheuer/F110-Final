@@ -6,24 +6,24 @@ class Constraints
     public:
         Constraints();
         virtual ~Constraints();
-        Eigen::MatrixXf getXMax();
-        Eigen::MatrixXf getUMax();
-        Eigen::MatrixXf getXMin();
-        Eigen::MatrixXf getUMin();
+        Eigen::MatrixXf x_max();
+        Eigen::MatrixXf u_max();
+        Eigen::MatrixXf x_min();
+        Eigen::MatrixXf u_min();
 
-        void setXMax(Eigen::MatrixXf xmax);
-        void setUMax(Eigen::MatrixXf umax);
-        void setXMin(Eigen::MatrixXf xmin);
-        void setUMin(Eigen::MatrixXf umin);
+        void set_x_max(Eigen::MatrixXf xmax);
+        void set_u_max(Eigen::MatrixXf umax);
+        void set_x_min(Eigen::MatrixXf xmin);
+        void set_u_min(Eigen::MatrixXf umin);
 
-        void setXlims(float x,float y); // sets xmax, xmin at +-d
+        void SetXLims(float x,float y); // sets xmax, xmin at +-d
         // void setUlims(float x,float y); 
 
     private:
-        Eigen::MatrixXf XMax_;
-        Eigen::MatrixXf UMax_;
-        Eigen::MatrixXf XMin_;
-        Eigen::MatrixXf UMin_;
+        Eigen::MatrixXf x_max_;
+        Eigen::MatrixXf u_max_;
+        Eigen::MatrixXf x_min_;
+        Eigen::MatrixXf u_min_;
         float d;
         // mode
 };

@@ -2,14 +2,14 @@
 
 Constraints::Constraints()
 {
-    XMax_.resize(3,1);
-    XMax_ << 1000.0f,1000.0f,1000.0f; //x,y,ori
-    XMin_.resize(3,1);
-    XMin_ << -1000.0f,-1000.0f,-1000.0f; //x,y,ori
-    UMax_.resize(2,1);
-    UMax_ << 4.5f, 0.43f; //Speed, steering
-    UMin_.resize(2,1);
-    UMin_ << 0.0f, -0.43f; //Speed, steering
+    x_max_.resize(3,1);
+    x_max_ << 1000.0f,1000.0f,1000.0f; //x,y,ori
+    x_min_.resize(3,1);
+    x_min_ << -1000.0f,-1000.0f,-1000.0f; //x,y,ori
+    u_max_.resize(2,1);
+    u_max_ << 4.5f, 0.43f; //Speed, steering
+    u_min_.resize(2,1);
+    u_min_ << 0.0f, -0.43f; //Speed, steering
     d = 1.0f;
     ROS_INFO("constraints created");
 }
@@ -20,55 +20,55 @@ Constraints::~Constraints()
 }
 
 
-Eigen::MatrixXf Constraints::getXMax()
+Eigen::MatrixXf Constraints::x_max()
 {
-    return XMax_;
+    return x_max_;
 }
 
-Eigen::MatrixXf Constraints::getXMin()
+Eigen::MatrixXf Constraints::x_min()
 {
-    return XMin_;
+    return x_min_;
 }
 
-Eigen::MatrixXf Constraints::getUMax()
+Eigen::MatrixXf Constraints::u_max()
 {
-    return UMax_;
+    return u_max_;
 }
 
-Eigen::MatrixXf Constraints::getUMin()
+Eigen::MatrixXf Constraints::u_min()
 {
-    return UMin_;
+    return u_min_;
 }
 
 
-void Constraints::setXMax(Eigen::MatrixXf xmax)
+void Constraints::set_x_max(Eigen::MatrixXf xmax)
 {
-    XMax_.resize(3,1);
-    XMax_ = xmax;
+    x_max_.resize(3,1);
+    x_max_ = xmax;
 }
 
-void Constraints::setXMin(Eigen::MatrixXf umax)
+void Constraints::set_u_max(Eigen::MatrixXf umax)
 {
-    UMax_.resize(2,1);
-    UMax_ = umax;
+    u_max_.resize(2,1);
+    u_max_ = umax;
 }
 
-void Constraints::setUMax(Eigen::MatrixXf xmin)
+void Constraints::set_x_min(Eigen::MatrixXf xmin)
 {
-    XMin_.resize(3,1);
-    XMin_ = xmin;
+    x_min_.resize(3,1);
+    x_min_ = xmin;
 }
 
-void Constraints::setUMin(Eigen::MatrixXf umin)
+void Constraints::set_u_min(Eigen::MatrixXf umin)
 {
-    UMin_.resize(2,1);
-    UMin_ = umin;
+    u_min_.resize(2,1);
+    u_min_ = umin;
 }
 
-void Constraints::setXlims(float x,float y)
+void Constraints::SetXLims(float x,float y)
 {
-    XMax_(0,0) = x+d;
-    XMax_(1,0) = y+d;
-    XMin_(0,0) = x-d;
-    XMin_(1,0) = y-d;
+    x_max_(0,0) = x+d;
+    x_max_(1,0) = y+d;
+    x_min_(0,0) = x-d;
+    x_min_(1,0) = y-d;
 }
