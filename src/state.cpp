@@ -42,3 +42,8 @@ double State::ori()
 {
     return ori_;
 }
+
+int State::size()
+{
+    return size_;
+}

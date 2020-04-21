@@ -19,11 +19,12 @@ class State
         double x();
         double y();
         double ori();
-        
+        int size();
     private:
         double x_;
         double y_;
         double ori_;
+        int size_;
         //... fill with state variables
 };
 
