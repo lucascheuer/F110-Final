@@ -15,9 +15,7 @@ float BIG_FLOAT = 999999.0f;
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {
     successfulRead_ = false;
-    cmaes_pub_ = nh.advertise<visualization_msgs::Marker>("cmaes_path", 1);
-    closest_cmaes_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_goal", 1);
-    best_traj_pub_ = nh.advertise<visualization_msgs::Marker>("best_trajectory", 1);
+    traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
     ROS_INFO("planner created");
 }
 
@@ -69,10 +67,6 @@ void TrajectoryPlanner::getCmaes()
     // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
     
 
-}
-void TrajectoryPlanner::visualizeCmaes()
-{
-    cmaes_pub_.publish(Visualizer::GenerateSphereList(cmaes_traj, 1, 0 , 0));
 }
 
 
@@ -191,45 +185,35 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         }
         
     }
-    publish_cmaes_closest_marker(trajectories_world[10 * best + 5].first,trajectories_world[10 * best + 5].second);
+    // publish_cmaes_closest_marker(trajectories_world[10 * best + 5].first,trajectories_world[10 * best + 5].second);
+    if (!cmaes_point_pushed_)
+    {
+        geometry_msgs::Point curr_point;
+        curr_point.x = closest_cmaes.first;
+        curr_point.y = closest_cmaes.second;
+        curr_point.z = 0.2;
+        points_.push_back(curr_point);
+        std_msgs::ColorRGBA curr_color;//(1.0, 0.0, 1.0, 1.0);
+        curr_color.r = 0;
+        curr_color.g = 0;
+        curr_color.b = 1;
+        curr_color.a = 1;
+        colors_.push_back(curr_color);
+        cmaes_point_pushed_ = true;
+    }
     // publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
-    best_cmaes_point_.SetX(trajectories_world[10 * best + 5].first);
-    best_cmaes_point_.SetY(trajectories_world[10 * best + 5].second);
-    double dx = (trajectories_world[10 * best + 5].first) - (trajectories_world[10 * best + 4].first);
-    double dy = (trajectories_world[10 * best + 5].second) - (trajectories_world[10 * best + 4].second);
+    best_cmaes_point_.SetX(trajectories_world[10 * best + 9].first);
+    best_cmaes_point_.SetY(trajectories_world[10 * best + 9].second);
+    double dx = (trajectories_world[10 * best + 9].first) - (trajectories_world[10 * best + 8].first);
+    double dy = (trajectories_world[10 * best + 9].second) - (trajectories_world[10 * best + 8].second);
     double ori = atan2(dy, dx);
-    cout << dx << "\t" << dy << "\t" << ori << endl;
+    // cout << dx << "\t" << dy << "\t" << ori << endl;
     best_cmaes_point_.SetOri(ori);
     // cout<<best<<"is the best"<<endl;
     return best;
 }
 
 
-void TrajectoryPlanner::publish_cmaes_closest_marker(float x, float y)
-{
-        visualization_msgs::Marker marker;
-        marker.header.frame_id = "map";
-        marker.header.stamp = ros::Time();
-        marker.ns = "current";
-        marker.id = 0;
-        marker.type = visualization_msgs::Marker::SPHERE;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.pose.position.x = x;
-        marker.pose.position.y = y;
-        marker.pose.position.z = 0.1;
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-        marker.pose.orientation.w = 1.0;
-        marker.scale.x = 0.2;
-        marker.scale.y = 0.2;
-        marker.scale.z = 0.1;
-        marker.color.a = 1.0; // Don't forget to set the alpha!
-        marker.color.r = 1.0;
-        marker.color.g = 0.0;
-        marker.color.b = 1.0;
-        closest_cmaes_pub_.publish(marker);
-}
 void TrajectoryPlanner::Visualize()
 {
     std::vector<pair<float,float>> best_traj;
@@ -237,8 +221,24 @@ void TrajectoryPlanner::Visualize()
     {
         best_traj.push_back(trajectories_world[i]);
     }
-    best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
-    visualizeCmaes();
+    std::vector<geometry_msgs::Point> best_traj_points = Visualizer::GenerateVizPoints(best_traj);
+    std::vector<std_msgs::ColorRGBA> best_traj_colors = Visualizer::GenerateVizColors(best_traj, 0, 1, 0);
+    points_.insert(points_.end(), best_traj_points.begin(), best_traj_points.end());
+    colors_.insert(colors_.end(), best_traj_colors.begin(), best_traj_colors.end());
+    best_traj_pushed_ = true;
+    // best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
+    std::vector<geometry_msgs::Point> cmaes_points = Visualizer::GenerateVizPoints(cmaes_traj);
+    std::vector<std_msgs::ColorRGBA> cmaes_colors = Visualizer::GenerateVizColors(cmaes_traj, 1, 0, 0);
+    points_.insert(points_.end(), cmaes_points.begin(), cmaes_points.end());
+    colors_.insert(colors_.end(), cmaes_colors.begin(), cmaes_colors.end());
+    cmaes_pushed_ = true;
+    traj_pub_.publish(Visualizer::GenerateList(points_, colors_));
+    cmaes_point_pushed_ = false;
+    best_traj_pushed_ = false;
+    cmaes_pushed_ = false;
+    points_.clear();
+    colors_.clear();
+    // visualizeCmaes();
 }
 void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid &occ_grid)
 {

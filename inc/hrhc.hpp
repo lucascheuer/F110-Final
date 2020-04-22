@@ -21,6 +21,7 @@ class HRHC
     private:
         ros::NodeHandle nh_;
         ros::Subscriber scan_sub_;
+        ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
 
         ros::Publisher drive_pub_;
@@ -30,8 +31,10 @@ class HRHC
         OccGrid occ_grid_;
         TrajectoryPlanner trajp_;
         MPC mpc_;
+        State mpc_des_state_;
         
 
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
+        void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr &nav_goal);
 };

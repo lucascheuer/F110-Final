@@ -1,6 +1,6 @@
 #include "input.hpp"
 
-Input::Input()
+Input::Input(): v_(0), steer_ang_(0), size_(2)
 {
     // ROS_INFO("input created");
 }

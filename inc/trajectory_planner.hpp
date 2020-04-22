@@ -25,15 +25,13 @@ class TrajectoryPlanner
         vector<pair<float,float>> trajectories_world;
         int best_traj(OccGrid &occ_grid,const geometry_msgs::Pose &current_pose);
         vector<pair<float,float>> cmaes_traj;
-        void visualizeCmaes();
+        // void visualizeCmaes();
         void Visualize();
         void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
         State best_cmaes_point_;
 
     private:
-        ros::Publisher closest_cmaes_pub_;
-        ros::Publisher cmaes_pub_;
-        ros::Publisher best_traj_pub_;
+        
         int best_traj_index_;
         
         bool successfulRead_;
@@ -42,6 +40,15 @@ class TrajectoryPlanner
         float calcDist(pair<float,float> &p1, pair<float,float> &p2);
         pair<float,float> findClosest(pair<float,float> &p1);
         // mode
+
+        // ros viz stuff
+        ros::Publisher traj_pub_;
+        std::vector<geometry_msgs::Point> points_;
+        std::vector<std_msgs::ColorRGBA> colors_;
+        bool cmaes_point_pushed_ = false;
+        bool cmaes_pushed_ = false;
+        bool best_traj_pushed_ = false;
+
 };
 
 #endif

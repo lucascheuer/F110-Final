@@ -28,9 +28,8 @@ std::vector<std_msgs::ColorRGBA> Visualizer::GenerateVizColors(std::vector<std::
     return vis_colors;
 }
 
-visualization_msgs::Marker Visualizer::GenerateList(std::vector<std::pair<float,float>> &points, std::vector<std_msgs::ColorRGBA> &marker_colors, int type)
+visualization_msgs::Marker Visualizer::GenerateList(std::vector<geometry_msgs::Point> &marker_points, std::vector<std_msgs::ColorRGBA> &marker_colors, int type, double scale_x, double scale_y, double scale_z)
 {
-    std::vector<geometry_msgs::Point> marker_points = Visualizer::GenerateVizPoints(points);
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
     marker.header.stamp = ros::Time();
@@ -43,9 +42,9 @@ visualization_msgs::Marker Visualizer::GenerateList(std::vector<std::pair<float,
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
     marker.points = marker_points;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
+    marker.scale.x = scale_x;
+    marker.scale.y = scale_y;
+    marker.scale.z = scale_z;
     marker.color.a = 0.6; // Don't forget to set the alpha!
     marker.color.r = 1.0;
     marker.color.g = 0.0;
@@ -53,6 +52,14 @@ visualization_msgs::Marker Visualizer::GenerateList(std::vector<std::pair<float,
     marker.colors = marker_colors;
     return marker;
 }
+
+visualization_msgs::Marker Visualizer::GenerateList(std::vector<std::pair<float,float>> &points, std::vector<std_msgs::ColorRGBA> &marker_colors, int type, double scale_x, double scale_y, double scale_z)
+{
+    std::vector<geometry_msgs::Point> temp = GenerateVizPoints(points);
+    return GenerateList(temp, marker_colors, type, scale_x, scale_y, scale_z);
+}
+
+
 
 visualization_msgs::Marker Visualizer::GenerateSphereList(std::vector<std::pair<float,float>> &points, float r, float g, float b)
 {

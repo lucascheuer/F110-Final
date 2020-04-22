@@ -2,7 +2,7 @@
 
 State::State(): x_(0), y_(0), ori_(0), size_(3)
 {
-    ROS_INFO("state created");
+    // ROS_INFO("state created");
 }
 
 State::State(double x, double y, double ori): x_(x), y_(y), ori_(ori), size_(3)
