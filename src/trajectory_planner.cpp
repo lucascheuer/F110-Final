@@ -179,7 +179,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         
         if (collision)
         {
-            cout<<ii<<" no_collision"<<endl;
+            // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
             pair<float,float> temp = findClosest(end_point);
             if (calcDist(car_pose,temp)>max_distance)
@@ -191,8 +191,16 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         }
         
     }
-    publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
-    cout<<best<<"is the best"<<endl;
+    publish_cmaes_closest_marker(trajectories_world[10 * best + 5].first,trajectories_world[10 * best + 5].second);
+    // publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
+    best_cmaes_point_.SetX(trajectories_world[10 * best + 5].first);
+    best_cmaes_point_.SetY(trajectories_world[10 * best + 5].second);
+    double dx = (trajectories_world[10 * best + 5].first) - (trajectories_world[10 * best + 4].first);
+    double dy = (trajectories_world[10 * best + 5].second) - (trajectories_world[10 * best + 4].second);
+    double ori = atan2(dy, dx);
+    cout << dx << "\t" << dy << "\t" << ori << endl;
+    best_cmaes_point_.SetOri(ori);
+    // cout<<best<<"is the best"<<endl;
     return best;
 }
 

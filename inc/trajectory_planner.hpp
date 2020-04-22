@@ -7,6 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include "occgrid.hpp"
 #include "visualizer.hpp"
+#include "state.hpp"
 using namespace std;
 
 class TrajectoryPlanner
@@ -27,13 +28,14 @@ class TrajectoryPlanner
         void visualizeCmaes();
         void Visualize();
         void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
-        
+        State best_cmaes_point_;
 
     private:
         ros::Publisher closest_cmaes_pub_;
         ros::Publisher cmaes_pub_;
         ros::Publisher best_traj_pub_;
         int best_traj_index_;
+        
         bool successfulRead_;
         void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories_;

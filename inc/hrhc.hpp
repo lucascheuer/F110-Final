@@ -5,6 +5,7 @@
 #include "occgrid.hpp"
 #include "visualizer.hpp"
 #include <nav_msgs/Odometry.h>
+#include <ackermann_msgs/AckermannDriveStamped.h>
 #include "trajectory_planner.hpp"
 #include "mpc.hpp"
 #include <visualization_msgs/MarkerArray.h>
@@ -22,9 +23,10 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber pf_sub_;
 
-        bool firstPoseEstimate;
-        geometry_msgs::Pose current_pose;
-        std::pair<float, float> occ_offset;
+        ros::Publisher drive_pub_;
+        bool firstPoseEstimate = false;
+        geometry_msgs::Pose current_pose_;
+        std::pair<float, float> occ_offset_;
         OccGrid occ_grid_;
         TrajectoryPlanner trajp_;
         MPC mpc_;

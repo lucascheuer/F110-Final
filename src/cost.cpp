@@ -5,12 +5,12 @@ Cost::Cost()
 }
 Cost::Cost(Eigen::MatrixXd q, Eigen::MatrixXd r): q_(q), r_(r)
 {
-    ROS_INFO("cost created");
+    // ROS_INFO("cost created");
 }
 
 Cost::~Cost()
 {
-    ROS_INFO("killing the cost");
+    // ROS_INFO("killing the cost");
 }
 
 void Cost::SetQ(Eigen::MatrixXd q)

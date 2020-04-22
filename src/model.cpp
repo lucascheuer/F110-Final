@@ -3,12 +3,12 @@
 
 Model::Model()
 {
-    ROS_INFO("model created");
+    // ROS_INFO("model created");
 }
 
 Model::~Model()
 {
-    ROS_INFO("killing the model");
+    // ROS_INFO("killing the model");
 }
 
 Eigen::MatrixXd Model::a()

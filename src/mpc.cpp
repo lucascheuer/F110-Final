@@ -1,6 +1,20 @@
 #include "mpc.hpp"
-MPC::MPC(int horizon): horizon_(horizon), state_size_(3), input_size_(2)
+
+MPC::MPC()
 {
+
+}
+
+MPC::MPC(int horizon):
+    horizon_(horizon),
+    state_size_(3),
+    input_size_(2),
+    num_states_(state_size_ * (horizon_ + 1)),
+    num_inputs_(input_size_ * horizon_),
+    num_variables_(num_states_ + num_inputs_),
+    num_constraints_(2 * num_states_ + num_inputs_)
+{
+    
     ROS_INFO("mpc created");
 }
 
@@ -9,21 +23,19 @@ MPC::~MPC()
     ROS_INFO("killing the mpc");
 }
 
-void MPC::Update()
+void MPC::Init(Model model, Cost cost, Constraints constraints)
 {
-    CreateHessianMatrix();
+    model_ = model;
+    cost_ = cost;
+    constraints_ = constraints;
 }
 
-void MPC::Update(State current_state, State desired_state, Input last_input, Model model, Cost cost, Constraints constraints)
+void MPC::Update(State current_state, State desired_state, Input last_input)
 {
 
-    // constraints_ = constraints;
-    // model_ = model;
-    // current_state_ = current_state;
-    cost_ = cost;
+
+    current_state_ = current_state;
     desired_state_ = desired_state;
-    model_ = model;
-    constraints_ = constraints;
     model_.linearize(current_state, last_input, 0.1);
     constraints_.set_state(current_state_);
     CreateHessianMatrix();
@@ -31,25 +43,55 @@ void MPC::Update(State current_state, State desired_state, Input last_input, Mod
     CreateLinearConstraintMatrix();
     CreateLowerBound();
     CreateUpperBound();
-    std::cout << lower_bound_ << std::endl << std::endl << upper_bound_ << std::endl;
+    Eigen::VectorXd QPSolution;
+
+    if (solver_init_)
+    {
+        solver_.updateHessianMatrix(hessian_);
+        solver_.updateGradient(gradient_);
+        solver_.updateLinearConstraintsMatrix(linear_matrix_);
+        solver_.updateBounds(lower_bound_, upper_bound_);
+    } else
+    {
+        solver_.settings()->setVerbosity(false);
+        solver_.data()->setNumberOfVariables(num_variables_);
+        solver_.data()->setNumberOfConstraints(num_constraints_);
+        if (!solver_.data()->setHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
+        if (!solver_.data()->setGradient(gradient_)) std::cout << "gradient failed" << std::endl;
+        if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_)) std::cout << "lienar failed" << std::endl;
+        if (!solver_.data()->setLowerBound(lower_bound_)) std::cout << "lower failed" << std::endl;
+        if (!solver_.data()->setUpperBound(upper_bound_)) std::cout << "upper failed" << std::endl;
+        if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
+        solver_init_ = true;
+    }
+    if (!solver_.solve())
+    {
+        std::cout << "solve failed" << std::endl;
+    } else
+    {
+        QPSolution = solver_.getSolution();
+        solved_input_.SetV(QPSolution(num_states_));
+        solved_input_.SetSteerAng(QPSolution(num_states_ + 1));
+        
+    }
 }
 
 void MPC::CreateHessianMatrix()
 {   
-    hessian_.resize(state_size_ * (horizon_ + 1) + input_size_ * horizon_, state_size_ * (horizon_ + 1) + input_size_ * horizon_);
+    hessian_.resize(num_variables_, num_variables_);
     for (int ii = 0; ii < horizon_ + 1; ++ii) // change for terminal cost
     {   
         SparseBlockSet(hessian_, cost_.q(), ii * state_size_, ii * state_size_);
     }
     for (int ii = 0; ii < horizon_; ++ii) // change for terminal cost
     {
-        SparseBlockSet(hessian_, cost_.r(), state_size_ * (horizon_ + 1) + ii * input_size_, state_size_ * (horizon_ + 1) + ii * input_size_);
+        SparseBlockSet(hessian_, cost_.r(), num_states_ + ii * input_size_, num_states_ + ii * input_size_);
     }
 }
 
 void MPC::CreateGradientVector()
 {
-    gradient_.resize(state_size_ * (horizon_ + 1) + input_size_ * horizon_);
+    gradient_.resize(num_variables_);
     Eigen::VectorXd horizon_block = (-1 * cost_.q() * desired_state_.ToVector()).replicate(horizon_ + 1, 1); // change for terminal cost
     gradient_.head(horizon_block.size()) = horizon_block;
 }
@@ -57,8 +99,7 @@ void MPC::CreateGradientVector()
 void MPC::CreateLinearConstraintMatrix()
 {
     // here for steering angle vs throttle
-    linear_matrix_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_, state_size_ * (horizon_ + 1) + input_size_ * horizon_);
-    int input_col_start = state_size_ * (horizon_+ 1);
+    linear_matrix_.resize(num_constraints_, num_variables_);
     
     Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
     a_eye << model_.a() , Eigen::MatrixXd::Identity(state_size_, state_size_);
@@ -69,7 +110,7 @@ void MPC::CreateLinearConstraintMatrix()
     {
         // SparseBlockSet()
         SparseBlockSet(linear_matrix_, a_eye, ii*state_size_, (ii - 1) * state_size_);
-        SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, input_col_start + (ii - 1) * input_size_);
+        SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, num_states_ + (ii - 1) * input_size_);
     }
 
     // state and input upper and lower bounds
@@ -78,14 +119,24 @@ void MPC::CreateLinearConstraintMatrix()
 
 void MPC::CreateLowerBound()
 {
-    lower_bound_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_);
+    lower_bound_.resize(num_constraints_);
     lower_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMin().replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
 }
 
 void MPC::CreateUpperBound()
 {
-    upper_bound_.resize(state_size_ * (horizon_ + 1) + (horizon_ + 1) * state_size_ + horizon_ * input_size_);
+    upper_bound_.resize(num_constraints_);
     upper_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMax().replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
+}
+
+void DoMPC()
+{
+    // solver
+}
+
+Input MPC::solved_input()
+{
+    return solved_input_;
 }
 
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
