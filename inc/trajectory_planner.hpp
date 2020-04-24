@@ -13,7 +13,7 @@ using namespace std;
 class TrajectoryPlanner
 {
     public:
-        TrajectoryPlanner(ros::NodeHandle &nh);
+        TrajectoryPlanner(ros::NodeHandle &nh,int horizon);
         virtual ~TrajectoryPlanner();
         void getTrajectories();
         void getCmaes();
@@ -33,7 +33,7 @@ class TrajectoryPlanner
     private:
         
         int best_traj_index_;
-        
+        int horizon_;
         bool successfulRead_;
         void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories_;

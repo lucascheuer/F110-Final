@@ -10,11 +10,12 @@
 using namespace std;
 namespace fs = experimental::filesystem;
 int num_traj = 10;
-int len_traj = 10;
+int MAX_HORIZON = 50;
 float BIG_FLOAT = 999999.0f;
-TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh, int horizon)
 {
     successfulRead_ = false;
+    horizon_ = horizon;
     traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
     ROS_INFO("planner created");
 }
@@ -26,7 +27,7 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::getTrajectories()
 {
-    string path = ros::package::getPath("milestone-3")+"/local_traj.csv";
+    string path = ros::package::getPath("milestone-3")+"/local_traj_50.csv";
     // string path = "/home/saumya/team3_ws/src/F110-Final/local_traj.csv";
     cout << path << endl;
     ifstream input(path);
@@ -160,9 +161,9 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     {
         bool collision = true;
         
-        for (int l=0; l<len_traj - 1;l++)
+        for (int l=0; l<horizon_ - 1;l++)
         {   
-            collision = occ_grid.CheckCollision(trajectories_world[10*ii+l],trajectories_world[10*ii+l+1]);
+            collision = occ_grid.CheckCollision(trajectories_world[MAX_HORIZON*ii+l],trajectories_world[MAX_HORIZON*ii+l+1]);
             if (!collision)
             {
                 //cout<<ii<<" collision"<<endl;
@@ -174,7 +175,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         if (collision)
         {
             // cout<<ii<<" no_collision"<<endl;
-            pair<float,float> end_point = trajectories_world[10*ii + len_traj-1];
+            pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
             pair<float,float> temp = findClosest(end_point);
             if (calcDist(car_pose,temp)>max_distance)
             {
@@ -202,10 +203,10 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         cmaes_point_pushed_ = true;
     }
     // publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
-    best_cmaes_point_.SetX(trajectories_world[10 * best + 9].first);
-    best_cmaes_point_.SetY(trajectories_world[10 * best + 9].second);
-    double dx = (trajectories_world[10 * best + 9].first) - (trajectories_world[10 * best + 8].first);
-    double dy = (trajectories_world[10 * best + 9].second) - (trajectories_world[10 * best + 8].second);
+    best_cmaes_point_.SetX(trajectories_world[MAX_HORIZON * best + horizon_-1].first);
+    best_cmaes_point_.SetY(trajectories_world[MAX_HORIZON * best + horizon_-1].second);
+    double dx = (trajectories_world[MAX_HORIZON * best + horizon_-1].first) - (trajectories_world[MAX_HORIZON * best + 8].first);
+    double dy = (trajectories_world[MAX_HORIZON * best + horizon_-1].second) - (trajectories_world[MAX_HORIZON * best + 8].second);
     double ori = atan2(dy, dx);
     // cout << dx << "\t" << dy << "\t" << ori << endl;
     best_cmaes_point_.SetOri(ori);
@@ -217,7 +218,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 void TrajectoryPlanner::Visualize()
 {
     std::vector<pair<float,float>> best_traj;
-    for (int i = 10*best_traj_index_; i<10*best_traj_index_+10;i++)
+    for (int i = MAX_HORIZON*best_traj_index_; i<MAX_HORIZON*best_traj_index_+horizon_;i++)
     {
         best_traj.push_back(trajectories_world[i]);
     }

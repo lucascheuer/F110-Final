@@ -6,8 +6,8 @@ HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
 }
-
-HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh), mpc_(nh, 10)
+int hori = 40;
+HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori), mpc_(nh, hori)
 {
     
     std::string pose_topic, scan_topic;
@@ -23,7 +23,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh), mp
     current_pose_.orientation.y = 0;
     current_pose_.orientation.z = 0;
     current_pose_.orientation.w = 1;
-    trajp_ = TrajectoryPlanner(nh);
+    // trajp_ = TrajectoryPlanner(nh,10);
     trajp_.getTrajectories();
     trajp_.trajectory2world(current_pose_);
     trajp_.trajectory2miniworld(current_pose_);
