@@ -70,7 +70,9 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
     if (firstPoseEstimate)
     {   
-        firstScanEstimate = true;
+        if (!firstScanEstimate)
+            firstScanEstimate = true;
+        
         occ_grid_.FillOccGrid(current_pose_, scan_msg, 0.1f);
         occ_grid_.Visualize();
         mpc_.update_scan(scan_msg);

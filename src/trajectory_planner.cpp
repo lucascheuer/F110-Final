@@ -12,6 +12,7 @@ namespace fs = experimental::filesystem;
 int num_traj = 10;
 int MAX_HORIZON = 50;
 float BIG_FLOAT = 999999.0f;
+float close_weight = 0.5f;
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh, int horizon)
 {
     successfulRead_ = false;
@@ -171,21 +172,28 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             }
             //cout << l << ",";
         }
-        
+        // 0 1.44218
+
+                
         if (collision)
         {
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
             pair<float,float> temp = findClosest(end_point);
-            if (calcDist(car_pose,temp)>max_distance)
+            float dist1 = calcDist(end_point,temp);
+            float dist2 = calcDist(temp,car_pose);
+            
+            if (dist2-close_weight*dist1>max_distance)
             {
-                max_distance = calcDist(car_pose,temp);
+                max_distance = dist2-close_weight*dist1;
                 closest_cmaes = temp;
                 best = ii;
             }
         }
         
     }
+    // cout<<max_distance<<endl;
+    // cout<<best<<endl;
     // publish_cmaes_closest_marker(trajectories_world[10 * best + 5].first,trajectories_world[10 * best + 5].second);
     if (!cmaes_point_pushed_)
     {
