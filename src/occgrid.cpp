@@ -142,7 +142,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
             int northEastDelta = 2*dy - 2*dx;
             for (int x = start_x, y = start_y; y<= end_y; y++)
             {
-                if (p > 0)
+                if (x>=grid_blocks_||p > 0)
                 {
                     p = p + northDelta;
                 } else {
@@ -169,7 +169,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     p = p + southEastDelta;
                     x++;
                 }
-                if (grid_(x,y))
+                if (x>=grid_blocks_||grid_(x,y))
                 {
                     //line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
@@ -192,7 +192,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     p = p + northEastDelta;
                     y++;
                 }
-                if (grid_(x,y))
+                if (y>=grid_blocks_||grid_(x,y))
                 {
                     //line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
@@ -212,7 +212,7 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                     p = p + southEastDelta;
                     y--;
                 }
-                if (grid_(x,y))
+                if (y<0||grid_(x,y))
                 {
                     // line_pub.publish(gen_path_marker(linePoints,0,0,1));
                     return false;
