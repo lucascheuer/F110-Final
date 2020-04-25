@@ -27,8 +27,8 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::getTrajectories()
 {
-    // string path = ros::package::getPath("milestone-3")+"/local_traj_50.csv";
-    string path = "/home/saumya/team3_ws/src/F110-Final/local_traj_50.csv";
+    string path = ros::package::getPath("milestone-3")+"/local_traj_50.csv";
+    // string path = "/home/saumya/team3_ws/src/F110-Final/local_traj_50.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -48,8 +48,8 @@ void TrajectoryPlanner::getTrajectories()
 
 void TrajectoryPlanner::getCmaes()
 {
-    // string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
-    string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
+    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
+    // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
