@@ -35,7 +35,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     Cost cost(q, r);
     Input input(2, 0.5);
     Model model;
-    Constraints constraints;
+    Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>("/nav", 10);
     ROS_INFO("Created HRHC");
@@ -54,12 +54,15 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     trajp_.Update(current_pose_, occ_grid_);
     trajp_.Visualize();
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
-    mpc_.Update( current_state, trajp_.best_cmaes_point_, desired_input);
-    mpc_.Visualize();
-    ackermann_msgs::AckermannDriveStamped drive_msg;
-    drive_msg.drive.speed = mpc_.solved_input().v();
-    drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
-    drive_pub_.publish(drive_msg);
+    if (firstScanEstimate){
+        mpc_.Update( current_state, trajp_.best_cmaes_point_, desired_input);
+        mpc_.Visualize();
+        ackermann_msgs::AckermannDriveStamped drive_msg;
+        drive_msg.drive.speed = mpc_.solved_input().v();
+        drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
+        drive_pub_.publish(drive_msg);
+    }
+    
     // cout << "V: " << mpc_.solved_input().v() << "\tS: " << mpc_.solved_input().steer_ang() << endl << "error" << endl << current_state.ToVector() - mpc_des_state_.ToVector() << endl << endl;
 }
 
@@ -67,8 +70,10 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
     if (firstPoseEstimate)
     {   
+        firstScanEstimate = true;
         occ_grid_.FillOccGrid(current_pose_, scan_msg, 0.1f);
         occ_grid_.Visualize();
+        mpc_.update_scan(scan_msg);
         
     }
 }

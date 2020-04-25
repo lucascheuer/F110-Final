@@ -26,6 +26,8 @@ class HRHC
 
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
+        bool firstScanEstimate = false;
+        
         geometry_msgs::Pose current_pose_;
         std::pair<float, float> occ_offset_;
         OccGrid occ_grid_;

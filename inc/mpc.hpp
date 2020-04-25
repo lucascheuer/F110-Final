@@ -5,6 +5,7 @@
 #include <OsqpEigen/OsqpEigen.h>
 #include <Eigen/Dense>
 #include <visualization_msgs/Marker.h>
+#include <sensor_msgs/LaserScan.h>
 
 
 #include "constraints.hpp"
@@ -22,7 +23,9 @@ class MPC
         void Init(Model model, Cost cost, Constraints constraints);
         void Update(State current_state, State desired_state, Input last_input);
         void Visualize();
+        void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         Input solved_input();
+        Constraints constraints();
     private:
         int horizon_;
         int input_size_;
@@ -44,6 +47,7 @@ class MPC
         State current_state_;
         State desired_state_;
         Cost cost_;
+        sensor_msgs::LaserScan scan_msg_;
         Eigen::VectorXd full_solution_;
         Input solved_input_;
         OsqpEigen::Solver solver_;

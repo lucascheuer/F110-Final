@@ -1,9 +1,9 @@
 #include "mpc.hpp"
 
-MPC::MPC()
-{
+// MPC::MPC()constraints_()
+// {
 
-}
+// }
 
 MPC::MPC(ros::NodeHandle &nh, int horizon):
     nh_(nh),
@@ -13,13 +13,15 @@ MPC::MPC(ros::NodeHandle &nh, int horizon):
     num_states_(state_size_ * (horizon_ + 1)),
     num_inputs_(input_size_ * horizon_),
     num_variables_(num_states_ + num_inputs_),
-    num_constraints_(2 * num_states_ + num_inputs_)
+    num_constraints_(2 * num_states_ + num_inputs_),
+    constraints_(nh)
 {
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
     prev_time_ = ros::Time::now();
     ROS_INFO("mpc created");
 }
+
 
 MPC::~MPC()
 {
@@ -31,6 +33,11 @@ void MPC::Init(Model model, Cost cost, Constraints constraints)
     model_ = model;
     cost_ = cost;
     constraints_ = constraints;
+}
+
+void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
+{
+    scan_msg_ = *scan_msg;
 }
 
 void MPC::Update(State current_state, State desired_state, Input last_input)
@@ -45,6 +52,7 @@ void MPC::Update(State current_state, State desired_state, Input last_input)
     // model_.linearize(current_state_, last_input, 0.1);
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
+    constraints_.find_half_spaces(current_state_,scan_msg_);
     CreateHessianMatrix();
     CreateGradientVector();
     CreateLinearConstraintMatrix();
