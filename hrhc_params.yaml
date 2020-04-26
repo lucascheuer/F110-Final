@@ -5,7 +5,7 @@ q1: 100.0
 q2: 0.0
 
 r0: 0.00
-r1: 30.0
+r1: 10.0
 
 pose_topic: "/odom"
 scan_topic: "/scan"
@@ -26,7 +26,8 @@ MAX_HORIZON: 50
 #constraints 
 umax: 4.5
 umin: 3.0
-follow_gap_thresh: 1.5
+follow_gap_thresh: 2
 state_lims: 1
+fov_divider: 2.0
 
 
