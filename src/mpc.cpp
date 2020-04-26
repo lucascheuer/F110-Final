@@ -179,7 +179,7 @@ void MPC::CreateGradientVector()
         gradient_.block(ii * state_size_, 0, state_size_, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();
         // gradient_.block(num_states_ + ii * input_size_, 0, input_size_, 1) = -1 * cost_.r() * desired_input_.ToVector();
     }
-    // gradient_.block(horizon_ * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[horizon_ - 1].ToVector();
+    gradient_.block(horizon_ * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[horizon_ - 1].ToVector();
     gradient_.tail(horizon_ * input_size_) = Eigen::VectorXd::Zero(horizon_ * input_size_);
     // gradient_ << state_costs, Eigen::VectorXd::Zero(horizon_ * input_size_);
     // std::cout << gradient_ << std::endl << std::endl;
