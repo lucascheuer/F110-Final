@@ -168,14 +168,14 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     float angle1 = scan_msg_.angle_min + best_lo * scan_msg_.angle_increment + current_angle;
     float angle2 = scan_msg_.angle_min + best_hi * scan_msg_.angle_increment + current_angle;
     
-    P1_.first = scan_msg_.ranges[best_lo] * cos(angle1) + poseX - 0.275 * cos(current_angle);
-    P1_.second = scan_msg_.ranges[best_lo] * sin(angle1) + poseY - 0.275 * sin(current_angle);
+    P1_.first = scan_msg_.ranges[best_lo] * cos(angle1) + poseX;// - 0.275 * cos(current_angle);
+    P1_.second = scan_msg_.ranges[best_lo] * sin(angle1) + poseY;// - 0.275 * sin(current_angle);
 
-    P2_.first = scan_msg_.ranges[best_hi] * cos(angle2) + poseX - 0.275 * cos(current_angle);
-    P2_.second = scan_msg_.ranges[best_hi] * sin(angle2) + poseY - 0.275 * sin(current_angle);
+    P2_.first = scan_msg_.ranges[best_hi] * cos(angle2) + poseX ;//- 0.275 * cos(current_angle);
+    P2_.second = scan_msg_.ranges[best_hi] * sin(angle2) + poseY ;//- 0.275 * sin(current_angle);
 
-    P_.first = poseX - 0.275 * cos(current_angle);
-    P_.second = poseY - 0.275 * sin(current_angle);
+    P_.first = poseX ;//- 0.275 * cos(current_angle);
+    P_.second = poseY ;//- 0.275 * sin(current_angle);
 
     std::vector<geometry_msgs::Point> triangle_points;
     geometry_msgs::Point p1;
@@ -246,11 +246,11 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     
     l1_(0) = a1;
     l1_(1) = b1;
-    l1_(2) = c1;
+    l1_(2) = c1+0.5;
     
     l2_(0) = a2;
     l2_(1) = b2;
-    l2_(2) = c2;
+    l2_(2) = c2+0.5;
     
 
 
