@@ -124,8 +124,8 @@ void MPC::Visualize()
     point.z = 0.2;
     points_.push_back(point);
     
-    color.r = 0;
-    color.g = 1;
+    color.r = 1;
+    color.g = 0;
     color.b = 0;
     color.a = 1;
     colors_.push_back(color);

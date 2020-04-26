@@ -31,7 +31,7 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
     q.diagonal() << 10.0, 10.0, 1.0;
-    r.diagonal() << 0.001, 0.1;
+    r.diagonal() << 0.001, 10;
     Cost cost(q, r);
     Input input(4, 0.5);
     Model model;
@@ -49,7 +49,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
     // State desired_state(trajp_.best_cmaes_point_., 0, 0);
-    Input desired_input(2.0f, 0);
+    Input desired_input(4.0f, 0);
     
     trajp_.Update(current_pose_, occ_grid_);
     trajp_.Visualize();

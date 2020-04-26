@@ -14,7 +14,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     u_min_.resize(2,1);
     u_min_ << -0.0f, -0.43f; //Speed, steering
     d = 1.0f;
-    thres_ = 2.0f;
+    thres_ = 1.5f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
     // scan_sub_ = nh.subscribe("/scan", 10, &Constraints::scan_callback, this);
     
@@ -168,11 +168,11 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     float angle1 = scan_msg_.angle_min + best_lo * scan_msg_.angle_increment + current_angle;
     float angle2 = scan_msg_.angle_min + best_hi * scan_msg_.angle_increment + current_angle;
     
-    P1_.first = scan_msg_.ranges[best_lo] * cos(angle1) + poseX;
-    P1_.second = scan_msg_.ranges[best_lo] * sin(angle1) + poseY;
+    P1_.first = scan_msg_.ranges[best_lo] * cos(angle1) + poseX - 0.275 * cos(current_angle);
+    P1_.second = scan_msg_.ranges[best_lo] * sin(angle1) + poseY - 0.275 * sin(current_angle);
 
-    P2_.first = scan_msg_.ranges[best_hi] * cos(angle2) + poseX;
-    P2_.second = scan_msg_.ranges[best_hi] * sin(angle2) + poseY;
+    P2_.first = scan_msg_.ranges[best_hi] * cos(angle2) + poseX - 0.275 * cos(current_angle);
+    P2_.second = scan_msg_.ranges[best_hi] * sin(angle2) + poseY - 0.275 * sin(current_angle);
 
     P_.first = poseX - 0.275 * cos(current_angle);
     P_.second = poseY - 0.275 * sin(current_angle);
