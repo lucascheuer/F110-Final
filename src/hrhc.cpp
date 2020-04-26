@@ -6,11 +6,7 @@ HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
 }
-<<<<<<< HEAD
 int hori = 50;
-=======
-int hori = 20;
->>>>>>> memory-leak-fix
 HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori), mpc_(nh, hori)
 {
     
