@@ -174,8 +174,8 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     P2_.first = scan_msg_.ranges[best_hi] * cos(angle2) + poseX;
     P2_.second = scan_msg_.ranges[best_hi] * sin(angle2) + poseY;
 
-    P_.first = poseX;
-    P_.second = poseY;
+    P_.first = poseX - 0.275 * cos(current_angle);
+    P_.second = poseY - 0.275 * sin(current_angle);
 
     std::vector<geometry_msgs::Point> triangle_points;
     geometry_msgs::Point p1;
@@ -208,9 +208,9 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
     marker.points = triangle_points;
-    marker.scale.x = 0.5;
-    marker.scale.y = 0.5;
-    marker.scale.z = 0.1;
+    marker.scale.x = 0.25;
+    marker.scale.y = 0.25;
+    marker.scale.z = 0.25;
     marker.color.a = 2; // Don't forget to set the alpha!
     marker.color.r = 0.0;
     marker.color.g = 0.0;

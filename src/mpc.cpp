@@ -13,7 +13,7 @@ MPC::MPC(ros::NodeHandle &nh, int horizon):
     num_states_(state_size_ * (horizon_ + 1)),
     num_inputs_(input_size_ * horizon_),
     num_variables_(num_states_ + num_inputs_),
-    num_constraints_(2 * num_states_ + num_inputs_),
+    num_constraints_(num_states_ + 2 * (horizon_ + 1) + num_inputs_),
     constraints_(nh)
 {
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
@@ -163,31 +163,53 @@ void MPC::CreateLinearConstraintMatrix()
     
     Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
     a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
-
+    Eigen::MatrixXd gap_con(2, state_size_);
+    gap_con(0, 0) = constraints_.l1()(0);
+    gap_con(0, 1) = constraints_.l1()(1);
+    gap_con(0, 2) = 0;
+    gap_con(1, 0) = constraints_.l2()(0);
+    gap_con(1, 1) = constraints_.l2()(1);
+    gap_con(1, 2) = 0;
+    
+    // std::cout << gap_con << std::endl << std::endl;
     // prediction equality constraint
     SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), 0, 0);
+    SparseBlockSet(linear_matrix_, gap_con, num_states_, 0);
     for (int ii = 1; ii < horizon_ + 1; ++ii)
     {
         // SparseBlockSet()
         SparseBlockSet(linear_matrix_, a_eye, ii*state_size_, (ii - 1) * state_size_);
         SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, num_states_ + (ii - 1) * input_size_);
+        SparseBlockSet(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
+        // std::cout << linear_matrix_ << std::endl << std::endl;
     }
-
+    
+    // l1 A B C
     // state and input upper and lower bounds
-    SparseBlockEye(linear_matrix_, linear_matrix_.cols(), (horizon_ + 1) * state_size_, 0);
+    SparseBlockEye(linear_matrix_, num_inputs_, num_states_ + 2 * (horizon_ + 1), num_states_);
+    // std::cout << linear_matrix_ << std::endl << std::endl;
+    
 }
 
 void MPC::CreateLowerBound()
 {
     lower_bound_.resize(num_constraints_);
-    lower_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMin().replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
+    Eigen::VectorXd gap_con(2);
+    gap_con(0) = -constraints_.l1()(2);
+    gap_con(1) = -constraints_.l2()(2);
+
+    lower_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
     // std::cout << lower_bound_ << std::endl << std::endl;
 }
 
 void MPC::CreateUpperBound()
 {
     upper_bound_.resize(num_constraints_);
-    upper_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMax().replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
+    Eigen::VectorXd gap_con(2);
+    gap_con(0) = OsqpEigen::INFTY;
+    gap_con(1) = OsqpEigen::INFTY;
+    // std::cout << gap_con << std::endl << std::endl;
+    upper_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
