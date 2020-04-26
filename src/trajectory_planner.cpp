@@ -211,11 +211,28 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         cmaes_point_pushed_ = true;
     }
     // publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
+    State push;
+    push.SetX(trajectories_world[MAX_HORIZON * best].first);
+    push.SetY(trajectories_world[MAX_HORIZON * best].second);
+    double dx = (trajectories_world[MAX_HORIZON * best + 1].first) - (trajectories_world[MAX_HORIZON * best].first);
+    double dy = (trajectories_world[MAX_HORIZON * best + 1].second) - (trajectories_world[MAX_HORIZON * best].second);
+    double ori = atan2(dy, dx);
+    best_cmaes_trajectory_.clear();
+    best_cmaes_trajectory_.push_back(push);
+    for (int ii =  1; ii < horizon_; ++ii)
+    {
+        push.SetX(trajectories_world[MAX_HORIZON * best + ii].first);
+        push.SetY(trajectories_world[MAX_HORIZON * best + ii].second);
+        dx = (trajectories_world[MAX_HORIZON * best + ii].first) - (trajectories_world[MAX_HORIZON * best + ii - 1].first);
+        dy = (trajectories_world[MAX_HORIZON * best + ii].second) - (trajectories_world[MAX_HORIZON * best + ii - 1].second);
+        ori = atan2(dy, dx);
+        best_cmaes_trajectory_.push_back(push);
+    }
     best_cmaes_point_.SetX(trajectories_world[MAX_HORIZON * best + horizon_-1].first);
     best_cmaes_point_.SetY(trajectories_world[MAX_HORIZON * best + horizon_-1].second);
-    double dx = (trajectories_world[MAX_HORIZON * best + horizon_-1].first) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].first);
-    double dy = (trajectories_world[MAX_HORIZON * best + horizon_-1].second) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].second);
-    double ori = atan2(dy, dx);
+    dx = (trajectories_world[MAX_HORIZON * best + horizon_-1].first) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].first);
+    dy = (trajectories_world[MAX_HORIZON * best + horizon_-1].second) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].second);
+    ori = atan2(dy, dx);
     // cout << dx << "\t" << dy << "\t" << ori << endl;
     best_cmaes_point_.SetOri(ori);
     // cout<<best<<"is the best"<<endl;

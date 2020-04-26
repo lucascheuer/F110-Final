@@ -55,7 +55,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        mpc_.Update( current_state, trajp_.best_cmaes_point_);
+        mpc_.Update( current_state, trajp_.best_cmaes_trajectory_);
         mpc_.Visualize();
         
         drive_msg.drive.speed = mpc_.solved_input().v();

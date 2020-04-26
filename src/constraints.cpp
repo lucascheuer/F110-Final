@@ -10,7 +10,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     x_min_.resize(3,1);
     x_min_ << -OsqpEigen::INFTY,-OsqpEigen::INFTY,-OsqpEigen::INFTY; //x,y,ori
     u_max_.resize(2,1);
-    u_max_ << 2.0f, 0.43f; //Speed, steering
+    u_max_ << 4.0f, 0.43f; //Speed, steering
     u_min_.resize(2,1);
     u_min_ << -0.0f, -0.43f; //Speed, steering
     d = 1.0f;

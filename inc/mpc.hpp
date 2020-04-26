@@ -21,7 +21,8 @@ class MPC
         MPC(ros::NodeHandle &nh, int horizon);
         virtual ~MPC();
         void Init(Model model, Cost cost, Constraints constraints);
-        void Update(State &current_state, State &desired_state);
+        void Update(State &current_state, std::vector<State> &desired_state_trajectory);
+        
         void Visualize();
         void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         Input solved_input();
@@ -46,6 +47,7 @@ class MPC
         Model model_;
         State current_state_;
         State desired_state_;
+        std::vector<State> desired_state_trajectory_;
         Cost cost_;
         sensor_msgs::LaserScan scan_msg_;
         Eigen::VectorXd full_solution_;

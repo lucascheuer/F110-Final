@@ -49,17 +49,17 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
     scan_msg_ = *scan_msg;
 }
 
-void MPC::Update(State &current_state, State &desired_state)
+void MPC::Update(State &current_state, std::vector<State> &desired_state_trajectory)
 {
 
 
     current_state_ = current_state;
-    desired_state_ = desired_state;
+    desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
 
-    model_.linearize(current_state, solved_input_, 0.01);//(curr_time - prev_time_).toSec());
-    // model_.linearize(current_state_, last_input, 0.1);
-    // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
+    // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
+    model_.linearize(current_state_, solved_input_, 0.01);
+    std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.find_half_spaces(current_state_,scan_msg_);
@@ -120,25 +120,29 @@ void MPC::Visualize()
         DrawCar(predicted_state, predicted_input);
         
     }
-
-    geometry_msgs::Point point;
-    std_msgs::ColorRGBA color;
-
-    point.x = desired_state_.x();
-    point.y = desired_state_.y();
-    point.z = 0.2;
-    points_.push_back(point);
-    point.x = desired_state_.x() + 0.1;
-    point.y = desired_state_.y() + 0.1;
-    point.z = 0.2;
-    points_.push_back(point);
     
-    color.r = 1;
-    color.g = 0;
-    color.b = 0;
-    color.a = 1;
-    colors_.push_back(color);
-    colors_.push_back(color);
+    // geometry_msgs::Point point;
+    // std_msgs::ColorRGBA color;
+
+    // for (int ii = 0; ii < horizon_-1; ++ii)
+    // {
+    //     point.x = desired_state_trajectory_[ii].x();
+    //     point.y = desired_state_trajectory_[ii].y();
+    //     point.z = 0.2;
+    //     points_.push_back(point);
+    //     point.x = desired_state_trajectory_[ii + 1].x();
+    //     point.y = desired_state_trajectory_[ii + 1].y();
+    //     point.z = 0.2;
+    //     points_.push_back(point);
+    //     color.r = (float)ii / horizon_;
+    //     color.g = 0;
+    //     color.b = 0;
+    //     color.a = 1;
+    //     colors_.push_back(color);
+    //     colors_.push_back(color);
+        
+    // }
+
 
     mpc_pub_.publish(Visualizer::GenerateList(points_, colors_, visualization_msgs::Marker::LINE_LIST, 0.05, 0.0, 0.0));
     points_.clear();
@@ -161,7 +165,17 @@ void MPC::CreateHessianMatrix()
 
 void MPC::CreateGradientVector()
 {
-    gradient_ << (-1 * cost_.q() * desired_state_.ToVector()).replicate(horizon_ + 1, 1), Eigen::VectorXd::Zero(horizon_ * input_size_);
+    // Eigen::VectorXd state_costs;
+    // state_costs.setZero(num_states_, 1);
+    for (int ii  = 0; ii < horizon_; ++ii)
+    {
+        gradient_.block(ii * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();
+    }
+    gradient_.block(horizon_ * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[horizon_ - 1].ToVector();
+    gradient_.tail(horizon_ * input_size_) = Eigen::VectorXd::Zero(horizon_ * input_size_);
+    // gradient_ << state_costs, Eigen::VectorXd::Zero(horizon_ * input_size_);
+    // std::cout << gradient_ << std::endl << std::endl;
+    // gradient_ << (-1 * cost_.q() * desired_state_.ToVector()).replicate(horizon_ + 1, 1), Eigen::VectorXd::Zero(horizon_ * input_size_);
 }
 
 void MPC::CreateLinearConstraintMatrix()

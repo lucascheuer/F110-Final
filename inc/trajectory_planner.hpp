@@ -29,7 +29,7 @@ class TrajectoryPlanner
         void Visualize();
         void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
         State best_cmaes_point_;
-
+        vector<State> best_cmaes_trajectory_;
     private:
         
         int best_traj_index_;
