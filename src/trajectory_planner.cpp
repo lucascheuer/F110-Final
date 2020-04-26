@@ -221,6 +221,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     double dx = (trajectories_world[MAX_HORIZON * best + 1].first) - (trajectories_world[MAX_HORIZON * best].first);
     double dy = (trajectories_world[MAX_HORIZON * best + 1].second) - (trajectories_world[MAX_HORIZON * best].second);
     double ori = atan2(dy, dx);
+    push.SetOri(ori);
     best_cmaes_trajectory_.clear();
     best_cmaes_trajectory_.push_back(push);
     for (int ii =  1; ii < horizon_; ++ii)
@@ -230,6 +231,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         dx = (trajectories_world[MAX_HORIZON * best + ii].first) - (trajectories_world[MAX_HORIZON * best + ii - 1].first);
         dy = (trajectories_world[MAX_HORIZON * best + ii].second) - (trajectories_world[MAX_HORIZON * best + ii - 1].second);
         ori = atan2(dy, dx);
+        push.SetOri(ori);
         best_cmaes_trajectory_.push_back(push);
     }
     best_cmaes_point_.SetX(trajectories_world[MAX_HORIZON * best + horizon_-1].first);
