@@ -30,10 +30,10 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     trajp_.getCmaes();
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
-    q.diagonal() << 10.0, 10.0, 0.0;
-    r.diagonal() << 0.00000001, 100;
+    q.diagonal() << 10.0, 10.0, 1.0;
+    r.diagonal() << 0.001, 0.1;
     Cost cost(q, r);
-    Input input(2, 0.5);
+    Input input(4, 0.5);
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
