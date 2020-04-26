@@ -6,7 +6,7 @@ HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
 }
-int hori = 40;
+int hori = 50;
 HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori), mpc_(nh, hori)
 {
     
@@ -30,8 +30,8 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     trajp_.getCmaes();
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
-    q.diagonal() << 10.0, 10.0, 1.0;
-    r.diagonal() << 0.00000001, 0.01;
+    q.diagonal() << 10.0, 10.0, 0.0;
+    r.diagonal() << 0.00000001, 100;
     Cost cost(q, r);
     Input input(2, 0.5);
     Model model;

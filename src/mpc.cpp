@@ -48,8 +48,9 @@ void MPC::Update(State current_state, State desired_state, Input last_input)
     desired_state_ = desired_state;
     ros::Time curr_time = ros::Time::now();
 
-    model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
+    model_.linearize(current_state, solved_input_, 0.01);//(curr_time - prev_time_).toSec());
     // model_.linearize(current_state_, last_input, 0.1);
+    // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.find_half_spaces(current_state_,scan_msg_);

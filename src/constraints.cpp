@@ -12,7 +12,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     u_max_.resize(2,1);
     u_max_ << 2.0f, 0.43f; //Speed, steering
     u_min_.resize(2,1);
-    u_min_ << -2.0f, -0.43f; //Speed, steering
+    u_min_ << -0.0f, -0.43f; //Speed, steering
     d = 1.0f;
     thres_ = 2.0f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
@@ -132,7 +132,7 @@ void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_
     bool in_gap = 0;
     for (int ii=0; ii<num_scans; ii++)
     {   float angle = scan_msg_.angle_min + ii * scan_msg_.angle_increment;
-        if (angle>-1.571f/2 && angle < 1.571f/2) // value is pi/2
+        if (angle>-1.571f && angle < 1.571f) // value is pi/2
         {
             if (scan_msg_.ranges[ii] > thres_)
             {   

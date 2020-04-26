@@ -213,8 +213,8 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     // publish_cmaes_closest_marker(closest_cmaes.first,closest_cmaes.second);
     best_cmaes_point_.SetX(trajectories_world[MAX_HORIZON * best + horizon_-1].first);
     best_cmaes_point_.SetY(trajectories_world[MAX_HORIZON * best + horizon_-1].second);
-    double dx = (trajectories_world[MAX_HORIZON * best + horizon_-1].first) - (trajectories_world[MAX_HORIZON * best + 8].first);
-    double dy = (trajectories_world[MAX_HORIZON * best + horizon_-1].second) - (trajectories_world[MAX_HORIZON * best + 8].second);
+    double dx = (trajectories_world[MAX_HORIZON * best + horizon_-1].first) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].first);
+    double dy = (trajectories_world[MAX_HORIZON * best + horizon_-1].second) - (trajectories_world[MAX_HORIZON * best + horizon_ - 2].second);
     double ori = atan2(dy, dx);
     // cout << dx << "\t" << dy << "\t" << ori << endl;
     best_cmaes_point_.SetOri(ori);
