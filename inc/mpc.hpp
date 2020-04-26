@@ -46,7 +46,7 @@ class MPC
         Constraints constraints_;
         Model model_;
         State current_state_;
-        State desired_state_;
+        Input desired_input_;
         std::vector<State> desired_state_trajectory_;
         Cost cost_;
         sensor_msgs::LaserScan scan_msg_;

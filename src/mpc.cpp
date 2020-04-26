@@ -22,6 +22,7 @@ MPC::MPC(ros::NodeHandle &nh):
     linear_matrix_.resize(num_constraints_, num_variables_);
     lower_bound_.resize(num_constraints_);
     upper_bound_.resize(num_constraints_);
+    
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
     prev_time_ = ros::Time::now();
@@ -39,7 +40,8 @@ void MPC::Init(Model model, Cost cost, Constraints constraints)
     model_ = model;
     cost_ = cost;
     constraints_ = constraints;
-
+    desired_input_.SetV(2);
+    desired_input_.SetSteerAng(0);
     CreateHessianMatrix();
     CreateUpperBound();
     CreateLowerBound();
@@ -57,8 +59,8 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
-
-    // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
+    // Input temp(solved_input_.v(), 0);
+    // model_.linearize(current_state, temp, (curr_time - prev_time_).toSec());
     model_.linearize(current_state_, solved_input_, 0.01);
     std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
@@ -122,27 +124,27 @@ void MPC::Visualize()
         
     }
     
-    // geometry_msgs::Point point;
-    // std_msgs::ColorRGBA color;
+    geometry_msgs::Point point;
+    std_msgs::ColorRGBA color;
 
-    // for (int ii = 0; ii < horizon_-1; ++ii)
-    // {
-    //     point.x = desired_state_trajectory_[ii].x();
-    //     point.y = desired_state_trajectory_[ii].y();
-    //     point.z = 0.2;
-    //     points_.push_back(point);
-    //     point.x = desired_state_trajectory_[ii + 1].x();
-    //     point.y = desired_state_trajectory_[ii + 1].y();
-    //     point.z = 0.2;
-    //     points_.push_back(point);
-    //     color.r = (float)ii / horizon_;
-    //     color.g = 0;
-    //     color.b = 0;
-    //     color.a = 1;
-    //     colors_.push_back(color);
-    //     colors_.push_back(color);
+    for (int ii = 0; ii < horizon_-1; ++ii)
+    {
+        point.x = desired_state_trajectory_[ii].x();
+        point.y = desired_state_trajectory_[ii].y();
+        point.z = 0.2;
+        points_.push_back(point);
+        point.x = desired_state_trajectory_[ii].x() + 0.4 * cos(desired_state_trajectory_[ii].ori());
+        point.y = desired_state_trajectory_[ii].y() + 0.4 * sin(desired_state_trajectory_[ii].ori());
+        point.z = 0.2;
+        points_.push_back(point);
+        color.r = (float)ii / horizon_;
+        color.g = 0;
+        color.b = 0;
+        color.a = 1;
+        colors_.push_back(color);
+        colors_.push_back(color);
         
-    // }
+    }
 
 
     mpc_pub_.publish(Visualizer::GenerateList(points_, colors_, visualization_msgs::Marker::LINE_LIST, 0.05, 0.0, 0.0));
@@ -170,7 +172,8 @@ void MPC::CreateGradientVector()
     // state_costs.setZero(num_states_, 1);
     for (int ii  = 0; ii < horizon_; ++ii)
     {
-        gradient_.block(ii * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();
+        gradient_.block(ii * state_size_, 0, state_size_, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();
+        // gradient_.block(num_states_ + ii * input_size_, 0, input_size_, 1) = -1 * cost_.r() * desired_input_.ToVector();
     }
     gradient_.block(horizon_ * state_size_, 0, 3, 1) = -1 * cost_.q() * desired_state_trajectory_[horizon_ - 1].ToVector();
     gradient_.tail(horizon_ * input_size_) = Eigen::VectorXd::Zero(horizon_ * input_size_);
@@ -259,14 +262,14 @@ void MPC::UpdateLowerBound()
     Eigen::VectorXd gap_con(2);
     gap_con(0) = -constraints_.l1()(2);
     gap_con(1) = -constraints_.l2()(2);
-    lower_bound_.head(state_size_) = -current_state_.ToVector();
+    lower_bound_.head(num_states_) << -current_state_.ToVector(), -model_.c().replicate(horizon_, 1);
     lower_bound_.block(num_states_, 0, (horizon_ + 1) * 2, 1) = gap_con.replicate(horizon_ + 1, 1);
     // std::cout << lower_bound_ << std::endl << std::endl;
 }
 
 void MPC::UpdateUpperBound()
 {
-    upper_bound_.head(state_size_) = -current_state_.ToVector();
+    upper_bound_.head(num_states_) << -current_state_.ToVector(), -model_.c().replicate(horizon_, 1);
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
