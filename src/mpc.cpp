@@ -16,6 +16,11 @@ MPC::MPC(ros::NodeHandle &nh, int horizon):
     num_constraints_(2 * num_states_ + num_inputs_),
     constraints_(nh)
 {
+    hessian_.resize(num_variables_, num_variables_);
+    gradient_.resize(num_variables_);
+    linear_matrix_.resize(num_constraints_, num_variables_);
+    lower_bound_.resize(num_constraints_);
+    upper_bound_.resize(num_constraints_);
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
     prev_time_ = ros::Time::now();
@@ -40,7 +45,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
     scan_msg_ = *scan_msg;
 }
 
-void MPC::Update(State current_state, State desired_state, Input last_input)
+void MPC::Update(State &current_state, State &desired_state)
 {
 
 
@@ -49,44 +54,45 @@ void MPC::Update(State current_state, State desired_state, Input last_input)
     ros::Time curr_time = ros::Time::now();
 
     model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    // model_.linearize(current_state_, last_input, 0.1);
+    std::cout << (curr_time - prev_time_).toSec() << std::endl;
+    // // model_.linearize(current_state_, last_input, 0.01);
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.find_half_spaces(current_state_,scan_msg_);
     CreateHessianMatrix();
     CreateGradientVector();
-    CreateLinearConstraintMatrix();
+    // CreateLinearConstraintMatrix();
     CreateLowerBound();
     CreateUpperBound();
-    // std::cout << gradient_ << std::endl << std::endl;
-    if (solver_init_)
-    {
-        if (!solver_.updateHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
-        if (!solver_.updateGradient(gradient_)) std::cout << "gradient failed" << std::endl;
-        if (!solver_.updateLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
-        if (!solver_.updateBounds(lower_bound_, upper_bound_)) std::cout << "bounds failed" << std::endl;
-    } else
-    {
-        solver_.settings()->setVerbosity(false);
-        solver_.data()->setNumberOfVariables(num_variables_);
-        solver_.data()->setNumberOfConstraints(num_constraints_);
-        if (!solver_.data()->setHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
-        if (!solver_.data()->setGradient(gradient_)) std::cout << "gradient failed" << std::endl;
-        if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
-        if (!solver_.data()->setLowerBound(lower_bound_)) std::cout << "lower failed" << std::endl;
-        if (!solver_.data()->setUpperBound(upper_bound_)) std::cout << "upper failed" << std::endl;
-        if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
-        solver_init_ = true;
-    }
-    if (!solver_.solve())
-    {
-        std::cout << "solve failed" << std::endl;
-    } else
-    {
-        full_solution_ = solver_.getSolution();
-        solved_input_.SetV(full_solution_(num_states_));
-        solved_input_.SetSteerAng(full_solution_(num_states_ + 1));   
-    }
+    // // std::cout << gradient_ << std::endl << std::endl;
+    // if (solver_init_)
+    // {
+    //     if (!solver_.updateHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
+    //     if (!solver_.updateGradient(gradient_)) std::cout << "gradient failed" << std::endl;
+    //     if (!solver_.updateLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
+    //     if (!solver_.updateBounds(lower_bound_, upper_bound_)) std::cout << "bounds failed" << std::endl;
+    // } else
+    // {
+    //     solver_.settings()->setVerbosity(false);
+    //     solver_.data()->setNumberOfVariables(num_variables_);
+    //     solver_.data()->setNumberOfConstraints(num_constraints_);
+    //     if (!solver_.data()->setHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
+    //     if (!solver_.data()->setGradient(gradient_)) std::cout << "gradient failed" << std::endl;
+    //     if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
+    //     if (!solver_.data()->setLowerBound(lower_bound_)) std::cout << "lower failed" << std::endl;
+    //     if (!solver_.data()->setUpperBound(upper_bound_)) std::cout << "upper failed" << std::endl;
+    //     if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
+    //     solver_init_ = true;
+    // }
+    // if (!solver_.solve())
+    // {
+    //     std::cout << "solve failed" << std::endl;
+    // } else
+    // {
+    //     full_solution_ = solver_.getSolution();
+    //     solved_input_.SetV(full_solution_(num_states_));
+    //     solved_input_.SetSteerAng(full_solution_(num_states_ + 1));   
+    // }
 }
 
 void MPC::Visualize()
@@ -150,42 +156,44 @@ void MPC::CreateHessianMatrix()
 
 void MPC::CreateGradientVector()
 {
-    gradient_.setZero(num_variables_);
-    Eigen::VectorXd horizon_block = (-1 * cost_.q() * desired_state_.ToVector()).replicate(horizon_ + 1, 1); // change for terminal cost
-    gradient_.head(horizon_block.size()) = horizon_block;
+    gradient_ << (-1 * cost_.q() * desired_state_.ToVector()).replicate(horizon_ + 1, 1), Eigen::VectorXd::Zero(horizon_ * input_size_);
 }
 
 void MPC::CreateLinearConstraintMatrix()
 {
-    // here for steering angle vs throttle
+    // // here for steering angle vs throttle
     linear_matrix_.resize(num_constraints_, num_variables_);
     
-    Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
-    a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
+    // Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
+    // a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
 
     // prediction equality constraint
-    SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), 0, 0);
+    SparseBlockEye(linear_matrix_, num_states_, 0, 0, -1);
     for (int ii = 1; ii < horizon_ + 1; ++ii)
     {
         // SparseBlockSet()
-        SparseBlockSet(linear_matrix_, a_eye, ii*state_size_, (ii - 1) * state_size_);
-        SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, num_states_ + (ii - 1) * input_size_);
+        SparseBlockSet(linear_matrix_, model_.a_, ii*state_size_, (ii - 1) * state_size_);
+        // SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), ii*state_size_, ii * state_size_);
+        SparseBlockSet(linear_matrix_, model_.b_, ii*state_size_, num_states_ + (ii - 1) * input_size_);
     }
 
     // state and input upper and lower bounds
-    SparseBlockEye(linear_matrix_, linear_matrix_.cols(), (horizon_ + 1) * state_size_, 0);
+    SparseBlockEye(linear_matrix_, linear_matrix_.cols(), (horizon_ + 1) * state_size_, 0, 1);
+    // std::cout << linear_matrix_ << std::endl <<std::endl;
+    // std::cout << model_.a_ << std::endl <<std::endl;
+    // std::cout << model_.b_ << std::endl <<std::endl;
 }
 
 void MPC::CreateLowerBound()
 {
-    lower_bound_.resize(num_constraints_);
+    // lower_bound_.resize(num_constraints_);
     lower_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMin().replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
     // std::cout << lower_bound_ << std::endl << std::endl;
 }
 
 void MPC::CreateUpperBound()
 {
-    upper_bound_.resize(num_constraints_);
+    // upper_bound_.resize(num_constraints_);
     upper_bound_ << current_state_.ToVector(), Eigen::VectorXd::Zero(horizon_ * state_size_), constraints_.MovedXMax().replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
@@ -216,11 +224,11 @@ void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::Matri
     }
 }
 
-void MPC::SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start)
+void MPC::SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start, int number)
 {
     for (int row = 0; row < size; ++row)
     {
-        modify.insert(row_start + row, col_start + row) = 1;
+        modify.insert(row_start + row, col_start + row) = number;
     }
 }
 

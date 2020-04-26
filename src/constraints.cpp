@@ -105,7 +105,7 @@ void Constraints::set_u_min(Eigen::VectorXd umin)
     u_min_ = umin;
 }
 
-void Constraints::set_state(State state)
+void Constraints::set_state(State &state)
 {
     state_ = state;
 }
@@ -118,7 +118,7 @@ void Constraints::SetXLims(State state)
     x_min_(1,0) = state.y()-d;
 }
 
-void Constraints::find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_)
+void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg_)
 {
     int num_scans = (scan_msg_.angle_max - scan_msg_.angle_min) / scan_msg_.angle_increment + 1;
     int max_gap = -1;

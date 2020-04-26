@@ -21,7 +21,7 @@ class MPC
         MPC(ros::NodeHandle &nh, int horizon);
         virtual ~MPC();
         void Init(Model model, Cost cost, Constraints constraints);
-        void Update(State current_state, State desired_state, Input last_input);
+        void Update(State &current_state, State &desired_state);
         void Visualize();
         void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         Input solved_input();
@@ -67,7 +67,7 @@ class MPC
         void CreateUpperBound();
         void DoMPC();
         void SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
-        void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start);
+        void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start, int number);
         void DrawCar(State &state, Input &input);
         
 

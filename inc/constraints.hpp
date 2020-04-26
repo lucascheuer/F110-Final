@@ -28,12 +28,12 @@ class Constraints
         void set_u_max(Eigen::VectorXd umax);
         void set_x_min(Eigen::VectorXd xmin);
         void set_u_min(Eigen::VectorXd umin);
-        void set_state(State state);
+        void set_state(State &state);
         void SetXLims(State x); // sets xmax, xmin at +-d
         
         // Eigen::VectorXd
         // void setUlims(float x,float y); 
-        void find_half_spaces(State state,sensor_msgs::LaserScan &scan_msg_);
+        void find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg_);
         
 
     private:
