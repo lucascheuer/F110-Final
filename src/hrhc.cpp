@@ -13,8 +13,8 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     std::string pose_topic, scan_topic;
     pose_topic = "/odom";
     scan_topic = "/scan";
-    pf_sub_ = nh_.subscribe(pose_topic, 10, &HRHC::pf_callback, this);
-    scan_sub_ = nh_.subscribe(scan_topic, 10, &HRHC::scan_callback, this);
+    pf_sub_ = nh_.subscribe(pose_topic, 1, &HRHC::pf_callback, this);
+    scan_sub_ = nh_.subscribe(scan_topic, 1, &HRHC::scan_callback, this);
     nav_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &HRHC::nav_goal_callback, this);
     current_pose_.position.x = 0;
     current_pose_.position.y = 0;
@@ -49,20 +49,20 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
     // State desired_state(trajp_.best_cmaes_point_., 0, 0);
-    Input desired_input(2.0f, 0);
     
     trajp_.Update(current_pose_, occ_grid_);
     trajp_.Visualize();
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
+    ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        mpc_.Update( current_state, trajp_.best_cmaes_point_, desired_input);
+        mpc_.Update( current_state, trajp_.best_cmaes_point_);
         mpc_.Visualize();
-        ackermann_msgs::AckermannDriveStamped drive_msg;
+        
         drive_msg.drive.speed = mpc_.solved_input().v();
         drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
-        drive_pub_.publish(drive_msg);
+        
     }
-    
+    drive_pub_.publish(drive_msg);
     // cout << "V: " << mpc_.solved_input().v() << "\tS: " << mpc_.solved_input().steer_ang() << endl << "error" << endl << current_state.ToVector() - mpc_des_state_.ToVector() << endl << endl;
 }
 

@@ -16,11 +16,13 @@ class Model
         Eigen::MatrixXd c();
         void linearize(State &S, Input &I, double dt);
         virtual ~Model();
+        
     private:
+        
+        double time_step_;
         Eigen::MatrixXd a_;
         Eigen::MatrixXd b_;
         Eigen::MatrixXd c_;
-        double time_step_;
         // mode
 };
 

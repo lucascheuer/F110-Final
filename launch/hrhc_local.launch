@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="milestone-3" type="hrhc_node" name="dummy_agent" output="screen"/>
+  
+</launch>
