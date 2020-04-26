@@ -18,7 +18,7 @@ class OccGrid
         std::pair<float,float> OccupancyToWorld(int row, int col);
         std::pair<float,float> OccupancyToWorld(std::pair<int,int> grid_point);
         std::pair<float, float> PolarToCartesian(float range, float angle);
-        void FillOccGrid(const geometry_msgs::Pose &pose_msg, const sensor_msgs::LaserScan::ConstPtr& scan_msg, float obstacle_dilation);
+        void FillOccGrid(const geometry_msgs::Pose &pose_msg, const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         bool InGrid(int col, int row);
         bool InGrid(std::pair<int, int> grid_point);
         bool CartesianInGrid(float x, float y);
@@ -35,6 +35,7 @@ class OccGrid
         int size_;
         float discrete_;
         int grid_blocks_;
+        float dilation_;
         std::pair<float, float> occ_offset_;
         Eigen::MatrixXf grid_;
         ros::Publisher occ_pub_;

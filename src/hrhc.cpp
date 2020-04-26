@@ -12,7 +12,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     std::string pose_topic, scan_topic, drive_topic;
     int og_size;
     float discrete;
-
+    
     nh_.getParam("/q0", q0_);
     nh_.getParam("/q1", q1_);
     nh_.getParam("/q2", q2_);
@@ -89,7 +89,7 @@ void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
         if (!firstScanEstimate)
             firstScanEstimate = true;
         
-        occ_grid_.FillOccGrid(current_pose_, scan_msg, 0.1f);
+        occ_grid_.FillOccGrid(current_pose_, scan_msg);
         occ_grid_.Visualize();
         mpc_.update_scan(scan_msg);
         

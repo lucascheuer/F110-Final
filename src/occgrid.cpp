@@ -9,6 +9,7 @@ OccGrid::OccGrid(ros::NodeHandle &nh)
     ROS_INFO("occgrid created");
     nh.getParam("/occ_size", size_);
     nh.getParam("/occ_discrete", discrete_);
+    nh.getParam("/occ_dilation", dilation_);
     grid_blocks_ = size_/discrete_;
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
@@ -52,7 +53,7 @@ std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
 }
 
 
-void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_msgs::LaserScan::ConstPtr &scan_msg, float obstacle_dilation)
+void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_,grid_blocks_);
     float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
@@ -66,9 +67,9 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
         std::pair<float, float> cartesian = PolarToCartesian(scan_msg->ranges[ii], angle);
         cartesian.first += occ_offset_.first;
         cartesian.second += occ_offset_.second;
-        for (float x_off = -obstacle_dilation; x_off <= obstacle_dilation; x_off += discrete_)
+        for (float x_off = -dilation_; x_off <= dilation_; x_off += discrete_)
         {
-            for (float y_off = -obstacle_dilation; y_off <= obstacle_dilation; y_off += discrete_)
+            for (float y_off = -dilation_; y_off <= dilation_; y_off += discrete_)
             {
                 //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
                 

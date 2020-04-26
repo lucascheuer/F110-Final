@@ -1,20 +1,20 @@
 
 #hrhc 
-q0: 10.0
-q1: 10.0
+q0: 100.0
+q1: 100.0
 q2: 0.0
 
-r0: 0.001
-r1: 10
+r0: 0.00
+r1: 30.0
 
 pose_topic: "/odom"
 scan_topic: "/scan"
 drive_topic: "/nav"
 horizon: 40
-
 #occ_grid
 occ_size: 10
 occ_discrete: 0.1
+occ_dilation: 0.2
 
 #traj_planner
 num_traj: 10
@@ -24,7 +24,7 @@ MAX_HORIZON: 50
 
 
 #constraints 
-umax: 2
+umax: 3
 follow_gap_thresh: 1.5
 state_lims: 1
 
