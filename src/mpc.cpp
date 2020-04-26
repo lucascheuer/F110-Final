@@ -60,8 +60,8 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
-    // model_.linearize(current_state, temp, (curr_time - prev_time_).toSec());
-    model_.linearize(current_state_, solved_input_, 0.01);
+    model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
+    // model_.linearize(current_state_, solved_input_, 0.01);
     std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
@@ -142,6 +142,10 @@ void MPC::Visualize()
         color.b = 0;
         color.a = 1;
         colors_.push_back(color);
+        color.r = 0;
+        color.g = (float)ii / horizon_;
+        color.b = 0;
+        color.a = 1;
         colors_.push_back(color);
         
     }
