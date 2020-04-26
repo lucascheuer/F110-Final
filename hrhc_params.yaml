@@ -24,7 +24,8 @@ MAX_HORIZON: 50
 
 
 #constraints 
-umax: 3
+umax: 4.5
+umin: 3.0
 follow_gap_thresh: 1.5
 state_lims: 1
 

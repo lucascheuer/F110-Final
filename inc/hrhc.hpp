@@ -32,7 +32,6 @@ class HRHC
         float r0_;
         float r1_;
 
-        float u_max_;
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
         bool firstScanEstimate = false;

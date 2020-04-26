@@ -20,7 +20,6 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     nh_.getParam("/r1", r1_);
     nh_.getParam("/pose_topic", pose_topic);
     nh_.getParam("/scan_topic", scan_topic);
-    nh_.getParam("/umax", u_max_);
     nh_.getParam("/drive_topic", drive_topic);
     nh_.getParam("/horizon", hori);
     nh_.getParam("/occgrid_size", og_size);
@@ -49,7 +48,6 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     q.diagonal() << q0_, q1_, q2_;
     r.diagonal() << r0_, r1_;
     Cost cost(q, r);
-    Input input(u_max_, 0.5);
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
