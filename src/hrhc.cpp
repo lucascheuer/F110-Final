@@ -7,12 +7,28 @@ HRHC::~HRHC()
     ROS_INFO("Killing HRHC");
 }
 int hori = 50;
-HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori), mpc_(nh, hori)
+HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
 {
+    std::string pose_topic, scan_topic, drive_topic;
+    int og_size;
+    float discrete;
+
+    nh_.getParam("/q0", q0_);
+    nh_.getParam("/q1", q1_);
+    nh_.getParam("/q2", q2_);
+    nh_.getParam("/r0", r0_);
+    nh_.getParam("/r1", r1_);
+    nh_.getParam("/pose_topic", pose_topic);
+    nh_.getParam("/scan_topic", scan_topic);
+    nh_.getParam("/umax", u_max_);
+    nh_.getParam("/drive_topic", drive_topic);
+    nh_.getParam("/horizon", hori);
+    nh_.getParam("/occgrid_size", og_size);
+    nh_.getParam("/occgrid_disc", discrete);
     
-    std::string pose_topic, scan_topic;
-    pose_topic = "/odom";
-    scan_topic = "/scan";
+
+    ros::NodeHandle nh_(nh);
+    // OccGrid occ_grid_(nh, og_size,discrete);
     pf_sub_ = nh_.subscribe(pose_topic, 1, &HRHC::pf_callback, this);
     scan_sub_ = nh_.subscribe(scan_topic, 1, &HRHC::scan_callback, this);
     nav_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &HRHC::nav_goal_callback, this);
@@ -30,14 +46,14 @@ HRHC:: HRHC(ros::NodeHandle &nh): nh_(nh), occ_grid_(nh, 10,0.1), trajp_(nh,hori
     trajp_.getCmaes();
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
-    q.diagonal() << 10.0, 10.0, 0.0;
-    r.diagonal() << 0.001, 10;
+    q.diagonal() << q0_, q1_, q2_;
+    r.diagonal() << r0_, r1_;
     Cost cost(q, r);
-    Input input(2, 0.5);
+    Input input(u_max_, 0.5);
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
-    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>("/nav", 10);
+    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
     ROS_INFO("Created HRHC");
 }
 

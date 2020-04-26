@@ -18,12 +18,21 @@ class HRHC
     public:
         HRHC(ros::NodeHandle &nh);
         virtual ~HRHC();
+        
     private:
         ros::NodeHandle nh_;
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
 
+
+        float q0_;
+        float q1_;
+        float q2_;
+        float r0_;
+        float r1_;
+
+        float u_max_;
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
         bool firstScanEstimate = false;
@@ -34,6 +43,7 @@ class HRHC
         TrajectoryPlanner trajp_;
         MPC mpc_;
         State mpc_des_state_;
+        
         
 
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);

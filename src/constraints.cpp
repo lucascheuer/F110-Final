@@ -4,17 +4,21 @@
 
 Constraints::Constraints(ros::NodeHandle &nh)
 {
-    
+    std::string hrhc_node = "";
+    nh.getParam(hrhc_node+"/umax", umax_val_);
+    nh.getParam(hrhc_node+"/follow_gap_thresh", thres_);
+    nh.getParam(hrhc_node+"/state_lims", d);
+
     x_max_.resize(3,1);
     x_max_ << OsqpEigen::INFTY, OsqpEigen::INFTY, OsqpEigen::INFTY; //x,y,ori
     x_min_.resize(3,1);
     x_min_ << -OsqpEigen::INFTY,-OsqpEigen::INFTY,-OsqpEigen::INFTY; //x,y,ori
     u_max_.resize(2,1);
-    u_max_ << 2.0f, 0.43f; //Speed, steering
+    u_max_ << umax_val_, 0.43f; //Speed, steering
     u_min_.resize(2,1);
-    u_min_ << -0.0f, -0.43f; //Speed, steering
-    d = 1.0f;
-    thres_ = 1.5f;
+    u_min_ << 0.0f, -0.43f; //Speed, steering
+    // d = 1.0f;
+    // thres_ = 1.5f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
     // scan_sub_ = nh.subscribe("/scan", 10, &Constraints::scan_callback, this);
     

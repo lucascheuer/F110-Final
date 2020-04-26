@@ -29,6 +29,7 @@ class State
         double ori_;
         int size_;
         //... fill with state variables
+        
 };
 
 #endif

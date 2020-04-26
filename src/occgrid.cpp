@@ -1,9 +1,14 @@
 #include "occgrid.hpp"
 #include <cmath>
 
-OccGrid::OccGrid(ros::NodeHandle &nh, int size, float discrete): size_(size),discrete_(discrete)
+
+
+OccGrid::OccGrid(ros::NodeHandle &nh)
 {
+
     ROS_INFO("occgrid created");
+    nh.getParam("/occ_size", size_);
+    nh.getParam("/occ_discrete", discrete_);
     grid_blocks_ = size_/discrete_;
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
