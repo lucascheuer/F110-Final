@@ -13,7 +13,8 @@ using namespace std;
 class TrajectoryPlanner
 {
     public:
-        TrajectoryPlanner(ros::NodeHandle &nh,int horizon);
+        TrajectoryPlanner();
+        TrajectoryPlanner(ros::NodeHandle &nh);
         virtual ~TrajectoryPlanner();
         void getTrajectories();
         void getCmaes();
@@ -30,6 +31,10 @@ class TrajectoryPlanner
         void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
         State best_cmaes_point_;
         vector<State> best_cmaes_trajectory_;
+        int num_traj;
+        int MAX_HORIZON;
+        float close_weight;
+
     private:
         
         int best_traj_index_;

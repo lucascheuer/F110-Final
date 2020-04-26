@@ -10,7 +10,8 @@
 class OccGrid
 {
     public:
-        OccGrid(ros::NodeHandle &nh, int size,float discrete);
+        OccGrid();
+        OccGrid(ros::NodeHandle &nh);
         virtual ~OccGrid();
         std::pair<int, int> WorldToOccupancy(std::pair<float, float> point);
         std::pair<int, int> WorldToOccupancy(float x, float y);

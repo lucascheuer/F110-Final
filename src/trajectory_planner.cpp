@@ -9,12 +9,16 @@
 
 using namespace std;
 namespace fs = experimental::filesystem;
-int num_traj = 10;
-int MAX_HORIZON = 50;
 float BIG_FLOAT = 999999.0f;
-float close_weight = 0.5f;
-TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh, int horizon)
-{
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
+
+{   
+    int horizon;
+    nh.getParam("/horizon", horizon);
+    nh.getParam("/num_traj", num_traj);
+    nh.getParam("/MAX_HORIZON", MAX_HORIZON);
+    nh.getParam("/close_weight", close_weight);
+    
     successfulRead_ = false;
     horizon_ = horizon;
     traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);

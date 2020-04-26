@@ -18,7 +18,7 @@ class MPC
 {
     public:
         MPC();
-        MPC(ros::NodeHandle &nh, int horizon);
+        MPC(ros::NodeHandle &nh);
         virtual ~MPC();
         void Init(Model model, Cost cost, Constraints constraints);
         void Update(State &current_state, std::vector<State> &desired_state_trajectory);

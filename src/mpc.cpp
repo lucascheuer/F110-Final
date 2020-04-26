@@ -5,17 +5,18 @@
 
 // }
 
-MPC::MPC(ros::NodeHandle &nh, int horizon):
+MPC::MPC(ros::NodeHandle &nh):
     nh_(nh),
-    horizon_(horizon),
     state_size_(3),
     input_size_(2),
-    num_states_(state_size_ * (horizon_ + 1)),
-    num_inputs_(input_size_ * horizon_),
-    num_variables_(num_states_ + num_inputs_),
-    num_constraints_(num_states_ + 2 * (horizon_ + 1) + num_inputs_),
     constraints_(nh)
 {
+    nh.getParam("/horizon", horizon_);
+    num_inputs_=(input_size_ * horizon_);
+    num_states_=(state_size_ * (horizon_ + 1));
+    num_variables_=(num_states_ + num_inputs_);
+    num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_);
+    
     hessian_.resize(num_variables_, num_variables_);
     gradient_.resize(num_variables_);
     linear_matrix_.resize(num_constraints_, num_variables_);

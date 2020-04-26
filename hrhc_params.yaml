@@ -1,0 +1,31 @@
+
+#hrhc 
+q0: 10.0
+q1: 10.0
+q2: 0.0
+
+r0: 0.001
+r1: 10
+
+pose_topic: "/odom"
+scan_topic: "/scan"
+drive_topic: "/nav"
+horizon: 40
+
+#occ_grid
+occ_size: 10
+occ_discrete: 0.1
+
+#traj_planner
+num_traj: 10
+close_weight: 0.5
+MAX_HORIZON: 50
+
+
+
+#constraints 
+umax: 2
+follow_gap_thresh: 1.5
+state_lims: 1
+
+
