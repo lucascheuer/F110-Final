@@ -10,6 +10,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     nh.getParam(hrhc_node+"/follow_gap_thresh", thres_);
     nh.getParam(hrhc_node+"/state_lims", d);
     nh.getParam(hrhc_node+"/fov_divider", divider_);
+    nh.getParam(hrhc_node+"/buffer", buffer_);
 
     x_max_.resize(3,1);
     x_max_ << OsqpEigen::INFTY, OsqpEigen::INFTY, OsqpEigen::INFTY; //x,y,ori
@@ -170,6 +171,11 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
                     best_lo = lo;
                 }
         }
+    }
+    if (best_hi-best_lo >2*buffer_)
+    {
+        best_hi = best_hi-buffer_;
+        best_lo = best_lo+buffer_;
     }
     float angle1 = scan_msg_.angle_min + best_lo * scan_msg_.angle_increment + current_angle;
     float angle2 = scan_msg_.angle_min + best_hi * scan_msg_.angle_increment + current_angle;

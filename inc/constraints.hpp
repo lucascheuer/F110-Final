@@ -56,6 +56,7 @@ class Constraints
         float umax_val_;
         float umin_val_;
         float divider_;
+        float buffer_;
         // ros::Subscriber scan_sub_;
         // void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         // mode
