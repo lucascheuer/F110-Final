@@ -34,6 +34,7 @@ class Constraints
         // Eigen::VectorXd
         // void setUlims(float x,float y); 
         void find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg_);
+        float dt;
         
 
     private:
@@ -57,6 +58,7 @@ class Constraints
         float umin_val_;
         float divider_;
         float buffer_;
+        float dt_;
         // ros::Subscriber scan_sub_;
         // void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         // mode

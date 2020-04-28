@@ -12,6 +12,7 @@ MPC::MPC(ros::NodeHandle &nh):
     constraints_(nh)
 {
     nh.getParam("/horizon", horizon_);
+    nh.getParam("/dt", dt_);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -61,7 +62,7 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
     // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    model_.linearize(current_state_, solved_input_, 0.01);
+    model_.linearize(current_state_, solved_input_, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
