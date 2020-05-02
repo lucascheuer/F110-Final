@@ -36,6 +36,7 @@ class MPC
         int num_variables_;
         int num_constraints_;
         bool solver_init_ = false;
+        float dt_;
 
 
         Eigen::SparseMatrix<double> hessian_;

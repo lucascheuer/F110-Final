@@ -12,6 +12,7 @@ MPC::MPC(ros::NodeHandle &nh):
     constraints_(nh)
 {
     nh.getParam("/horizon", horizon_);
+    nh.getParam("/dt", dt_);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -61,7 +62,7 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
     // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    model_.linearize(current_state_, solved_input_, 0.01);
+    model_.linearize(current_state_, solved_input_, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
@@ -94,11 +95,33 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     if (!solver_.solve())
     {
         std::cout << "solve failed" << std::endl;
+        solved_input_.SetV(0.5);
+        solved_input_.SetSteerAng(0.001); 
     } else
     {
         full_solution_ = solver_.getSolution();
-        solved_input_.SetV(full_solution_(num_states_));
-        solved_input_.SetSteerAng(full_solution_(num_states_ + 1));   
+        // std::cout<<full_solution_(num_states_ + 1)<<std::endl;
+        if (std::isnan(full_solution_(num_states_ + 1)))
+        {
+            // std::cout<<"vel fucked"<<std::endl;
+            solved_input_.SetSteerAng(0.001);               
+        }
+        else
+        {
+            solved_input_.SetSteerAng(full_solution_(num_states_ + 1));   
+        }
+        if (std::isnan(full_solution_(num_states_)))
+        {
+            std::cout<<"vel fucked"<<std::endl;
+            solved_input_.SetV(4);               
+        }
+        else
+        {
+
+            solved_input_.SetV(full_solution_(num_states_));
+        }
+        
+
     }
 }
 
