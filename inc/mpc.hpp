@@ -25,12 +25,14 @@ class MPC
         
         void Visualize();
         void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
-        Input solved_input();
-        void increment_solved_path();
         Constraints constraints();
         float get_dt() 
         {
             return dt_;
+        }
+        std::vector<Input> get_solved_trajectory()
+        {
+            return solved_trajectory_;
         }
     private:
         int horizon_;
@@ -42,7 +44,6 @@ class MPC
         int num_constraints_;
         bool solver_init_ = false;
         float dt_;
-        std::mutex solved_path_mutex;
 
         Eigen::SparseMatrix<double> hessian_;
         Eigen::VectorXd gradient_;

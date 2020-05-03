@@ -72,10 +72,14 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
+        std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
+        mpc_thread.join();
+
+        inputs_idx_ = 0;
+        current_inputs_ = mpc_.get_solved_trajectory();
+
         mpc_.Visualize();
     }
-    // cout << "V: " << mpc_.solved_input().v() << "\tS: " << mpc_.solved_input().steer_ang() << endl << "error" << endl << current_state.ToVector() - mpc_des_state_.ToVector() << endl << endl;
 }
 
 void HRHC::drive_loop()
@@ -83,14 +87,24 @@ void HRHC::drive_loop()
     while(true) {
         if (firstPoseEstimate && firstScanEstimate) {
             ackermann_msgs::AckermannDriveStamped drive_msg;
-            drive_msg.drive.speed = mpc_.solved_input().v();
-            drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
+            Input input = get_next_input();
+            drive_msg.drive.speed = input.v();
+            drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
-            mpc_.increment_solved_path();
-            int dt_ms = mpc_.get_dt()*1000;
+            int dt_ms = mpc_.get_dt()*100;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }
+}
+
+Input HRHC::get_next_input()
+{
+    if (inputs_idx_ >= current_inputs_.size()) {
+        ROS_ERROR("Trajectory complete!");
+        return Input(0,0);
+    }
+    int current_idx = inputs_idx_++;
+    return current_inputs_[current_idx];
 }
 
 void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
