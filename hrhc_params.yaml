@@ -11,7 +11,7 @@ pose_topic: "/odom"
 scan_topic: "/scan"
 drive_topic: "/drive"
 
-horizon: 50
+horizon: 30
 dt: 0.01
 #occ_grid
 occ_size: 10
@@ -20,7 +20,7 @@ occ_dilation: 0.1
 
 #traj_planner
 num_traj: 10
-close_weight: 1
+close_weight: 1.5
 MAX_HORIZON: 50
 
 
