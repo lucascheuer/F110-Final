@@ -72,9 +72,9 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
-        mpc_thread.join();
-
+        // std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
+        // mpc_thread.join();
+        mpc_.Update(current_state,trajp_.best_cmaes_trajectory_);
         inputs_idx_ = 0;
         current_inputs_ = mpc_.get_solved_trajectory();
 
@@ -91,7 +91,7 @@ void HRHC::drive_loop()
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
-            int dt_ms = mpc_.get_dt()*100;
+            int dt_ms = mpc_.get_dt()*1000*2;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }

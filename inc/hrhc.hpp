@@ -15,6 +15,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <atomic>
 class HRHC
 {
     public:

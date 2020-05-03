@@ -56,7 +56,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 void MPC::Update(State &current_state, std::vector<State> &desired_state_trajectory)
 {
 
-    ROS_INFO("updating MPC");
+    // ROS_INFO("updating MPC");
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
@@ -104,9 +104,11 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
 void MPC::updateSolvedTrajectory()
 { 
     trajectory_idx_ = 0;
-    solved_trajectory_.clear();
-    for (int i = num_states_; i < full_solution_.size()-1; i+=2) {
+    solved_trajectory_.clear();//full_solution_.size()-1
+    for (int i = num_states_; i < num_states_+5; i+=2) {
         double v = full_solution_(i);
+        // std::cout<<v<<std::endl;
+        ROS_INFO("updating");
         double angle = full_solution_(i+1);
         if (std::isnan(v) || std::isnan(angle)) {
             return;
@@ -278,8 +280,8 @@ void MPC::UpdateLowerBound()
 {   
     lower_bound_.resize(num_constraints_);
     Eigen::VectorXd gap_con(2);
-    gap_con(0) = -constraints_.l1()(2);
-    gap_con(1) = -constraints_.l2()(2);
+    gap_con(0) = -OsqpEigen::INFTY;//-constraints_.l1()(2);
+    gap_con(1) = -OsqpEigen::INFTY;//-constraints_.l2()(2);
     lower_bound_.head(num_states_) << -current_state_.ToVector(), -model_.c().replicate(horizon_, 1);
     lower_bound_.block(num_states_, 0, (horizon_ + 1) * 2, 1) = gap_con.replicate(horizon_ + 1, 1);
     // std::cout << lower_bound_ << std::endl << std::endl;
@@ -291,25 +293,6 @@ void MPC::UpdateUpperBound()
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
-<<<<<<< HEAD
-Input MPC::solved_input()
-{
-    if (trajectory_idx_ >= solved_trajectory_.size()) {
-        ROS_ERROR("Trajectory completed!");
-        return Input(0.5,-0.1);
-    }
-    return solved_trajectory_[trajectory_idx_];
-}
-
-void MPC::increment_solved_path()
-{
-    solved_path_mutex.lock();
-    trajectory_idx_++;
-    solved_path_mutex.unlock();
-}
-
-=======
->>>>>>> b1d53ff3f89e65ab44bba26348ba8892723938be
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
 {
     int row_size = block.rows();

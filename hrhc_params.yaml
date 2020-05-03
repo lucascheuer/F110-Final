@@ -5,13 +5,13 @@ q1: 10.0
 q2: 0.0
 
 r0: 0.10
-r1: 1.0
+r1: 0.10
 
 pose_topic: "/odom"
 scan_topic: "/scan"
 drive_topic: "/drive"
 
-horizon: 40
+horizon: 35
 dt: 0.01
 #occ_grid
 occ_size: 10
