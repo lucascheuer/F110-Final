@@ -93,13 +93,9 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
         if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
         solver_init_ = true;
     }
-    if (!solver_.solve())
-    {
+    if (!solver_.solve()) {
         std::cout << "solve failed" << std::endl;
-        // move 1 step up currently solved trajectory
-        trajectory_idx_++;
-    } else
-    {
+    } else {
         full_solution_ = solver_.getSolution();
         updateSolvedTrajectory();
     }
@@ -298,6 +294,11 @@ Input MPC::solved_input()
         return Input(0,0);
     }
     return solved_trajectory_[trajectory_idx_];
+}
+
+void MPC::increment_solved_path()
+{
+    trajectory_idx_++;
 }
 
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)

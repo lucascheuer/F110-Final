@@ -74,10 +74,20 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         
         drive_msg.drive.speed = mpc_.solved_input().v();
         drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
-        
+        mpc_.increment_solved_path();
     }
     drive_pub_.publish(drive_msg);
     // cout << "V: " << mpc_.solved_input().v() << "\tS: " << mpc_.solved_input().steer_ang() << endl << "error" << endl << current_state.ToVector() - mpc_des_state_.ToVector() << endl << endl;
+}
+
+void HRHC::drive_loop()
+{
+    while(true) {
+        ackermann_msgs::AckermannDriveStamped drive_msg;
+        drive_msg.drive.speed = mpc_.solved_input().v();
+        drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
+        drive_pub_.publish(drive_msg);
+    }
 }
 
 void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)

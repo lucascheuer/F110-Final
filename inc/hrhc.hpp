@@ -12,7 +12,8 @@
 #include <visualization_msgs/Marker.h>
 #include <cmath>
 #include "OsqpEigen/OsqpEigen.h"
-
+#include <thread>
+#include <chrono>
 class HRHC
 {
     public:
@@ -24,7 +25,7 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
-
+        std::thread drive_thread_;
 
         float q0_;
         float q1_;
@@ -44,7 +45,7 @@ class HRHC
         State mpc_des_state_;
         
         
-
+        void drive_loop();
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr &nav_goal);

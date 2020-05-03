@@ -26,6 +26,7 @@ class MPC
         void Visualize();
         void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         Input solved_input();
+        void increment_solved_path();
         Constraints constraints();
     private:
         int horizon_;
