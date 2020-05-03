@@ -103,6 +103,8 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
 
 void MPC::updateSolvedTrajectory()
 {
+    solved_path_mutex.lock();
+ 
     trajectory_idx_ = 0;
     solved_trajectory_.clear();
     for (int i = num_states_; i < full_solution_.size()-1; i+=2) {
@@ -111,6 +113,8 @@ void MPC::updateSolvedTrajectory()
         Input input(v, angle);
         solved_trajectory_.push_back(input);
     }
+ 
+    solved_path_mutex.unlock();
 }
 
 void MPC::Visualize()
@@ -291,6 +295,7 @@ void MPC::UpdateUpperBound()
 Input MPC::solved_input()
 {
     if (trajectory_idx_ >= solved_trajectory_.size()) {
+        ROS_ERROR("Trajectory completed!");
         return Input(0,0);
     }
     return solved_trajectory_[trajectory_idx_];
@@ -298,7 +303,9 @@ Input MPC::solved_input()
 
 void MPC::increment_solved_path()
 {
+    solved_path_mutex.lock();
     trajectory_idx_++;
+    solved_path_mutex.unlock();
 }
 
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)

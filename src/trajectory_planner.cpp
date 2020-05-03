@@ -53,7 +53,7 @@ void TrajectoryPlanner::getTrajectories()
 
 void TrajectoryPlanner::getCmaes()
 {
-    string path = ros::package::getPath("milestone-3")+"/fooxx_safe.csv";
+    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
     // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);

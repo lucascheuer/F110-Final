@@ -14,6 +14,7 @@
 #include "OsqpEigen/OsqpEigen.h"
 #include <thread>
 #include <chrono>
+#include <mutex>
 class HRHC
 {
     public:
@@ -25,7 +26,6 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
-        std::thread drive_thread_;
 
         float q0_;
         float q1_;

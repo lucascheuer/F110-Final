@@ -52,14 +52,17 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
+    std::thread t(&HRHC::drive_loop, this);
+    t.detach();
     ROS_INFO("Created HRHC");
 }
 
 void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
 {   
     current_pose_ = odom_msg->pose.pose;
-    if (!firstPoseEstimate)
+    if (!firstPoseEstimate) {
         firstPoseEstimate = true;
+    }
     float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
     // State desired_state(trajp_.best_cmaes_point_., 0, 0);
@@ -69,24 +72,24 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        mpc_.Update( current_state, trajp_.best_cmaes_trajectory_);
+        mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
         mpc_.Visualize();
-        
-        drive_msg.drive.speed = mpc_.solved_input().v();
-        drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
-        mpc_.increment_solved_path();
     }
-    drive_pub_.publish(drive_msg);
     // cout << "V: " << mpc_.solved_input().v() << "\tS: " << mpc_.solved_input().steer_ang() << endl << "error" << endl << current_state.ToVector() - mpc_des_state_.ToVector() << endl << endl;
 }
 
 void HRHC::drive_loop()
 {
     while(true) {
-        ackermann_msgs::AckermannDriveStamped drive_msg;
-        drive_msg.drive.speed = mpc_.solved_input().v();
-        drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
-        drive_pub_.publish(drive_msg);
+        if (firstPoseEstimate && firstScanEstimate) {
+            ackermann_msgs::AckermannDriveStamped drive_msg;
+            drive_msg.drive.speed = mpc_.solved_input().v();
+            drive_msg.drive.steering_angle = mpc_.solved_input().steer_ang();
+            drive_pub_.publish(drive_msg);
+            mpc_.increment_solved_path();
+            int dt_ms = mpc_.get_dt()*1000;
+            std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
+        }
     }
 }
 
