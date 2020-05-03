@@ -53,7 +53,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
     scan_msg_ = *scan_msg;
 }
 
-void MPC::Update(State &current_state, std::vector<State> &desired_state_trajectory)
+void MPC::Update(State current_state, Input input, std::vector<State> &desired_state_trajectory)
 {
 
     // ROS_INFO("updating MPC");
@@ -62,7 +62,6 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
     // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    Input input(4.5,0);
     model_.linearize(current_state_, input, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;

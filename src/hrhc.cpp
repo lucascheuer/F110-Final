@@ -51,7 +51,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
-    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
+    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::drive_loop, this);
     t.detach();
     ROS_INFO("Created HRHC");
@@ -74,7 +74,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     if (firstScanEstimate){
         // std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
         // mpc_thread.join();
-        mpc_.Update(current_state,trajp_.best_cmaes_trajectory_);
+        mpc_.Update(current_state,get_next_input(),trajp_.best_cmaes_trajectory_);
         inputs_idx_ = 0;
         current_inputs_ = mpc_.get_solved_trajectory();
 
@@ -92,6 +92,7 @@ void HRHC::drive_loop()
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
             int dt_ms = mpc_.get_dt()*1000*2;
+            inputs_idx_++;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }
@@ -103,8 +104,7 @@ Input HRHC::get_next_input()
         ROS_ERROR("Trajectory complete!");
         return Input(0,0);
     }
-    int current_idx = inputs_idx_++;
-    return current_inputs_[current_idx];
+    return current_inputs_[inputs_idx_];
 }
 
 void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
