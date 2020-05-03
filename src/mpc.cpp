@@ -62,7 +62,8 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
     // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    model_.linearize(current_state_, solved_input_, dt_);
+    Input input(solved_input().v(), solved_input().steer_ang());
+    model_.linearize(current_state_, input, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
@@ -92,37 +93,28 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
         if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
         solver_init_ = true;
     }
-    if (!solver_.solve())
-    {
+    if (!solver_.solve()) {
         std::cout << "solve failed" << std::endl;
-        solved_input_.SetV(0.5);
-        solved_input_.SetSteerAng(0.001); 
-    } else
-    {
+    } else {
         full_solution_ = solver_.getSolution();
-        // std::cout<<full_solution_(num_states_ + 1)<<std::endl;
-        if (std::isnan(full_solution_(num_states_ + 1)))
-        {
-            // std::cout<<"vel fucked"<<std::endl;
-            solved_input_.SetSteerAng(0.001);               
-        }
-        else
-        {
-            solved_input_.SetSteerAng(full_solution_(num_states_ + 1));   
-        }
-        if (std::isnan(full_solution_(num_states_)))
-        {
-            std::cout<<"vel fucked"<<std::endl;
-            solved_input_.SetV(4);               
-        }
-        else
-        {
-
-            solved_input_.SetV(full_solution_(num_states_));
-        }
-        
-
+        updateSolvedTrajectory();
     }
+}
+
+void MPC::updateSolvedTrajectory()
+{
+    solved_path_mutex.lock();
+ 
+    trajectory_idx_ = 0;
+    solved_trajectory_.clear();
+    for (int i = num_states_; i < full_solution_.size()-1; i+=2) {
+        double v = std::isnan(full_solution_(i)) ? 4 : full_solution_(i);
+        double angle = std::isnan(full_solution_(i+1)) ? 0.001 : full_solution_(i+1);
+        Input input(v, angle);
+        solved_trajectory_.push_back(input);
+    }
+ 
+    solved_path_mutex.unlock();
 }
 
 void MPC::Visualize()
@@ -302,7 +294,18 @@ void MPC::UpdateUpperBound()
 
 Input MPC::solved_input()
 {
-    return solved_input_;
+    if (trajectory_idx_ >= solved_trajectory_.size()) {
+        ROS_ERROR("Trajectory completed!");
+        return Input(0,0);
+    }
+    return solved_trajectory_[trajectory_idx_];
+}
+
+void MPC::increment_solved_path()
+{
+    solved_path_mutex.lock();
+    trajectory_idx_++;
+    solved_path_mutex.unlock();
 }
 
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
