@@ -43,10 +43,12 @@ class HRHC
         TrajectoryPlanner trajp_;
         MPC mpc_;
         State mpc_des_state_;
-        
+        std::vector<Input> current_inputs_;
+        std::atomic<int> inputs_idx_;
         
         void drive_loop();
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr &nav_goal);
+        Input get_next_input();
 };

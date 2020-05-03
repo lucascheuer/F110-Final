@@ -62,7 +62,7 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
     // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
-    Input input(solved_input().v(), solved_input().steer_ang());
+    Input input(4.5,0);
     model_.linearize(current_state_, input, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
@@ -94,7 +94,7 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
         solver_init_ = true;
     }
     if (!solver_.solve()) {
-        std::cout << "solve failed" << std::endl;
+        ROS_ERROR("solve failed");
     } else {
         full_solution_ = solver_.getSolution();
         updateSolvedTrajectory();
@@ -102,19 +102,18 @@ void MPC::Update(State &current_state, std::vector<State> &desired_state_traject
 }
 
 void MPC::updateSolvedTrajectory()
-{
-    solved_path_mutex.lock();
- 
+{ 
     trajectory_idx_ = 0;
-    solved_trajectory_.clear(); //full_solution_.size()-1
-    for (int i = num_states_; i < 5; i+=2) {
-        double v = std::isnan(full_solution_(i)) ? 0.5 : full_solution_(i);
-        double angle = std::isnan(full_solution_(i+1)) ? 0.001 : full_solution_(i+1);
+    solved_trajectory_.clear();
+    for (int i = num_states_; i < full_solution_.size()-1; i+=2) {
+        double v = full_solution_(i);
+        double angle = full_solution_(i+1);
+        if (std::isnan(v) || std::isnan(angle)) {
+            return;
+        }
         Input input(v, angle);
         solved_trajectory_.push_back(input);
     }
- 
-    solved_path_mutex.unlock();
 }
 
 void MPC::Visualize()
@@ -292,6 +291,7 @@ void MPC::UpdateUpperBound()
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
+<<<<<<< HEAD
 Input MPC::solved_input()
 {
     if (trajectory_idx_ >= solved_trajectory_.size()) {
@@ -308,6 +308,8 @@ void MPC::increment_solved_path()
     solved_path_mutex.unlock();
 }
 
+=======
+>>>>>>> b1d53ff3f89e65ab44bba26348ba8892723938be
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
 {
     int row_size = block.rows();
