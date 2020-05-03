@@ -30,7 +30,7 @@ umax: 4.5 #change dt if you change this
 umin: 4
 follow_gap_thresh: 3
 state_lims: 1
-fov_divider: 2
+fov_divider: 1.5
 buffer: 3
 
 

@@ -56,7 +56,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 void MPC::Update(State &current_state, std::vector<State> &desired_state_trajectory)
 {
 
-
+    ROS_INFO("updating MPC");
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
@@ -106,9 +106,9 @@ void MPC::updateSolvedTrajectory()
     solved_path_mutex.lock();
  
     trajectory_idx_ = 0;
-    solved_trajectory_.clear();
-    for (int i = num_states_; i < full_solution_.size()-1; i+=2) {
-        double v = std::isnan(full_solution_(i)) ? 4 : full_solution_(i);
+    solved_trajectory_.clear(); //full_solution_.size()-1
+    for (int i = num_states_; i < 5; i+=2) {
+        double v = std::isnan(full_solution_(i)) ? 0.5 : full_solution_(i);
         double angle = std::isnan(full_solution_(i+1)) ? 0.001 : full_solution_(i+1);
         Input input(v, angle);
         solved_trajectory_.push_back(input);
@@ -296,7 +296,7 @@ Input MPC::solved_input()
 {
     if (trajectory_idx_ >= solved_trajectory_.size()) {
         ROS_ERROR("Trajectory completed!");
-        return Input(0,0);
+        return Input(0.5,-0.1);
     }
     return solved_trajectory_[trajectory_idx_];
 }
