@@ -51,7 +51,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
-    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
+    drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::drive_loop, this);
     t.detach();
     ROS_INFO("Created HRHC");
@@ -91,7 +91,7 @@ void HRHC::drive_loop()
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
-            int dt_ms = mpc_.get_dt()*100;
+            int dt_ms = mpc_.get_dt()*1000;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }
