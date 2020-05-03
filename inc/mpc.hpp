@@ -52,9 +52,10 @@ class MPC
         Cost cost_;
         sensor_msgs::LaserScan scan_msg_;
         Eigen::VectorXd full_solution_;
-        Input solved_input_;
         OsqpEigen::Solver solver_;
         ros::Time prev_time_;
+        std::vector<Input> solved_trajectory_;
+        int trajectory_idx_;
 
         // ros vis stuff
         ros::NodeHandle nh_;
@@ -74,7 +75,7 @@ class MPC
         void SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
         void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start, int number);
         void DrawCar(State &state, Input &input);
-        
+        void updateSolvedTrajectory();
 
         // mode
 };
