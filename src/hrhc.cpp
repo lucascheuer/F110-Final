@@ -76,6 +76,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         // mpc_thread.join();
         mpc_.Update(current_state,get_next_input(),trajp_.best_cmaes_trajectory_);
         inputs_idx_ = 0;
+
         current_inputs_ = mpc_.get_solved_trajectory();
 
         mpc_.Visualize();
@@ -88,6 +89,11 @@ void HRHC::drive_loop()
         if (firstPoseEstimate && firstScanEstimate) {
             ackermann_msgs::AckermannDriveStamped drive_msg;
             Input input = get_next_input();
+            if (trajp_.best_traj_index< 0)
+            {
+                std::cout<<"cannot"<<std::endl;
+                input.SetV(0.5);
+            }
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
@@ -102,7 +108,7 @@ Input HRHC::get_next_input()
 {
     if (inputs_idx_ >= current_inputs_.size()) {
         ROS_ERROR("Trajectory complete!");
-        return Input(0,0);
+        return Input(0.5,-0.05);
     }
     return current_inputs_[inputs_idx_];
 }

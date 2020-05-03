@@ -34,10 +34,10 @@ class TrajectoryPlanner
         int num_traj;
         int MAX_HORIZON;
         float close_weight;
+        int best_traj_index;
 
     private:
         
-        int best_traj_index_;
         int horizon_;
         bool successfulRead_;
         void publish_cmaes_closest_marker(float x, float y);

@@ -249,7 +249,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 void TrajectoryPlanner::Visualize()
 {
     std::vector<pair<float,float>> best_traj;
-    for (int i = MAX_HORIZON*best_traj_index_; i<MAX_HORIZON*best_traj_index_+horizon_;i++)
+    for (int i = MAX_HORIZON*best_traj_index; i<MAX_HORIZON*best_traj_index+horizon_;i++)
     {
         best_traj.push_back(trajectories_world[i]);
     }
@@ -276,6 +276,6 @@ void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid 
 {
     //trajectory2miniworld(current_pose);
     trajectory2world(current_pose);
-    best_traj_index_ = best_traj(occ_grid, current_pose);
+    best_traj_index = best_traj(occ_grid, current_pose);
     
 }

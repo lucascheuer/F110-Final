@@ -107,7 +107,6 @@ void MPC::updateSolvedTrajectory()
     for (int i = num_states_; i < num_states_+5; i+=2) {
         double v = full_solution_(i);
         // std::cout<<v<<std::endl;
-        ROS_INFO("updating");
         double angle = full_solution_(i+1);
         if (std::isnan(v) || std::isnan(angle)) {
             return;
