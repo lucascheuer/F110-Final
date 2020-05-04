@@ -74,12 +74,19 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     if (firstScanEstimate){
         // std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
         // mpc_thread.join();
-        mpc_.Update(current_state,get_next_input(),trajp_.best_cmaes_trajectory_);
+        Input input_to_pass = get_next_input();
+        input_to_pass.SetV(4);
+         if (trajp_.best_traj_index> -1)
+            {
+            mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
+            current_inputs_ = mpc_.get_solved_trajectory();
+            mpc_.Visualize();
+            }
         inputs_idx_ = 0;
 
-        current_inputs_ = mpc_.get_solved_trajectory();
+        
 
-        mpc_.Visualize();
+        
     }
 }
 
@@ -99,6 +106,7 @@ void HRHC::drive_loop()
             drive_pub_.publish(drive_msg);
             int dt_ms = mpc_.get_dt()*1000*2;
             inputs_idx_++;
+            std::cout<<inputs_idx_<< " " << current_inputs_.size() << endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }
