@@ -38,12 +38,12 @@ max_goal_distance: 2.0
 min_goal_distance: 1.5
 goal_epsilon: 0.1
 max_expansion_dist: 0.5
-rrt_iters: 500
+rrt_iters: 200
 look_ahead: 0.4
 angle_limit: 1.5
 steer_angle: 0.75
 rrt_radius_sq: 0.8
 explore_dist: 1
-shortcut_iters: 100
+shortcut_iters: 50
 
 

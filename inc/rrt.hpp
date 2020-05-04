@@ -27,7 +27,7 @@
 #include "xtensor/xtensor.hpp"
 #include "xtensor-interpolate/xinterpolate.hpp"
 #include "xtensor/xadapt.hpp"
-
+#include "state.hpp"
 // standard
 #include <math.h>
 #include <vector>
@@ -72,7 +72,7 @@ public:
     RRT(ros::NodeHandle &nh, OccGrid occ_grid);
     virtual ~RRT();
     void updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pair<float, float> carFramePoint, std::pair<float, float> globalFramePoint);
-    vector<Input> getRRTInputs(float dt);
+    vector<State> getRRTStates(float dt, int horizon);
 private:
     float max_angle;
     float steer_angle;
@@ -111,7 +111,7 @@ private:
     int build_tree(std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords);
 
     // RRT methods
-    vector<pair<float,float>> smooth_path(vector<pair<float,float>> path);
+    vector<pair<float,float>> smooth_path(vector<pair<float,float>> path, int discrete);
     std::vector<double> sample();
     int nearest(std::vector<Node> &tree, std::vector<double> &sampled_point);
     Node steer(Node &nearest_node, std::vector<double> &sampled_point);

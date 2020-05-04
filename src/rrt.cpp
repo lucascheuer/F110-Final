@@ -55,15 +55,34 @@ float RRT::getPathLength(vector<pair<float,float>> &path)
     return length;
 }
 
-vector<Input> RRT::getRRTInputs(float dt)
+// assume car always starts at beginning of path
+vector<State> RRT::getRRTStates(float dt, int horizon)
 {
-    float velocity;
-    float pathLength = getPathLength(rrtPath);
+    vector<State> states;
     int vectorSize = rrtPath.size();
-    float pathIncrement = pathLength/vectorSize;
+    float velocity = 4;
+    float pathLength = getPathLength(rrtPath);
     float pathTime = pathLength/velocity;
-    int steps = pathTime/dt;
-    
+    float deltaT = dt*horizon;
+    if (vectorSize > 3 && pathTime >= deltaT) {
+        int pathSectionIdx = deltaT/pathTime;
+        vector<pair<float, float>> subPath(rrtPath.begin(), rrtPath.begin()+pathSectionIdx);
+        vector<pair<float, float>> splinedSubpath = smooth_path(subPath, horizon+1);
+        for (int i = 1; i < splinedSubpath.size(); i++) {
+            float prev_x = splinedSubpath[i-1].first;
+            float prev_y = splinedSubpath[i-1].second;
+
+            float x = splinedSubpath[i].first;
+            float y = splinedSubpath[i].second;
+            float dydx = (y-prev_y)/(x-prev_x);
+            State state;
+            state.SetX(x);
+            state.SetY(y);
+            state.SetOri(dydx);
+            states.push_back(state);
+        }
+    }
+    return states;
 }
 
 vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
@@ -114,7 +133,7 @@ vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
     return path;
 }
 
-vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path)
+vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path, int discrete=100)
 {
     if (path.size()>3) {
         vector<double> x, y;
@@ -128,7 +147,7 @@ vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path)
         auto tck1 = xt::interpolate::splrep(t, x_, 3, 1);
         auto tck2 = xt::interpolate::splrep(t, y_, 3, 1);
 
-        xt::xarray<double> t_evaluate = xt::linspace<double>(0,1,100);
+        xt::xarray<double> t_evaluate = xt::linspace<double>(0,1,discrete);
 
         xt::xarray<double> xs = xt::interpolate::splev(t_evaluate, tck1);
         xt::xarray<double> ys = xt::interpolate::splev(t_evaluate, tck2);
@@ -152,8 +171,8 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     vector<pair<float,float>> shortPath, prePath;
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
-        rrtPath = smooth_path(shortcutPath(prePath));
-        cout << "RRRRT SIZE " << rrtPath.size();
+        rrtPath = prePath;//smooth_path(shortcutPath(prePath));
+        // cout << "RRRRT SIZE " << rrtPath.size();
     }
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
     visualization_msgs::Marker path_marker = gen_path_marker(prePath);
