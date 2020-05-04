@@ -81,9 +81,10 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         // need to do rrt here
         std::pair<float, float> carFrameTarget;
         std::pair<float, float> globalFrameTarget;
-        pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
-        ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
-        // rrt_.update(current_pose_, )
+        // pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
+        // ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
+        // rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
+
         inputs_idx_ = 0;
 
         current_inputs_ = mpc_.get_solved_trajectory();

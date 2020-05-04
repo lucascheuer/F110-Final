@@ -68,8 +68,9 @@ struct Node {
 // TODO: make a method to set its params from the HRHC object
 class RRT {
 public:
-        RRT(ros::NodeHandle &nh, OccGrid occ_grid);
-        virtual ~RRT();
+    RRT(ros::NodeHandle &nh, OccGrid occ_grid);
+    virtual ~RRT();
+    void updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pair<float, float> carFramePoint, std::pair<float, float> globalFramePoint);
 private:
     float max_angle;
     float steer_angle;
@@ -105,7 +106,6 @@ private:
 
     std::vector<Node> tree;
 
-    void updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords);
     // callbacks
     int build_tree(std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords);
 

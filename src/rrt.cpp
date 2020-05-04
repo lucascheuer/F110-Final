@@ -129,10 +129,9 @@ vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path)
     return path;
 }
 
-void RRT::updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> carFrameWaypoint, std::pair<float, float> globalFrameWaypoint)
+void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pair<float, float> carFrameWaypoint, std::pair<float, float> globalFrameWaypoint)
 {
-    current_pose_.position = pose_update->position;
-    current_pose_.orientation = pose_update->orientation;
+    current_pose_ = pose_update;
     occ_grid_ = occ_grid;
     int index = build_tree(carFrameWaypoint, globalFrameWaypoint);
     vector<pair<float,float>> shortPath, prePath;
