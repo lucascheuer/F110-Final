@@ -1,6 +1,7 @@
-# ESE 615 - Pure Pursuit
-## Arnav Dhamija
+# FINAL PROJECT
 
+Install:
 ```
-roslaunch team_3_pure_pursuit pure_pursuit.launch
+conda install -c conda-forge xtensor
+git clone git@github.com:rjsberry/xtensor-interpolate.git
 ```
