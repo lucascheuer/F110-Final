@@ -18,6 +18,10 @@ class Constraints
         Eigen::VectorXd x_min();
         Eigen::VectorXd u_min();
 
+        Eigen::MatrixXd slip_constraint();
+        Eigen::MatrixXd slip_upper_bound();
+        Eigen::MatrixXd slip_lower_bound();
+
         Eigen::VectorXd MovedXMax();
         Eigen::VectorXd MovedXMin();
 
@@ -44,7 +48,9 @@ class Constraints
         Eigen::VectorXd u_min_;
         Eigen::VectorXd l1_;
         Eigen::VectorXd l2_;
-
+        Eigen::MatrixXd slip_constraint_;
+        Eigen::MatrixXd slip_upper_bound_;
+        Eigen::MatrixXd slip_lower_bound_;
         State state_;
         float d;
         float thres_;
