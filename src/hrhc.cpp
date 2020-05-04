@@ -80,12 +80,12 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         std::pair<float, float> globalFrameTarget;
         // pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
         // ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
-        // rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
+        rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
 
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
          if (trajp_.best_traj_index>-1) {
-            std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
+            std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));
             mpc_thread.join();
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();

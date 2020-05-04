@@ -260,9 +260,9 @@ int RRT::nearest(std::vector<Node> &tree, std::vector<double> &sampled_point)
     float min_dist = 100;
     float curr_dist;
     int nearest_node = 0;
-    for (int i = 0;i<tree.size();i++){
+    for (int i = 0;i<tree.size();i++) {
         curr_dist = pow((tree[i]).x-sampled_point[0],2) + pow((tree[i]).y-sampled_point[1],2);
-        if (curr_dist<min_dist){
+        if (curr_dist<min_dist) {
             min_dist = curr_dist;
             nearest_node = i;
         }
