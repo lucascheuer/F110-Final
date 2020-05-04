@@ -16,7 +16,7 @@ MPC::MPC(ros::NodeHandle &nh):
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
-    num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_);
+    num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_ + horizon_); // dynamics + follow the gap + max/min input + skid limit
     
     hessian_.resize(num_variables_, num_variables_);
     gradient_.resize(num_variables_);
@@ -44,6 +44,7 @@ void MPC::Init(Model model, Cost cost, Constraints constraints)
     desired_input_.SetV(4.5);
     desired_input_.SetSteerAng(0);
     CreateHessianMatrix();
+    CreateLinearConstraintMatrix();
     CreateUpperBound();
     CreateLowerBound();
 }
@@ -61,7 +62,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
     // Input temp(solved_input_.v(), 0);
-    // model_.linearize(current_state, solved_input_, (curr_time - prev_time_).toSec());
+    // model_.linearize(current_state, input, (curr_time - prev_time_).toSec());
     model_.linearize(current_state_, input, dt_);
     // std::cout<< (curr_time - prev_time_).toSec()<<std::endl;
     prev_time_ = curr_time;
@@ -69,7 +70,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     constraints_.find_half_spaces(current_state_,scan_msg_);
     
     CreateGradientVector();
-    CreateLinearConstraintMatrix();
+    UpdateLinearConstraintMatrix();
     UpdateLowerBound();
     UpdateUpperBound();
     // // std::cout << gradient_ << std::endl << std::endl;
@@ -177,11 +178,11 @@ void MPC::CreateHessianMatrix()
     hessian_.setZero();
     for (int ii = 0; ii < horizon_ + 1; ++ii) // change for terminal cost
     {   
-        SparseBlockSet(hessian_, cost_.q(), ii * state_size_, ii * state_size_);
+        SparseBlockInit(hessian_, cost_.q(), ii * state_size_, ii * state_size_);
     }
     for (int ii = 0; ii < horizon_; ++ii) // change for terminal cost
     {
-        SparseBlockSet(hessian_, cost_.r(), num_states_ + ii * input_size_, num_states_ + ii * input_size_);
+        SparseBlockInit(hessian_, cost_.r(), num_states_ + ii * input_size_, num_states_ + ii * input_size_);
     }
 }
 
@@ -206,20 +207,16 @@ void MPC::CreateLinearConstraintMatrix()
     // here for steering angle vs throttle
     linear_matrix_.setZero();
     
+    
     Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
-    a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
+    a_eye << Eigen::MatrixXd::Identity(state_size_, state_size_) , -Eigen::MatrixXd::Identity(state_size_, state_size_);
     Eigen::MatrixXd gap_con(2, state_size_);
-    gap_con(0, 0) = constraints_.l1()(0);
-    gap_con(0, 1) = constraints_.l1()(1);
-    gap_con(0, 2) = 0;
-    gap_con(1, 0) = constraints_.l2()(0);
-    gap_con(1, 1) = constraints_.l2()(1);
-    gap_con(1, 2) = 0;
+    gap_con = Eigen::MatrixXd::Ones(2,state_size_);
     
     // std::cout << gap_con << std::endl << std::endl;
     // prediction equality constraint
     // SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), 0, 0);
-    SparseBlockSet(linear_matrix_, gap_con, num_states_, 0);
+    SparseBlockInit(linear_matrix_, gap_con, num_states_, 0);
     // // here for steering angle vs throttle
     // linear_matrix_.resize(num_constraints_, num_variables_);
     
@@ -231,22 +228,39 @@ void MPC::CreateLinearConstraintMatrix()
     for (int ii = 1; ii < horizon_ + 1; ++ii)
     {
         // SparseBlockSet()
-        SparseBlockSet(linear_matrix_, model_.a(), ii*state_size_, (ii - 1) * state_size_);
-        // SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), ii*state_size_, ii * state_size_);
-        SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, num_states_ + (ii - 1) * input_size_);
-        SparseBlockSet(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
-        // std::cout << linear_matrix_ << std::endl << std::endl;
+        SparseBlockInit(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), ii*state_size_, (ii - 1) * state_size_);
+        SparseBlockInit(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, input_size_), ii*state_size_, num_states_ + (ii - 1) * input_size_);
+        SparseBlockInit(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
+        // if (ii < horizon_)
+        // {
+            SparseBlockInit(linear_matrix_, constraints_.slip_constraint(), num_states_ + 2 * (horizon_ + 1) + num_inputs_ + ii - 1, num_states_ + (ii - 1) * input_size_);
+        // }
     }
     
     // l1 A B C
     // state and input upper and lower bounds
+
+    // same every time. Time could be saved without resetting and using coeffref
     SparseBlockEye(linear_matrix_, num_inputs_, num_states_ + 2 * (horizon_ + 1), num_states_, 1);
-    // std::cout << linear_matrix_ << std::endl << std::endl;
-    
-    // SparseBlockEye(linear_matrix_, linear_matrix_.cols(), (horizon_ + 1) * state_size_, 0, 1);
-    // std::cout << linear_matrix_ << std::endl <<std::endl;
-    // std::cout << model_.a() << std::endl <<std::endl;
-    // std::cout << model_.b() << std::endl <<std::endl;
+}
+
+void MPC::UpdateLinearConstraintMatrix()
+{
+    Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
+    a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
+    Eigen::MatrixXd gap_con(2, state_size_);
+    gap_con(0, 0) = constraints_.l1()(0);
+    gap_con(0, 1) = constraints_.l1()(1);
+    gap_con(0, 2) = 0;
+    gap_con(1, 0) = constraints_.l2()(0);
+    gap_con(1, 1) = constraints_.l2()(1);
+    gap_con(1, 2) = 0;
+    for (int ii = 1; ii < horizon_ + 1; ++ii)
+    {
+        SparseBlockSet(linear_matrix_, model_.a(), ii*state_size_, (ii - 1) * state_size_);
+        SparseBlockSet(linear_matrix_, model_.b(), ii*state_size_, num_states_ + (ii - 1) * input_size_);
+        SparseBlockSet(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
+    }
 }
 
 void MPC::CreateLowerBound()
@@ -255,10 +269,7 @@ void MPC::CreateLowerBound()
     Eigen::VectorXd gap_con(2);
     gap_con(0) = -OsqpEigen::INFTY;
     gap_con(1) = -OsqpEigen::INFTY;
-
-    lower_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
-    // lower_bound_.resize(num_constraints_);
-    // lower_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), constraints_.MovedXMin().replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1);
+    lower_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_min().replicate(horizon_, 1), constraints_.slip_lower_bound().replicate(horizon_, 1);
     // std::cout << lower_bound_ << std::endl << std::endl;
 }
 
@@ -268,10 +279,7 @@ void MPC::CreateUpperBound()
     Eigen::VectorXd gap_con(2);
     gap_con(0) = OsqpEigen::INFTY;
     gap_con(1) = OsqpEigen::INFTY;
-    // std::cout << gap_con << std::endl << std::endl;
-    upper_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
-    // upper_bound_.resize(num_constraints_);
-    // upper_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), constraints_.MovedXMax().replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1);
+    upper_bound_ << Eigen::VectorXd::Zero((horizon_ + 1) * state_size_), gap_con.replicate(horizon_ + 1, 1), constraints_.u_max().replicate(horizon_, 1), constraints_.slip_upper_bound().replicate(horizon_, 1);
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
@@ -292,6 +300,18 @@ void MPC::UpdateUpperBound()
     // std::cout << upper_bound_ << std::endl << std::endl;
 }
 
+void MPC::SparseBlockInit(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
+{
+    int row_size = block.rows();
+    int col_size = block.cols();
+    for (int row = 0; row < row_size; ++row)
+    {
+        for (int col = 0; col < col_size; ++col)
+        {
+            modify.insert(row_start + row, col_start + col) = block(row, col);
+        }
+    }
+}
 void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start)
 {
     int row_size = block.rows();
@@ -300,10 +320,7 @@ void MPC::SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::Matri
     {
         for (int col = 0; col < col_size; ++col)
         {
-            if (block(row, col) != 0)
-            {
-                modify.insert(row_start + row, col_start + col) = block(row, col);
-            }
+            modify.coeffRef(row_start + row, col_start + col) = block(row, col);
         }
     }
 }

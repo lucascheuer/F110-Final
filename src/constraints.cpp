@@ -11,7 +11,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     nh.getParam(hrhc_node+"/state_lims", d);
     nh.getParam(hrhc_node+"/fov_divider", divider_);
     nh.getParam(hrhc_node+"/buffer", buffer_);
-
+    
     x_max_.resize(3,1);
     x_max_ << OsqpEigen::INFTY, OsqpEigen::INFTY, OsqpEigen::INFTY; //x,y,ori
     x_min_.resize(3,1);
@@ -20,6 +20,23 @@ Constraints::Constraints(ros::NodeHandle &nh)
     u_max_ << umax_val_, 0.43f; //Speed, steering
     u_min_.resize(2,1);
     u_min_ << umin_val_, -0.43f; //Speed, steering
+
+    double slip_p1_vel;
+    double slip_p1_steer;
+    double slip_p2_vel;
+    double slip_p2_steer;
+    nh.getParam(hrhc_node+"/slip_p1_vel", slip_p1_vel);
+    nh.getParam(hrhc_node+"/slip_p1_steer", slip_p1_vel);
+    nh.getParam(hrhc_node+"/slip_p2_vel", slip_p2_vel);
+    nh.getParam(hrhc_node+"/slip_p2_steer", slip_p2_steer);
+    
+    double slope = (slip_p2_steer - slip_p1_steer) / (slip_p2_vel - slip_p1_vel);
+    slip_constraint_.resize(1, 2);
+    slip_constraint_ << -slope, 1;
+    slip_upper_bound_.resize(1, 1);
+    slip_upper_bound_ << slope * (-slip_p1_vel) + slip_p1_steer;
+    slip_lower_bound_.resize(1, 1);
+    slip_lower_bound_ << -OsqpEigen::INFTY;
     // d = 1.0f;
     // thres_ = 1.5f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
@@ -65,6 +82,21 @@ Eigen::VectorXd Constraints::u_min()
 {
     return u_min_;
 }
+
+Eigen::MatrixXd Constraints::slip_constraint()
+{
+    return slip_constraint_;
+}
+Eigen::MatrixXd Constraints::slip_upper_bound()
+{
+    return slip_upper_bound_;
+}
+
+Eigen::MatrixXd Constraints::slip_lower_bound()
+{
+    return slip_lower_bound_;
+}
+
 
 Eigen::VectorXd Constraints::MovedXMax()
 {
