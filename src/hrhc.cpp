@@ -89,12 +89,8 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
             mpc_thread.join();
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
+            inputs_idx_ = 0;
         }
-        inputs_idx_ = 0;
-
-        
-
-        
     }
 }
 
