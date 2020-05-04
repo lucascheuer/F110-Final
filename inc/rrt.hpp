@@ -42,6 +42,7 @@
 #include <utility>
 #include "occgrid.hpp"
 #include "transforms.hpp"
+#include "input.hpp"
 // other
 #include <Eigen/Geometry>
 
@@ -71,6 +72,7 @@ public:
     RRT(ros::NodeHandle &nh, OccGrid occ_grid);
     virtual ~RRT();
     void updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pair<float, float> carFramePoint, std::pair<float, float> globalFramePoint);
+    vector<Input> getRRTInputs(float dt);
 private:
     float max_angle;
     float steer_angle;
@@ -97,7 +99,6 @@ private:
     // random generator, use this
     double max_expansion_dist;
     int shortcut_iters;
-    float explore_dist;
     std::mt19937 gen;
     std::uniform_real_distribution<double> x_dist;
     std::uniform_real_distribution<double> y_dist;

@@ -56,7 +56,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 void MPC::Update(State current_state, Input input, std::vector<State> &desired_state_trajectory)
 {
 
-    ROS_INFO("updating MPC");
+    // ROS_INFO("updating MPC");
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();

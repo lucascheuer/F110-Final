@@ -23,13 +23,17 @@ RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), g
     nh_.getParam(rrt_node+"/angle_limit",angle_limit);
     nh_.getParam(rrt_node+"/steer_angle",steer_angle);
     nh_.getParam(rrt_node+"/rrt_radius_sq",rrt_radius_sq);
-    nh_.getParam(rrt_node+"/explore_dist",explore_dist);
     nh_.getParam(rrt_node+"/shortcut_iters",shortcut_iters);
 
     // FIXME: we only want the grid in front of car right?
     int divide = 3;
     x_dist = uniform_real_distribution<double>(0.4,1.5 * max_goal_distance);
     y_dist = uniform_real_distribution<double>(-1.5 * max_goal_distance,1.5*max_goal_distance);
+
+    goal_pub = nh_.advertise<visualization_msgs::Marker>("goal_marker", 1 );
+    line_pub = nh_.advertise<visualization_msgs::Marker>("path_marker", 1 );
+    tree_pub = nh_.advertise<visualization_msgs::Marker>("tree_marker", 1 );
+    shortcut_pub = nh_.advertise<visualization_msgs::Marker>("shortcut_marker", 1 );
 
     // TODO: create a occupancy grid
     ROS_INFO("Created new RRT Object.");
@@ -49,6 +53,17 @@ float RRT::getPathLength(vector<pair<float,float>> &path)
         }
     }
     return length;
+}
+
+vector<Input> RRT::getRRTInputs(float dt)
+{
+    float velocity;
+    float pathLength = getPathLength(rrtPath);
+    int vectorSize = rrtPath.size();
+    float pathIncrement = pathLength/vectorSize;
+    float pathTime = pathLength/velocity;
+    int steps = pathTime/dt;
+    
 }
 
 vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
@@ -138,6 +153,7 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
         rrtPath = smooth_path(shortcutPath(prePath));
+        cout << "RRRRT SIZE " << rrtPath.size();
     }
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
     visualization_msgs::Marker path_marker = gen_path_marker(prePath);
@@ -223,24 +239,23 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
                 }
             }
         }
-        
-        float minDistance = numeric_limits<float>::max();
-        int minIndex = 0;
-        for (auto itr = tree.begin(); itr != tree.end(); itr++)
-        {
-            pair<float,float> point(itr->x,itr->y);
-            geometry_msgs::TransformStamped transform_msg = Transforms::WorldToCarTransform(current_pose_);
-            std::pair<float, float> transformedPoint = Transforms::TransformPoint(point, transform_msg);
-            if (transformedPoint.first > 0) {
-                    float distance = get_distance(transformedPoint, targetWaypoint);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        minIndex = itr-tree.begin();
-                    }
-                }
-            }
-        return minIndex;
     }
+        
+    float minDistance = numeric_limits<float>::max();
+    int minIndex = -1;
+    for (auto itr = tree.begin(); itr != tree.end(); itr++) {
+        pair<float,float> point(itr->x,itr->y);
+        geometry_msgs::TransformStamped transform_msg = Transforms::WorldToCarTransform(current_pose_);
+        std::pair<float, float> transformedPoint = Transforms::TransformPoint(point, transform_msg);
+        if (transformedPoint.first > 0) {
+            float distance = get_distance(transformedPoint, targetWaypoint);
+            if (distance < minDistance) {
+                minDistance = distance;
+                minIndex = itr-tree.begin();
+            }
+        }
+    }
+    return minIndex;
 }
 
 std::vector<double> RRT::sample()
