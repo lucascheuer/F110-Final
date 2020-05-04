@@ -1,11 +1,7 @@
-// ESE 680
-// RRT assignment
-// Author: Hongrui Zheng
 
-// This file contains the class definition of tree nodes and RRT
-// Before you start, please read: https://arxiv.org/pdf/1105.1186.pdf
+#ifndef RRT_H
+#define RRT_H
 
-// ros
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <sensor_msgs/LaserScan.h>
@@ -19,6 +15,18 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <nav_msgs/Odometry.h>
+#include <functional>
+#include <cmath>
+#include <stdio.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
+#include <tf2/transform_datatypes.h>
+#include <tf/transform_datatypes.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include "xtensor/xbuilder.hpp"
+#include "xtensor/xtensor.hpp"
+#include "xtensor-interpolate/xinterpolate.hpp"
+#include "xtensor/xadapt.hpp"
 
 // standard
 #include <math.h>
@@ -33,6 +41,7 @@
 #include <random>
 #include <utility>
 #include "occgrid.hpp"
+#include "transforms.hpp"
 // other
 #include <Eigen/Geometry>
 
@@ -56,18 +65,12 @@ struct Node {
     }
 };
 
-// TODO: Make occgrid member of class as a 2D boolean/eigen
-
+// TODO: make a method to set its params from the HRHC object
 class RRT {
 public:
         RRT(OccGrid occ_grid);
         virtual ~RRT();
 private:
-    enum MODE {
-        RRT_EXPLORE,
-        RRT_FOLLOW
-    };
-    MODE current_mode;
     float max_angle;
     float steer_angle;
     int rrt_iters;
@@ -104,12 +107,7 @@ private:
 
     void updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords);
     // callbacks
-    // where rrt actually happens
-    void pf_callback(const nav_msgs::Odometry::ConstPtr &pose_msg);
-    // updates occupancy grid
-    void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
-
-    int build_tree();
+    int build_tree(std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords);
 
     // RRT methods
     vector<pair<float,float>> smooth_path(vector<pair<float,float>> path);
@@ -142,3 +140,4 @@ private:
     vector<geometry_msgs::Point> full_tree(const vector<Node> &tree);
 };
 
+#endif

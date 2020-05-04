@@ -8,6 +8,7 @@
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include "trajectory_planner.hpp"
 #include "mpc.hpp"
+#include "rrt.hpp"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <cmath>
@@ -43,6 +44,7 @@ class HRHC
         OccGrid occ_grid_;
         TrajectoryPlanner trajp_;
         MPC mpc_;
+        RRT rrt_;
         State mpc_des_state_;
         std::vector<Input> current_inputs_;
         std::atomic<int> inputs_idx_;

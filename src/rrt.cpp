@@ -1,24 +1,4 @@
-// ESE 680
-// RRT assignment
-// Author: Hongrui Zheng
-
-// This file contains the class definition of tree nodes and RRT
-// Before you start, please read: https://arxiv.org/pdf/1105.1186.pdf
-// Make sure you have read through the header file as well
-
 #include "rrt.hpp"
-#include <functional>
-#include <cmath>
-#include <stdio.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <visualization_msgs/Marker.h>
-#include <tf2/transform_datatypes.h>
-#include <tf/transform_datatypes.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include "xtensor/xbuilder.hpp"
-#include "xtensor/xtensor.hpp"
-#include "xtensor-interpolate/xinterpolate.hpp"
-#include "xtensor/xadapt.hpp"
 
 RRT::~RRT()
 {
@@ -55,7 +35,6 @@ RRT::RRT(OccGrid occ_grid): occ_grid_(occ_grid), gen((std::random_device())())
     y_dist = uniform_real_distribution<double>(-1.5 * goal_distance,1.5*goal_distance);
 
     // TODO: create a occupancy grid
-    current_mode = MODE::RRT_EXPLORE;
     ROS_INFO("Created new RRT Object.");
 }
 
@@ -153,167 +132,118 @@ vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path)
     return path;
 }
 
-void RRT::UpdateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords)
-
-// 5
-void RRT::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
+void RRT::updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords)
 {
-    switch(current_mode) {
-    case MODE::RRT_EXPLORE:
-        int index = build_tree();
-        vector<pair<float,float>> shortPath, prePath;
-        if (index != -1) {
-            prePath = smooth_path(find_path(tree, tree[index]));
-            rrtPath = smooth_path(shortcutPath(prePath));
-            current_mode = MODE::RRT_FOLLOW;
-        }
-        visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
-        visualization_msgs::Marker path_marker = gen_path_marker(prePath);
-        visualization_msgs::Marker shortcut_marker = gen_path_marker(rrtPath,0.5,0,0.5);
-        visualization_msgs::Marker tree_marker = gen_tree_marker(tree);
-        
-        tree_pub.publish(tree_marker);
-        line_pub.publish(path_marker);
-        shortcut_pub.publish(shortcut_marker);
+    current_pose_.position = pose_update->position;
+    current_pose_.orientation = pose_update->orientation;
+    occ_grid_ = occ_grid;
+    int index = build_tree(targetWaypoint, targetWaypointGlobalCoords);
+    vector<pair<float,float>> shortPath, prePath;
+    if (index != -1) {
+        prePath = smooth_path(find_path(tree, tree[index]));
+        rrtPath = smooth_path(shortcutPath(prePath));
     }
+    visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
+    visualization_msgs::Marker path_marker = gen_path_marker(prePath);
+    visualization_msgs::Marker shortcut_marker = gen_path_marker(rrtPath,0.5,0,0.5);
+    visualization_msgs::Marker tree_marker = gen_tree_marker(tree);
+    
+    tree_pub.publish(tree_marker);
+    line_pub.publish(path_marker);
+    shortcut_pub.publish(shortcut_marker);
 }
 
+
 // returns point closest to waypoint
-int RRT::build_tree()
+int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords)
 {
-    int waypointIndex;
-    float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
-    pair<float, float> targetWaypoint = PurePursuit::getNextWaypoint(globalWaypoints, goal_distance, current_pose, waypointIndex, lastWaypointIdx);
+    float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     tree.clear();
 
-    if (waypointIndex != -1) {
-        lastWaypointIdx = waypointIndex;
-        pair<float, float> targetWaypointGlobalCoords = globalWaypoints[waypointIndex];//carPoint2World(targetWaypoint.first, targetWaypoint.second);
-        float posex = current_pose.position.x;
-        float posey = current_pose.position.y;
-        Node root = Node(posex, posey, true);
-        root.parent = -1;
+    float posex = current_pose_.position.x;
+    float posey = current_pose_.position.y;
+    Node root = Node(posex, posey, true);
+    root.parent = -1;
 
-        posex = current_pose.position.x + 0.275 * cos(current_angle);
-        posey = current_pose.position.y + 0.275 * sin(current_angle);
-        Node root_plus = Node(posex, posey, true);
-        root_plus.parent = 0;
-        tree.push_back(root);
-        tree.push_back(root_plus);
-        
-        for (int i = 0; i < rrt_iters; i++) {
-            // FIXME: i think this should be from 0,0
-            vector<double> x_rand;
-            Node x_new;
-            int x_nearest_idx;
-            // need to check distance here
-            x_rand.push_back(targetWaypointGlobalCoords.first);
-            x_rand.push_back(targetWaypointGlobalCoords.second);
+    posex = current_pose_.position.x + 0.275 * cos(current_angle);
+    posey = current_pose_.position.y + 0.275 * sin(current_angle);
+    Node root_plus = Node(posex, posey, true);
+    root_plus.parent = 0;
+    tree.push_back(root);
+    tree.push_back(root_plus);
+    
+    for (int i = 0; i < rrt_iters; i++) {
+        // FIXME: i think this should be from 0,0
+        vector<double> x_rand;
+        Node x_new;
+        int x_nearest_idx;
+        // need to check distance here
+        x_rand.push_back(targetWaypointGlobalCoords.first);
+        x_rand.push_back(targetWaypointGlobalCoords.second);
+        x_nearest_idx = nearest(tree, x_rand);
+        x_new.x = x_rand[0];
+        x_new.y = x_rand[1];
+        x_new.parent = x_nearest_idx;
+        vector<double> tmp;
+        tmp.push_back(targetWaypointGlobalCoords.first);
+        tmp.push_back(targetWaypointGlobalCoords.second);
+        float angle = angle_cost(tree[x_nearest_idx], tmp);
+        if (check_collision(tree[x_nearest_idx], x_new) && abs(angle)<steer_angle)
+        {
+            tree.push_back(x_new);
+            // ROS_INFO("breaking out coz of shortcircuit %f", angle);
+            break;
+        } else {
+            x_rand = sample();
             x_nearest_idx = nearest(tree, x_rand);
-            x_new.x = x_rand[0];
-            x_new.y = x_rand[1];
-            x_new.parent = x_nearest_idx;
-            vector<double> tmp;
-            tmp.push_back(targetWaypointGlobalCoords.first);
-            tmp.push_back(targetWaypointGlobalCoords.second);
-            float angle = angle_cost(tree[x_nearest_idx], tmp);
-            if (check_collision(tree[x_nearest_idx], x_new) && abs(angle)<steer_angle)
+            x_new =  steer(tree[x_nearest_idx], x_rand);
+            if (check_collision(tree[x_nearest_idx], x_new) && angle_cost(tree, tree[x_nearest_idx],x_new)<angle_limit)
             {
-                tree.push_back(x_new);
-                // ROS_INFO("breaking out coz of shortcircuit %f", angle);
-                break;
-            } else {
-                x_rand = sample();
-                x_nearest_idx = nearest(tree, x_rand);
-                x_new =  steer(tree[x_nearest_idx], x_rand);
-                if (check_collision(tree[x_nearest_idx], x_new) && angle_cost(tree, tree[x_nearest_idx],x_new)<angle_limit)
-                {
-                    std::vector<int> nearby = near(tree, x_new);
+                std::vector<int> nearby = near(tree, x_new);
 
-                    int x_min = x_nearest_idx;
-                    double c_min = cost(tree, tree[x_nearest_idx]) + line_cost(tree[x_nearest_idx], x_new);
-                    for (int current_near = 0; current_near < nearby.size(); ++current_near)
+                int x_min = x_nearest_idx;
+                double c_min = cost(tree, tree[x_nearest_idx]) + line_cost(tree[x_nearest_idx], x_new);
+                for (int current_near = 0; current_near < nearby.size(); ++current_near)
+                {
+                    if (check_collision(tree[nearby[current_near]], x_new) && (cost(tree, tree[nearby[current_near]]) + line_cost(x_new, tree[nearby[current_near]])<c_min))
                     {
-                        if (check_collision(tree[nearby[current_near]], x_new) && (cost(tree, tree[nearby[current_near]]) + line_cost(x_new, tree[nearby[current_near]])<c_min))
-                        {
-                            x_min = nearby[current_near];
-                            c_min = cost(tree, tree[nearby[current_near]]) + line_cost(x_new, tree[nearby[current_near]]);
-                        }
+                        x_min = nearby[current_near];
+                        c_min = cost(tree, tree[nearby[current_near]]) + line_cost(x_new, tree[nearby[current_near]]);
                     }
-                    x_new.parent = x_min;
-                    tree.push_back(x_new);
-                    for (int current_near = 0; current_near < nearby.size(); ++current_near)
+                }
+                x_new.parent = x_min;
+                tree.push_back(x_new);
+                for (int current_near = 0; current_near < nearby.size(); ++current_near)
+                {
+                    if (check_collision(tree[nearby[current_near]], x_new) && (cost(tree, x_new) + line_cost(x_new, tree[nearby[current_near]])) < cost(tree, tree[nearby[current_near]]))
                     {
-                        if (check_collision(tree[nearby[current_near]], x_new) && (cost(tree, x_new) + line_cost(x_new, tree[nearby[current_near]])) < cost(tree, tree[nearby[current_near]]))
-                        {
-                            tree[nearby[current_near]].parent = tree.size()-1;
-                        }
+                        tree[nearby[current_near]].parent = tree.size()-1;
                     }
-                    if (is_goal(x_new, targetWaypointGlobalCoords.first, targetWaypointGlobalCoords.second))
-                    {
-                        // ROS_INFO("breaking out coz GOAL FOUND");
-                        // break;
-                    }
+                }
+                if (is_goal(x_new, targetWaypointGlobalCoords.first, targetWaypointGlobalCoords.second))
+                {
+                    // ROS_INFO("breaking out coz GOAL FOUND");
+                    // break;
                 }
             }
         }
         
-        float minDistance = PurePursuit::BIG_FLOAT;
+        float minDistance = numeric_limits<float>::max();
         int minIndex = 0;
         for (auto itr = tree.begin(); itr != tree.end(); itr++)
         {
             pair<float,float> point(itr->x,itr->y);
-            geometry_msgs::TransformStamped transform_msg = PurePursuit::get_world_to_car_transform(current_pose);
-            pair<float, float> transformedPoint = PurePursuit::transformPoint(point, transform_msg);
+            geometry_msgs::TransformStamped transform_msg = Transforms::WorldToCarTransform(current_pose_);
+            std::pair<float, float> transformedPoint = Transforms::TransformPoint(point, transform_msg);
             if (transformedPoint.first > 0) {
-                float distance = get_distance(transformedPoint, targetWaypoint);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    minIndex = itr-tree.begin();
+                    float distance = get_distance(transformedPoint, targetWaypoint);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        minIndex = itr-tree.begin();
+                    }
                 }
             }
-        }
-        // publish_marker(tree[minIndex].x, tree[minIndex].y);
         return minIndex;
-    }
-    // if no keypoint is in front of us
-    return -1;
-}
-
-// 5
-void RRT::pf_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
-{
-    // tree as std::vector
-    std::vector<Node> tree;
-    auto pose_real_msg = pose_msg->pose;
-    current_pose = pose_msg->pose.pose;
-    geometry_msgs::TransformStamped transform_msg = PurePursuit::get_world_to_car_transform(current_pose);
-    switch(current_mode) {
-    case MODE::RRT_FOLLOW: {
-        if (rrtPath.size()>0) {
-            vector<float> rrtPointDistances = PurePursuit::getWaypointDistances(rrtPath, transform_msg);
-            for(int i = 0;i<rrtPointDistances.size();i++){
-                if (rrtPointDistances[i]<look_ahead || i < localPathIdx){
-                    rrtPointDistances[i] = PurePursuit::BIG_FLOAT;
-                }
-            }
-
-            auto minItr = min_element(rrtPointDistances.begin(), rrtPointDistances.end());
-            int minIdx = minItr-rrtPointDistances.begin();
-            localPathIdx = minIdx;
-            pair<float,float> nextCarFramePoint = PurePursuit::transformPoint(rrtPath[minIdx], transform_msg);
-            if (!isPathCollisionFree()) {
-                current_mode = MODE::RRT_EXPLORE;
-            }
-            if (rrtPointDistances[rrtPath.size()-1]<=explore_dist) {
-                current_mode = MODE::RRT_EXPLORE;
-            }
-        } else {
-            // this should never happen but we'll be screwed if it does lah!
-            current_mode = MODE::RRT_EXPLORE;
-        }
-        break;
-    }
     }
 }
 
@@ -322,7 +252,7 @@ std::vector<double> RRT::sample()
     std::vector<double> sampled_point;
     float x = x_dist(gen);
     float y = y_dist(gen);
-    pair<float,float> newPoint = carPoint2World(x,y);
+    pair<float,float> newPoint = Transforms::CarPointToWorldPoint(x,y,current_pose_);
     sampled_point.push_back(newPoint.first);
     sampled_point.push_back(newPoint.second);
     return sampled_point;

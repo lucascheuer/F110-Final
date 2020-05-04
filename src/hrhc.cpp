@@ -7,7 +7,7 @@ HRHC::~HRHC()
     ROS_INFO("Killing HRHC");
 }
 int hori = 50;
-HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
+HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(occ_grid_)
 {
     std::string pose_topic, scan_topic, drive_topic;
     int og_size;
@@ -51,9 +51,12 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     Model model;
     Constraints constraints(nh);
     mpc_.Init(model, cost, constraints);
+
+    // drive thread
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::drive_loop, this);
     t.detach();
+
     ROS_INFO("Created HRHC");
 }
 

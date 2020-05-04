@@ -1,3 +1,6 @@
+#ifndef CONSTRAINTS_H
+#define CONSTRAINTS_H
+
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 #include "state.hpp"
@@ -63,3 +66,5 @@ class Constraints
         // void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
         // mode
 };
+
+#endif
