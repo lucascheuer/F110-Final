@@ -30,7 +30,7 @@ TrajectoryPlanner::~TrajectoryPlanner()
     ROS_INFO("killing the planner");
 }
 
-void TrajectoryPlanner::getTrajectories()
+void TrajectoryPlanner::readTrajectories()
 {
     string path = ros::package::getPath("milestone-3")+"/local_traj_50.csv";
     // string path = "/home/saumya/team3_ws/src/F110-Final/local_traj_50.csv";
@@ -51,7 +51,7 @@ void TrajectoryPlanner::getTrajectories()
     }
 }
 
-void TrajectoryPlanner::getCmaes()
+void TrajectoryPlanner::readCMA_ES()
 {
     string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
     // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";

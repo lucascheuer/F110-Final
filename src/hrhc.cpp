@@ -1,13 +1,11 @@
 #include "hrhc.hpp"
 
-
-
 HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
 }
 int hori = 50;
-HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(occ_grid_)
+HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(nh, occ_grid_), pure_pursuit_(1)
 {
     std::string pose_topic, scan_topic, drive_topic;
     int og_size;
@@ -39,10 +37,11 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(occ
     current_pose_.orientation.z = 0;
     current_pose_.orientation.w = 1;
     // trajp_ = TrajectoryPlanner(nh,10);
-    trajp_.getTrajectories();
+    trajp_.readTrajectories();
     trajp_.trajectory2world(current_pose_);
     trajp_.trajectory2miniworld(current_pose_);
-    trajp_.getCmaes();
+    trajp_.readCMA_ES();
+    pure_pursuit_.setCMA_ES(trajp_.cmaes_traj);
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
     q.diagonal() << q0_, q1_, q2_;
@@ -78,6 +77,13 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         // std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
         // mpc_thread.join();
         mpc_.Update(current_state,get_next_input(),trajp_.best_cmaes_trajectory_);
+
+        // need to do rrt here
+        std::pair<float, float> carFrameTarget;
+        std::pair<float, float> globalFrameTarget;
+        pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
+        ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
+        // rrt_.update(current_pose_, )
         inputs_idx_ = 0;
 
         current_inputs_ = mpc_.get_solved_trajectory();

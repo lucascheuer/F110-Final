@@ -9,6 +9,7 @@
 #include "trajectory_planner.hpp"
 #include "mpc.hpp"
 #include "rrt.hpp"
+#include "pure_pursuit.hpp"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <cmath>
@@ -48,7 +49,8 @@ class HRHC
         State mpc_des_state_;
         std::vector<Input> current_inputs_;
         std::atomic<int> inputs_idx_;
-        
+        PurePursuit pure_pursuit_;
+
         void drive_loop();
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);

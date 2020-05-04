@@ -5,7 +5,7 @@ RRT::~RRT()
 }
 
 // Constructor of the RRT class
-RRT::RRT(OccGrid occ_grid): occ_grid_(occ_grid), gen((std::random_device())())
+RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), gen((std::random_device())())
 {
 
     // TODO: Load parameters from yaml file, you could add your own parameters to the rrt_params.yaml file
@@ -15,24 +15,21 @@ RRT::RRT(OccGrid occ_grid): occ_grid_(occ_grid), gen((std::random_device())())
         rrt_node = "";
     }
 
-    // nh_.getParam(rrt_node+"/max_angle", max_angle);
-    // nh_.getParam(rrt_node+"/max_goal_distance", max_goal_distance);
-    // nh_.getParam(rrt_node+"/min_goal_distance", min_goal_distance);
-    // nh_.getParam(rrt_node+"/goal_epsilon", goal_epsilon);
-    // nh_.getParam(rrt_node+"/max_expansion_dist", max_expansion_dist);
-    // nh_.getParam(rrt_node+"/rrt_iters", rrt_iters);
-    // nh_.getParam(rrt_node+"/look_ahead", look_ahead);
-    // nh_.getParam(rrt_node+"/angle_limit",angle_limit);
-    // nh_.getParam(rrt_node+"/steer_angle",steer_angle);
-    // nh_.getParam(rrt_node+"/rrt_radius_sq",rrt_radius_sq);
-    // nh_.getParam(rrt_node+"/explore_dist",explore_dist);
-    // nh_.getParam(rrt_node+"/shortcut_iters",shortcut_iters);
+    nh_.getParam(rrt_node+"/max_goal_distance", max_goal_distance);
+    nh_.getParam(rrt_node+"/min_goal_distance", min_goal_distance);
+    nh_.getParam(rrt_node+"/goal_epsilon", goal_epsilon);
+    nh_.getParam(rrt_node+"/max_expansion_dist", max_expansion_dist);
+    nh_.getParam(rrt_node+"/rrt_iters", rrt_iters);
+    nh_.getParam(rrt_node+"/angle_limit",angle_limit);
+    nh_.getParam(rrt_node+"/steer_angle",steer_angle);
+    nh_.getParam(rrt_node+"/rrt_radius_sq",rrt_radius_sq);
+    nh_.getParam(rrt_node+"/explore_dist",explore_dist);
+    nh_.getParam(rrt_node+"/shortcut_iters",shortcut_iters);
 
-    goal_distance = max_goal_distance;
     // FIXME: we only want the grid in front of car right?
     int divide = 3;
-    x_dist = uniform_real_distribution<double>(0.4,1.5 * goal_distance);
-    y_dist = uniform_real_distribution<double>(-1.5 * goal_distance,1.5*goal_distance);
+    x_dist = uniform_real_distribution<double>(0.4,1.5 * max_goal_distance);
+    y_dist = uniform_real_distribution<double>(-1.5 * max_goal_distance,1.5*max_goal_distance);
 
     // TODO: create a occupancy grid
     ROS_INFO("Created new RRT Object.");
@@ -132,12 +129,12 @@ vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path)
     return path;
 }
 
-void RRT::updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> targetWaypoint, std::pair<float, float> targetWaypointGlobalCoords)
+void RRT::updateRRT(const geometry_msgs::Pose::ConstPtr &pose_update, OccGrid& occ_grid, std::pair<float, float> carFrameWaypoint, std::pair<float, float> globalFrameWaypoint)
 {
     current_pose_.position = pose_update->position;
     current_pose_.orientation = pose_update->orientation;
     occ_grid_ = occ_grid;
-    int index = build_tree(targetWaypoint, targetWaypointGlobalCoords);
+    int index = build_tree(carFrameWaypoint, globalFrameWaypoint);
     vector<pair<float,float>> shortPath, prePath;
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));

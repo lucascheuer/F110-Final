@@ -68,7 +68,7 @@ struct Node {
 // TODO: make a method to set its params from the HRHC object
 class RRT {
 public:
-        RRT(OccGrid occ_grid);
+        RRT(ros::NodeHandle &nh, OccGrid occ_grid);
         virtual ~RRT();
 private:
     float max_angle;
@@ -78,12 +78,12 @@ private:
     float max_goal_distance;
     float min_goal_distance;
     float goal_epsilon;
-    float look_ahead;
     float rrt_radius_sq;
     float angle_limit;
     OccGrid occ_grid_;
     geometry_msgs::Pose current_pose_;
 
+    ros::NodeHandle nh_;
     ros::Publisher vis_pub_mult;
     ros::Publisher vis_pub;
     ros::Publisher goal_pub;
