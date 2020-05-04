@@ -34,7 +34,8 @@ Constraints::Constraints(ros::NodeHandle &nh)
     slip_constraint_.resize(1, 2);
     slip_constraint_ << -slope, 1;
     slip_upper_bound_.resize(1, 1);
-    slip_upper_bound_ << slope * (-slip_p1_vel) + slip_p1_steer;
+    // slip_upper_bound_ << slope * (-slip_p1_vel) + slip_p1_steer;
+    slip_upper_bound_ << OsqpEigen::INFTY;
     slip_lower_bound_.resize(1, 1);
     slip_lower_bound_ << -OsqpEigen::INFTY;
     // d = 1.0f;
