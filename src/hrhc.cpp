@@ -76,17 +76,12 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         // mpc_thread.join();
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
-         if (trajp_.best_traj_index> -1)
-            {
+         if (trajp_.best_traj_index> -1) {
             mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
-            }
-        inputs_idx_ = 0;
-
-        
-
-        
+            inputs_idx_ = 0;
+        }
     }
 }
 
