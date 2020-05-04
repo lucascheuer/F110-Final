@@ -104,7 +104,7 @@ void MPC::updateSolvedTrajectory()
 { 
     trajectory_idx_ = 0;
     solved_trajectory_.clear();//full_solution_.size()-1
-    for (int i = num_states_; i < num_states_+5; i+=2) {
+    for (int i = num_states_; i < num_states_+15; i+=2) {
         double v = full_solution_(i);
         // std::cout<<v<<std::endl;
         double angle = full_solution_(i+1);
