@@ -148,6 +148,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             }
             //cout << l << ",";
         }
+        
         // 0 1.44218
 
                 
@@ -158,8 +159,8 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             pair<float,float> temp = lanes_[current_lane_].findClosest(end_point);
             float dist1 = Transforms::calcDist(end_point,temp);
             float dist2 = Transforms::calcDist(temp,car_pose);
-            
-            if (dist2-close_weight*dist1>max_distance)
+            collision = occ_grid.CheckCollision(end_point,temp);    
+            if (dist2-close_weight*dist1>max_distance && collision)
             {
                 max_distance = dist2-close_weight*dist1;
                 closest_cmaes = temp;
