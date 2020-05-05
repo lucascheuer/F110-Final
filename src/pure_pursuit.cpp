@@ -12,7 +12,11 @@ vector<float> PurePursuit::getWaypointDistances(geometry_msgs::TransformStamped 
         pair<float, float> transformedPoint = Transforms::TransformPoint(point, transform_msg);
         float x = transformedPoint.first;
         float y = transformedPoint.second;
-        distances.push_back(sqrt(x*x+y*y));
+        if (x>0) {
+            distances.push_back(sqrt(x*x+y*y));
+        } else {
+            distances.push_back(numeric_limits<float>::max());
+        }
     }
     return distances;
 }
@@ -32,7 +36,7 @@ void PurePursuit::getNextWaypoint(const geometry_msgs::Pose &pose, pair<float, f
     float argminDist = -1;
     for (int i = 0; i < distances.size(); i++) {
         float currentDistance = distances[i] - lookahead_;
-        if (currentDistance >= 0 && currentDistance < minDistance && currentDistance < 1000 && (i >= lastWaypointIndex_ || (2*i/waypoints_.size()<2*lastWaypointIndex_/waypoints_.size()))) {
+        if (currentDistance >= 0 && currentDistance < minDistance && currentDistance < 1000){// && (i >= lastWaypointIndex_ || (2*i/waypoints_.size()<2*lastWaypointIndex_/waypoints_.size()))) {
             argminDist = i;
             minDistance = currentDistance;
         }

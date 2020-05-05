@@ -28,7 +28,7 @@ RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), g
     // FIXME: we only want the grid in front of car right?
     int divide = 3;
     x_dist = uniform_real_distribution<double>(0.4,1.5 * max_goal_distance);
-    y_dist = uniform_real_distribution<double>(-1.5 * max_goal_distance,1.5*max_goal_distance);
+    y_dist = uniform_real_distribution<double>(max_goal_distance,max_goal_distance);
 
     goal_pub = nh_.advertise<visualization_msgs::Marker>("goal_marker", 1 );
     line_pub = nh_.advertise<visualization_msgs::Marker>("path_marker", 1 );
@@ -56,11 +56,11 @@ float RRT::getPathLength(vector<pair<float,float>> &path)
 }
 
 // assume car always starts at beginning of path
-vector<State> RRT::getRRTStates(float dt, int horizon)
+vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
 {
     vector<State> states;
     int vectorSize = rrtPath.size();
-    float velocity = 4;
+    float velocity = 2.5;
     float pathLength = getPathLength(rrtPath);
     float pathTime = pathLength/velocity;
     float deltaT = dt*horizon;
@@ -172,6 +172,7 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
         rrtPath = prePath;//smooth_path(shortcutPath(prePath));
+        vector<State> states = getRRTStates();
         // cout << "RRRRT SIZE " << rrtPath.size();
     }
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
@@ -191,17 +192,17 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
     float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     tree.clear();
 
-    float posex = current_pose_.position.x;
-    float posey = current_pose_.position.y;
+    // float posex = current_pose_.position.x;
+    // float posey = current_pose_.position.y;
+    float posex = current_pose_.position.x + 0.275 * cos(current_angle);
+    float posey = current_pose_.position.y + 0.275 * sin(current_angle);
     Node root = Node(posex, posey, true);
     root.parent = -1;
 
-    posex = current_pose_.position.x + 0.275 * cos(current_angle);
-    posey = current_pose_.position.y + 0.275 * sin(current_angle);
     Node root_plus = Node(posex, posey, true);
     root_plus.parent = 0;
     tree.push_back(root);
-    tree.push_back(root_plus);
+    publish_marker(targetWaypointGlobalCoords.first, targetWaypointGlobalCoords.second);
     
     for (int i = 0; i < rrt_iters; i++) {
         // FIXME: i think this should be from 0,0

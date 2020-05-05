@@ -3,6 +3,8 @@
 
 #include "transforms.hpp"
 #include "input.hpp"
+#include <limits>
+
 using namespace std;
 
 class PurePursuit {

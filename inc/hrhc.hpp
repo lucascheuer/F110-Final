@@ -29,7 +29,7 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
-
+        int debug;
         float q0_;
         float q1_;
         float q2_;
