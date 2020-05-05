@@ -4,6 +4,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include "occgrid.hpp"
 #include "visualizer.hpp"
+#include "transforms.hpp"
 #include <nav_msgs/Odometry.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include "trajectory_planner.hpp"

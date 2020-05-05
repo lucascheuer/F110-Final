@@ -61,7 +61,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     if (!firstPoseEstimate) {
         firstPoseEstimate = true;
     }
-    float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
+    float current_angle = Transforms::getCarOrientation(current_pose_);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
     // State desired_state(trajp_.best_cmaes_point_., 0, 0);
     

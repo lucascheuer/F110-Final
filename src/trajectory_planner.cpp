@@ -9,7 +9,6 @@
 
 using namespace std;
 namespace fs = experimental::filesystem;
-float BIG_FLOAT = 999999.0f;
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 
 {   
@@ -142,7 +141,7 @@ float TrajectoryPlanner::calcDist(pair<float,float> &p1, pair<float,float> &p2)
 
 pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
 {   pair<float,float> closest;
-    float min_dist = BIG_FLOAT;
+    float min_dist = std::numeric_limits<float>::max();
     for (int i=0; i < cmaes_traj.size();i++)
     {
         if (calcDist(p1,cmaes_traj[i])<min_dist)
@@ -158,7 +157,7 @@ pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
 
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
 {   
-    float max_distance = -BIG_FLOAT;
+    float max_distance = -std::numeric_limits<float>::max();
     int best = -1;
     pair<float,float> closest_cmaes;
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);

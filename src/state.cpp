@@ -38,6 +38,11 @@ void State::SetOri(double ori)
     ori_ = ori;
 }
 
+std::pair<float,float> State::getPair()
+{
+    return std::pair<float,float>(x_,y_);
+}
+
 // Accessors
 double State::x()
 {

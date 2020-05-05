@@ -3,20 +3,27 @@
 
 #include "transforms.hpp"
 #include "input.hpp"
+#include "state.hpp"
+#include "transforms.hpp"
+#include "input.hpp"
+#include "occgrid.hpp"
+#include <ros/package.h>
+
+#include <fstream>
 #include <limits>
 
 using namespace std;
 
 class PurePursuit {
 private:
-    vector<pair<float,float>> waypoints_;
-    int lastWaypointIndex_;
+    vector<State> waypoints_;
     float lookahead_;
-    vector<float> getWaypointDistances(geometry_msgs::TransformStamped transform_msg);
+    vector<float> getWaypointDistances(const geometry_msgs::Pose &pose);
 public:
     PurePursuit(float lookahead);
     ~PurePursuit();
-    void setCMA_ES(vector<pair<float,float>> &waypoints);
-    void getNextWaypoint(const geometry_msgs::Pose &pose, pair<float, float> &carFrameTarget, pair<float,float> &globalFrameTarget);
+    bool readCMA_ES(string filename);
+    bool isPathCollisionFree(const geometry_msgs::Pose &pose, OccGrid &occ_grid);
+    int getClosestIdx(vector<float> &distances, float lookahead);
 };
 #endif

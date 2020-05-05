@@ -17,7 +17,7 @@ class State
         void SetX(double x);
         void SetY(double y);
         void SetOri(double z);
-
+        std::pair<float,float> getPair();
         // getters
         double x();
         double y();

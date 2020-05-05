@@ -42,3 +42,8 @@ std::pair<float, float> Transforms::TransformPoint(std::pair<float, float> point
     waypoint_out.y += transform_msg.transform.translation.y;
     return std::pair<float,float>(waypoint_out.x, waypoint_out.y);
 }
+
+float Transforms::getCarOrientation(geometry_msgs::Pose pose)
+{
+    return atan2(2 * pose.orientation.w * pose.orientation.z, 1 - 2 * pose.orientation.z * pose.orientation.z);
+}
