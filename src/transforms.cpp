@@ -47,3 +47,9 @@ float Transforms::getCarOrientation(geometry_msgs::Pose pose)
 {
     return atan2(2 * pose.orientation.w * pose.orientation.z, 1 - 2 * pose.orientation.z * pose.orientation.z);
 }
+
+float Transforms::calcDist(std::pair<float,float> p1, std::pair<float,float> p2)
+{
+    float dist = sqrt(pow((p1.first - p2.first),2) + pow((p1.second-p2.second),2));
+    return dist;
+}

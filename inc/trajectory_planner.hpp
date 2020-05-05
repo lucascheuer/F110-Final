@@ -5,6 +5,7 @@
 #include <geometry_msgs/Pose.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
+#include "transforms.hpp"
 #include "occgrid.hpp"
 #include "visualizer.hpp"
 #include "state.hpp"
@@ -42,7 +43,6 @@ class TrajectoryPlanner
         bool successfulRead_;
         void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories_;
-        float calcDist(pair<float,float> &p1, pair<float,float> &p2);
         pair<float,float> findClosest(pair<float,float> &p1);
         // mode
 

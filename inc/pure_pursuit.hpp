@@ -25,5 +25,6 @@ public:
     bool readCMA_ES(string filename);
     bool isPathCollisionFree(const geometry_msgs::Pose &pose, OccGrid &occ_grid);
     int getClosestIdx(vector<float> &distances, float lookahead);
+    pair<float,float> findClosest(pair<float,float> &globalPoint);
 };
 #endif

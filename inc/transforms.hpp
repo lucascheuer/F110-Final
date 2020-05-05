@@ -11,5 +11,6 @@ class Transforms
         static geometry_msgs::TransformStamped WorldToCarTransform(const geometry_msgs::Pose &pose);
         static std::pair<float, float> TransformPoint(std::pair<float, float> point, geometry_msgs::TransformStamped &transform_msg);
         static float getCarOrientation(geometry_msgs::Pose pose);
+        static float calcDist(std::pair<float,float> p1, std::pair<float,float> p2);
 };
 #endif

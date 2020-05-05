@@ -132,29 +132,6 @@ void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose
     // ROS_INFO("trajectories in world frame");
 }
 
-
-float TrajectoryPlanner::calcDist(pair<float,float> &p1, pair<float,float> &p2)
-{
-    float dist = sqrt(pow((p1.first - p2.first),2) + pow((p1.second-p2.second),2));
-    return dist;
-}
-
-pair<float,float> TrajectoryPlanner::findClosest(pair<float,float> &p1)
-{   pair<float,float> closest;
-    float min_dist = std::numeric_limits<float>::max();
-    for (int i=0; i < cmaes_traj.size();i++)
-    {
-        if (calcDist(p1,cmaes_traj[i])<min_dist)
-        {
-            closest = cmaes_traj[i];
-            min_dist = calcDist(p1,cmaes_traj[i]);
-        }
-    }
-    return closest;
-}
-
-
-
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
 {   
     float max_distance = -std::numeric_limits<float>::max();
@@ -183,8 +160,8 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
             pair<float,float> temp = findClosest(end_point);
-            float dist1 = calcDist(end_point,temp);
-            float dist2 = calcDist(temp,car_pose);
+            float dist1 = Transforms::calcDist(end_point,temp);
+            float dist2 = Transforms::calcDist(temp,car_pose);
             
             if (dist2-close_weight*dist1>max_distance)
             {

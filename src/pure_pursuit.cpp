@@ -80,6 +80,21 @@ int PurePursuit::getClosestIdx(vector<float> &distances, float lookahead)
     return argminDist;
 }
 
+pair<float,float> PurePursuit::findClosest(pair<float,float> &globalPoint)
+{
+    pair<float,float> closest;
+    float min_dist = std::numeric_limits<float>::max();
+    for (int i=0; i < waypoints_.size();i++) {
+        float distance = Transforms::calcDist(globalPoint,waypoints_[i].getPair());
+        if (distance<min_dist) {
+            closest = waypoints_[i].getPair();
+            min_dist = distance;
+        }
+    }
+    return closest;
+}
+
+
 bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose &pose, OccGrid &occ_grid)
 {
     vector<float> distances = getWaypointDistances(pose);
