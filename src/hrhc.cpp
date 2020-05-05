@@ -1,7 +1,5 @@
 #include "hrhc.hpp"
 
-
-
 HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
@@ -39,10 +37,10 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     current_pose_.orientation.z = 0;
     current_pose_.orientation.w = 1;
     // trajp_ = TrajectoryPlanner(nh,10);
-    trajp_.getTrajectories();
+    trajp_.readTrajectories();
     trajp_.trajectory2world(current_pose_);
     trajp_.trajectory2miniworld(current_pose_);
-    trajp_.getCmaes();
+    trajp_.readCMA_ES();
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
     q.diagonal() << q0_, q1_, q2_;
@@ -53,6 +51,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::drive_loop, this);
     t.detach();
+
     ROS_INFO("Created HRHC");
 }
 
@@ -71,12 +70,15 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        // std::thread mpc_thread(&MPC::Update, &mpc_, std::ref(current_state), std::ref(trajp_.best_cmaes_trajectory_));//(mpc_.Update(current_state, trajp_.best_cmaes_trajectory_);
-        // mpc_thread.join();
+        double begin = ros::Time::now().toSec();
+
+        // need to do rrt here
+
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
          if (trajp_.best_traj_index> -1) {
             mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
+            // }   
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
             inputs_idx_ = 0;
@@ -100,7 +102,7 @@ void HRHC::drive_loop()
             drive_pub_.publish(drive_msg);
             int dt_ms = mpc_.get_dt()*1000*2;
             inputs_idx_++;
-            std::cout<<inputs_idx_<< " " << current_inputs_.size() << endl;
+            // std::cout<<inputs_idx_<< " " << current_inputs_.size() << endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }
@@ -109,7 +111,7 @@ void HRHC::drive_loop()
 Input HRHC::get_next_input()
 {
     if (inputs_idx_ >= current_inputs_.size()) {
-        ROS_ERROR("Trajectory complete!");
+        // ROS_ERROR("Trajectory complete!");
         return Input(0.5,-0.05);
     }
     return current_inputs_[inputs_idx_];

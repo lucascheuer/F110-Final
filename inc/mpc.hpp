@@ -1,5 +1,6 @@
 #ifndef MPC_H
 #define MPC_H
+
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <OsqpEigen/OsqpEigen.h>
@@ -13,7 +14,7 @@
 #include "model.hpp"
 #include "cost.hpp"
 #include "visualizer.hpp"
-#include <mutex>
+
 class MPC
 {
     public:
@@ -29,6 +30,10 @@ class MPC
         float get_dt() 
         {
             return dt_;
+        }
+        int get_horizon()
+        {
+            return horizon_;
         }
         std::vector<Input> get_solved_trajectory()
         {

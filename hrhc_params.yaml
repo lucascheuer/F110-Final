@@ -9,7 +9,7 @@ r1: 10.0
 
 pose_topic: "/odom"
 scan_topic: "/scan"
-drive_topic: "/drive"
+drive_topic: "/nav"
 
 horizon: 30
 dt: 0.01
@@ -58,5 +58,16 @@ state_lims: 1
 fov_divider: 1.5
 buffer: 3
 
+#rrt*
+max_goal_distance: 2.5
+min_goal_distance: 2.0
+goal_epsilon: 0.1
+max_expansion_dist: 0.5
+rrt_iters: 500
+look_ahead: 0.4
+angle_limit: 1.5
+steer_angle: 0.3
+rrt_radius_sq: 0.8
+shortcut_iters: 50
 
 
