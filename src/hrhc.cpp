@@ -82,6 +82,8 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
         double begin = ros::Time::now().toSec();
         rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
+        vector<State> rrt_states = rrt_.getRRTStates(mpc_.get_dt(), mpc_.get_horizon());
+        
         double diff = ros::Time::now().toSec()-begin;
         ROS_INFO("Hz - %f", 1/diff);
 
@@ -90,10 +92,10 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
          if (trajp_.best_traj_index>-1) {
             // std::thread mpc_thread(&MPC::Update, &mpc_, current_state, input_to_pass, std::ref(trajp_.best_cmaes_trajectory_));
             // mpc_thread.join();
-            // mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
+            mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
 
-            // current_inputs_ = mpc_.get_solved_trajectory();
-            // mpc_.Visualize();
+            current_inputs_ = mpc_.get_solved_trajectory();
+            mpc_.Visualize();
             inputs_idx_ = 0;
         }
     }

@@ -70,7 +70,7 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
             pathSectionIdx = rrtPath.size();
         }
         vector<pair<float, float>> subPath(rrtPath.begin(), rrtPath.begin()+pathSectionIdx);
-        vector<pair<float, float>> splinedSubpath = smooth_path(subPath, horizon+1);
+        vector<pair<float, float>> splinedSubpath = smooth_path(subPath, horizon+2);
         for (int i = 1; i < splinedSubpath.size(); i++) {
             float prev_x = splinedSubpath[i-1].first;
             float prev_y = splinedSubpath[i-1].second;
@@ -172,14 +172,11 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     occ_grid_ = occ_grid;
     int index = build_tree(carFrameWaypoint, globalFrameWaypoint);
     vector<pair<float,float>> shortPath, prePath;
-    vector<State> states;
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
         rrtPath = prePath;//smooth_path(shortcutPath(prePath));
-        states = getRRTStates();
         // cout << "RRRRT SIZE " << rrtPath.size();
     }
-    cout << states.size() << endl;
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
     visualization_msgs::Marker path_marker = gen_path_marker(prePath);
     visualization_msgs::Marker shortcut_marker = gen_path_marker(rrtPath,0.5,0,0.5);

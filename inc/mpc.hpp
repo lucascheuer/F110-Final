@@ -31,6 +31,10 @@ class MPC
         {
             return dt_;
         }
+        int get_horizon()
+        {
+            return horizon_;
+        }
         std::vector<Input> get_solved_trajectory()
         {
             return solved_trajectory_;
