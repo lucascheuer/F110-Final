@@ -5,7 +5,7 @@ HRHC::~HRHC()
     ROS_INFO("Killing HRHC");
 }
 int hori = 50;
-HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(nh, occ_grid_), pure_pursuit_(1.25)
+HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh), rrt_(nh, occ_grid_), pure_pursuit_(1.5)
 {
     std::string pose_topic, scan_topic, drive_topic;
     int og_size;
@@ -74,30 +74,25 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
+        double begin = ros::Time::now().toSec();
 
         // need to do rrt here
-        std::pair<float, float> carFrameTarget;
-        std::pair<float, float> globalFrameTarget;
-        // ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
-        pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
-        double begin = ros::Time::now().toSec();
-        rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
-        vector<State> rrt_states = rrt_.getRRTStates(mpc_.get_dt(), mpc_.get_horizon());
-        
-        double diff = ros::Time::now().toSec()-begin;
-        ROS_INFO("Hz - %f", 1/diff);
 
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
          if (trajp_.best_traj_index>-1) {
             // std::thread mpc_thread(&MPC::Update, &mpc_, current_state, input_to_pass, std::ref(trajp_.best_cmaes_trajectory_));
             // mpc_thread.join();
+            // if (rrt_states.size()>0) {
+            //     cout << "RRT STATES SIZE " << rrt_states.size() << endl;
             mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
-
+            // }   
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
             inputs_idx_ = 0;
         }
+        double diff = ros::Time::now().toSec()-begin;
+        ROS_INFO("Hz - %f", 1/diff);
     }
 }
 

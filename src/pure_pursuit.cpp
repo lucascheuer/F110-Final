@@ -36,7 +36,7 @@ void PurePursuit::getNextWaypoint(const geometry_msgs::Pose &pose, pair<float, f
     float argminDist = -1;
     for (int i = 0; i < distances.size(); i++) {
         float currentDistance = distances[i] - lookahead_;
-        if (currentDistance >= 0 && currentDistance < minDistance && currentDistance < 1000){ //&& i >= lastWaypointIndex_ || (2*i/waypoints_.size()<2*lastWaypointIndex_/waypoints_.size())) {
+        if (currentDistance >= 0 && currentDistance < minDistance && currentDistance < 1000 && (i >= lastWaypointIndex_ || (2*i/waypoints_.size()<2*lastWaypointIndex_/waypoints_.size()))) {
             argminDist = i;
             minDistance = currentDistance;
         }

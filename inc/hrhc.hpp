@@ -35,7 +35,7 @@ class HRHC
         float q2_;
         float r0_;
         float r1_;
-
+        std::vector<State> rrt_states;
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
         bool firstScanEstimate = false;

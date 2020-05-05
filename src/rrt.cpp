@@ -64,25 +64,42 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
     float pathLength = getPathLength(rrtPath);
     float pathTime = pathLength/velocity;
     float deltaT = dt*horizon;
+    int steps = pathTime/dt;
     if (vectorSize > 3) {
-        int pathSectionIdx = rrtPath.size()*deltaT/pathTime;
-        if (pathSectionIdx > rrtPath.size()) {
-            pathSectionIdx = rrtPath.size();
-        }
-        vector<pair<float, float>> subPath(rrtPath.begin(), rrtPath.begin()+pathSectionIdx);
-        vector<pair<float, float>> splinedSubpath = smooth_path(subPath, horizon+2);
-        for (int i = 1; i < splinedSubpath.size(); i++) {
-            float prev_x = splinedSubpath[i-1].first;
-            float prev_y = splinedSubpath[i-1].second;
+        vector<pair<float, float>> stepsPath = smooth_path(rrtPath, steps+2);
+        if (stepsPath.size() >= horizon) {
+            for (int i = 1; i < horizon+1; i++) {
+                float prev_x = stepsPath[i-1].first;
+                float prev_y = stepsPath[i-1].second;
 
-            float x = splinedSubpath[i].first;
-            float y = splinedSubpath[i].second;
-            float ori = atan2(y-prev_y,x-prev_x);
-            State state;
-            state.SetX(x);
-            state.SetY(y);
-            state.SetOri(ori);
-            states.push_back(state);
+                float x = stepsPath[i].first;
+                float y = stepsPath[i].second;
+                float ori = atan2(y-prev_y,x-prev_x);
+                State state;
+                state.SetX(x);
+                state.SetY(y);
+                state.SetOri(ori);
+                states.push_back(state);
+            }
+        } else {
+            State lastState;
+            for (int i = 1; i < stepsPath.size(); i++) {
+                float prev_x = stepsPath[i-1].first;
+                float prev_y = stepsPath[i-1].second;
+
+                float x = stepsPath[i].first;
+                float y = stepsPath[i].second;
+                float ori = atan2(y-prev_y,x-prev_x);
+                State state;
+                state.SetX(x);
+                state.SetY(y);
+                state.SetOri(ori);
+                lastState = state;
+                states.push_back(state);
+            }
+            for (int i = stepsPath.size(); i < horizon; i++) {
+                states.push_back(lastState);
+            }
         }
     }
     return states;
@@ -174,7 +191,7 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     vector<pair<float,float>> shortPath, prePath;
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
-        rrtPath = prePath;//smooth_path(shortcutPath(prePath));
+        rrtPath = smooth_path(shortcutPath(prePath));
         // cout << "RRRRT SIZE " << rrtPath.size();
     }
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
@@ -194,18 +211,20 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
     float current_angle = atan2(2 * current_pose_.orientation.w * current_pose_.orientation.z, 1 - 2 * current_pose_.orientation.z * current_pose_.orientation.z);
     tree.clear();
 
-    // float posex = current_pose_.position.x;
-    // float posey = current_pose_.position.y;
-    float posex = current_pose_.position.x + 0.275 * cos(current_angle);
-    float posey = current_pose_.position.y + 0.275 * sin(current_angle);
+    float posex = current_pose_.position.x;
+    float posey = current_pose_.position.y;
     Node root = Node(posex, posey, true);
     root.parent = -1;
 
+    posex = current_pose_.position.x + 0.275 * cos(current_angle);
+    posey = current_pose_.position.y + 0.275 * sin(current_angle);
     Node root_plus = Node(posex, posey, true);
     root_plus.parent = 0;
     tree.push_back(root);
+    tree.push_back(root_plus);
+
     publish_marker(targetWaypointGlobalCoords.first, targetWaypointGlobalCoords.second);
-    
+
     for (int i = 0; i < rrt_iters; i++) {
         // FIXME: i think this should be from 0,0
         vector<double> x_rand;
@@ -222,12 +241,13 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
         tmp.push_back(targetWaypointGlobalCoords.first);
         tmp.push_back(targetWaypointGlobalCoords.second);
         float angle = angle_cost(tree[x_nearest_idx], tmp);
-        if (check_collision(tree[x_nearest_idx], x_new) && abs(angle)<steer_angle)
-        {
-            tree.push_back(x_new);
-            // ROS_INFO("breaking out coz of shortcircuit %f", angle);
-            break;
-        } else {
+        // if (check_collision(tree[x_nearest_idx], x_new) && abs(angle)<steer_angle)
+        // {
+        //     tree.push_back(x_new);
+        //     // ROS_INFO("breaking out coz of shortcircuit %f", angle);
+        //     break;
+        // } else
+         {
             x_rand = sample();
             x_nearest_idx = nearest(tree, x_rand);
             x_new =  steer(tree[x_nearest_idx], x_rand);
@@ -322,7 +342,7 @@ Node RRT::steer(Node &nearest_node, std::vector<double> &sampled_point)
         new_point.push_back(sampled_point[1]);
     }
     float angle = angle_cost(nearest_node, new_point);
-    if (abs(angle)>steer_angle && nearest_node.parent!=-1) {
+    if (abs(angle)>steer_angle && nearest_node.is_root == false) {
         double distance = min(curr_distance, max_expansion_dist);
         Node parent = tree[nearest_node.parent];
         double prev_angle = atan2(nearest_node.y-parent.y, nearest_node.x-parent.x);

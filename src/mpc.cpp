@@ -104,12 +104,11 @@ void MPC::updateSolvedTrajectory()
 { 
     trajectory_idx_ = 0;
     solved_trajectory_.clear();//full_solution_.size()-1
-    for (int i = num_states_; i < num_states_+5; i+=2) {
+    for (int i = num_states_; i < num_states_+21; i+=2) {
         double v = full_solution_(i);
         // std::cout<<v<<std::endl;
         double angle = full_solution_(i+1);
         if (std::isnan(v) || std::isnan(angle)) {
-            std::cout<<"nannn"<<std::endl;
             return;
         }
         Input input(v, angle);
@@ -142,7 +141,7 @@ void MPC::Visualize()
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
 
-    for (int ii = 0; ii < horizon_-1; ++ii)
+    for (int ii = 0; ii < desired_state_trajectory_.size(); ++ii)
     {
         point.x = desired_state_trajectory_[ii].x();
         point.y = desired_state_trajectory_[ii].y();
