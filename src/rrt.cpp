@@ -60,12 +60,15 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
 {
     vector<State> states;
     int vectorSize = rrtPath.size();
-    float velocity = 2.5;
+    float velocity = 3;
     float pathLength = getPathLength(rrtPath);
     float pathTime = pathLength/velocity;
     float deltaT = dt*horizon;
-    if (vectorSize > 3 && pathTime >= deltaT) {
-        int pathSectionIdx = deltaT/pathTime;
+    if (vectorSize > 3) {
+        int pathSectionIdx = rrtPath.size()*deltaT/pathTime;
+        if (pathSectionIdx > rrtPath.size()) {
+            pathSectionIdx = rrtPath.size();
+        }
         vector<pair<float, float>> subPath(rrtPath.begin(), rrtPath.begin()+pathSectionIdx);
         vector<pair<float, float>> splinedSubpath = smooth_path(subPath, horizon+1);
         for (int i = 1; i < splinedSubpath.size(); i++) {
@@ -74,11 +77,11 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
 
             float x = splinedSubpath[i].first;
             float y = splinedSubpath[i].second;
-            float dydx = (y-prev_y)/(x-prev_x);
+            float ori = atan2(y-prev_y,x-prev_x);
             State state;
             state.SetX(x);
             state.SetY(y);
-            state.SetOri(dydx);
+            state.SetOri(ori);
             states.push_back(state);
         }
     }
@@ -169,12 +172,14 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     occ_grid_ = occ_grid;
     int index = build_tree(carFrameWaypoint, globalFrameWaypoint);
     vector<pair<float,float>> shortPath, prePath;
+    vector<State> states;
     if (index != -1) {
         prePath = smooth_path(find_path(tree, tree[index]));
         rrtPath = prePath;//smooth_path(shortcutPath(prePath));
-        vector<State> states = getRRTStates();
+        states = getRRTStates();
         // cout << "RRRRT SIZE " << rrtPath.size();
     }
+    cout << states.size() << endl;
     visualization_msgs::MarkerArray rrt_marker = gen_RRT_markers();
     visualization_msgs::Marker path_marker = gen_path_marker(prePath);
     visualization_msgs::Marker shortcut_marker = gen_path_marker(rrtPath,0.5,0,0.5);
@@ -320,7 +325,7 @@ Node RRT::steer(Node &nearest_node, std::vector<double> &sampled_point)
         new_point.push_back(sampled_point[1]);
     }
     float angle = angle_cost(nearest_node, new_point);
-    if (abs(angle)>steer_angle) {
+    if (abs(angle)>steer_angle && nearest_node.parent!=-1) {
         double distance = min(curr_distance, max_expansion_dist);
         Node parent = tree[nearest_node.parent];
         double prev_angle = atan2(nearest_node.y-parent.y, nearest_node.x-parent.x);

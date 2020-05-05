@@ -81,9 +81,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         // ROS_INFO("%f %f", globalFrameTarget.first, globalFrameTarget.second);
         pure_pursuit_.getNextWaypoint(current_pose_, carFrameTarget, globalFrameTarget);
         double begin = ros::Time::now().toSec();
-        if (debug++%100==0) {
-            rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
-        }
+        rrt_.updateRRT(current_pose_, occ_grid_, carFrameTarget, globalFrameTarget);
         double diff = ros::Time::now().toSec()-begin;
         ROS_INFO("Hz - %f", 1/diff);
 

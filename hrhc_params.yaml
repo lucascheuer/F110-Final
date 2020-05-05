@@ -41,7 +41,7 @@ max_expansion_dist: 0.5
 rrt_iters: 500
 look_ahead: 0.4
 angle_limit: 1.5
-steer_angle: 0.41
+steer_angle: 0.75
 rrt_radius_sq: 0.8
 shortcut_iters: 50
 
