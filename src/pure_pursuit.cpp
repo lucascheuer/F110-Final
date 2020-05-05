@@ -72,7 +72,7 @@ int PurePursuit::getClosestIdx(vector<float> &distances, float lookahead)
     float minDistance = numeric_limits<float>::max();
     float argminDist = -1;
     for (int i = 0; i < distances.size(); i++) {
-        float currentDistance = distances[i] - lookahead_;
+        float currentDistance = distances[i] - lookahead;
         float ori = waypoints_[i].ori();
         if (currentDistance >= 0 && currentDistance < minDistance) {// && ori >= lowerAngle && ori <= upperAngle) {
             argminDist = i;
@@ -110,7 +110,7 @@ bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &o
     vector<float> distances = getWaypointDistances(pose);
     int startingIdx = getClosestIdx(distances, 0);
     int endingIdx = getClosestIdx(distances, lookahead_);
-
+    std::cout << "Starting: " << startingIdx << "\tEnding: " << endingIdx << std::endl;
     for (int i = startingIdx; i < endingIdx; i++) {
         if (!occ_grid.CheckCollision(waypoints_[i].getPair(),waypoints_[i+1].getPair())) {
             return false;

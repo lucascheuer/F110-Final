@@ -37,7 +37,10 @@ class TrajectoryPlanner
         int best_traj_index;
 
     private:
-        PurePursuit pure_pursuit;
+        int current_lane_ = 0;
+        // PurePursuit pure_pursuit;
+        std::vector<PurePursuit> lanes_;
+        void SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid);
         float cmaes_lookahead;
         int horizon_;
         void publish_cmaes_closest_marker(float x, float y);

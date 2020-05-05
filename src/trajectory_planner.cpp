@@ -10,15 +10,33 @@
 using namespace std;
 namespace fs = experimental::filesystem;
 // FIXME: change lookahead to var
-TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : pure_pursuit(2)
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {   
+
     int horizon;
     nh.getParam("/horizon", horizon);
     nh.getParam("/num_traj", num_traj);
     nh.getParam("/MAX_HORIZON", MAX_HORIZON);
     nh.getParam("/close_weight", close_weight);
+    std::string lane_file;
+    std::string lane_name;
+    PurePursuit temporary_trajectory(2);
+    int lane_number = 0;
     
-    pure_pursuit.readCMA_ES("fooxx.csv");
+    while(true)
+    {
+        lane_name = "lane_" + std::to_string(lane_number);
+        lane_number++;
+        if (nh.getParam(lane_name, lane_file))
+        {
+            temporary_trajectory.readCMA_ES(lane_file);
+            lanes_.push_back(temporary_trajectory);
+        } else
+        {
+            break;
+        }
+    }
+    // pure_pursuit.readCMA_ES("fooxx.csv");
     horizon_ = horizon;
     traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
     ROS_INFO("planner created");
@@ -134,7 +152,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         {
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
-            pair<float,float> temp = pure_pursuit.findClosest(end_point);
+            pair<float,float> temp = lanes_[current_lane_].findClosest(end_point);
             float dist1 = Transforms::calcDist(end_point,temp);
             float dist2 = Transforms::calcDist(temp,car_pose);
             
@@ -196,6 +214,20 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     return best;
 }
 
+void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid)
+{
+    int new_lane = 0;
+    for (int lane = 0; lane < lanes_.size(); ++lane)
+    {
+        if (lane != current_lane_ && lanes_[lane].isPathCollisionFree(pose, occ_grid))
+        {
+            current_lane_ = lane;
+            break;
+        }
+    }
+}
+
+
 
 void TrajectoryPlanner::Visualize()
 {
@@ -210,7 +242,7 @@ void TrajectoryPlanner::Visualize()
     colors_.insert(colors_.end(), best_traj_colors.begin(), best_traj_colors.end());
     best_traj_pushed_ = true;
     // best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
-    auto pts = pure_pursuit.getPairPoints();
+    auto pts = lanes_[current_lane_].getPairPoints();
     std::vector<geometry_msgs::Point> cmaes_points = Visualizer::GenerateVizPoints(pts);
     std::vector<std_msgs::ColorRGBA> cmaes_colors = Visualizer::GenerateVizColors(pts, 1, 0, 0);
     points_.insert(points_.end(), cmaes_points.begin(), cmaes_points.end());
@@ -228,6 +260,10 @@ void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid 
 {
     //trajectory2miniworld(current_pose);
     trajectory2world(current_pose);
+    if (!lanes_[current_lane_].isPathCollisionFree(current_pose, occ_grid))
+    {
+        SelectLane(current_pose, occ_grid);
+    }
     best_traj_index = best_traj(occ_grid, current_pose);
     
 }

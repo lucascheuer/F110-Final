@@ -23,7 +23,12 @@ num_traj: 10
 close_weight: 1.5
 MAX_HORIZON: 50
 
-
+# Lanes
+lane_0: "csv/fooxx.csv"
+lane_1: "csv/fooxx_point25.csv"
+lane_2: "csv/fooxx_point5.csv"
+lane_3: "csv/fooxx_point75.csv"
+lane_4: "csv/fooxx_one.csv"
 
 #constraints 
 umax: 4.5 #change dt if you change this
@@ -34,6 +39,12 @@ umin: 3
 # slip_p1_steer: 0.36
 # slip_p2_vel: 4.5
 # slip_p2_steer: 0.08
+
+# slip angle 0.2
+# slip_p1_vel: 3.1
+# slip_p1_steer: 0.4
+# slip_p2_vel: 4.5
+# slip_p2_steer: 0.15
 
 # slip angle 0.3
 # slip_p1_vel: 3.6
