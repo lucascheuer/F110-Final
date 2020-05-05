@@ -28,7 +28,7 @@ RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), g
     // FIXME: we only want the grid in front of car right?
     int divide = 3;
     x_dist = uniform_real_distribution<double>(0.4,1.5 * max_goal_distance);
-    y_dist = uniform_real_distribution<double>(max_goal_distance,max_goal_distance);
+    y_dist = uniform_real_distribution<double>(-max_goal_distance,max_goal_distance);
 
     goal_pub = nh_.advertise<visualization_msgs::Marker>("goal_marker", 1 );
     line_pub = nh_.advertise<visualization_msgs::Marker>("path_marker", 1 );
