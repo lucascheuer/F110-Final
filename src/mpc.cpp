@@ -13,6 +13,11 @@ MPC::MPC(ros::NodeHandle &nh):
 {
     nh.getParam("/horizon", horizon_);
     nh.getParam("/dt", dt_);
+    double desired_vel, desired_steer;
+    nh.getParam("des_vel", desired_vel);
+    nh.getParam("des_steer", desired_steer);
+    desired_input_.SetV(desired_vel);
+    desired_input_.SetSteerAng(desired_steer);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -40,8 +45,7 @@ void MPC::Init(Model model, Cost cost)
 {
     model_ = model;
     cost_ = cost;
-    desired_input_.SetV(4.5);
-    desired_input_.SetSteerAng(0);
+    
     CreateHessianMatrix();
     CreateLinearConstraintMatrix();
     CreateUpperBound();

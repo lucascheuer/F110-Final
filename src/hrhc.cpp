@@ -93,9 +93,10 @@ void HRHC::drive_loop()
             Input input = get_next_input();
             if (trajp_.best_traj_index< 0)
             {
-                std::cout<<"cannot"<<std::endl;
+                // std::cout<<"cannot"<<std::endl;
                 input.SetV(0.5);
             }
+            drive_msg.header.stamp = ros::Time::now();
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
