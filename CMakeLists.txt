@@ -41,14 +41,14 @@ include_directories(
   /usr/local/include/eigen3/Eigen
 )
 
-add_executable(hrhc_node 
-node/hrhc_node.cpp 
-src/constraints.cpp 
-src/cost.cpp 
+add_executable(hrhc_node
+node/hrhc_node.cpp
+src/constraints.cpp
+src/cost.cpp
 src/hrhc.cpp
-src/input.cpp 
-src/model.cpp 
-src/mpc.cpp 
+src/input.cpp
+src/model.cpp
+src/mpc.cpp
 src/occgrid.cpp
 src/state.cpp
 src/trajectory_planner.cpp

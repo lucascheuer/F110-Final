@@ -27,13 +27,11 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
-        int debug;
         float q0_;
         float q1_;
         float q2_;
         float r0_;
         float r1_;
-        std::vector<State> rrt_states;
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
         bool firstScanEstimate = false;
