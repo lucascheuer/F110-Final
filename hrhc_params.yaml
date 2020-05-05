@@ -9,7 +9,7 @@ r1: 10.0
 
 pose_topic: "/odom"
 scan_topic: "/scan"
-drive_topic: "/nav"
+drive_topic: "/drive"
 
 horizon: 30
 dt: 0.01
