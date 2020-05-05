@@ -17,6 +17,8 @@ dt: 0.01
 occ_size: 10
 occ_discrete: 0.1
 occ_dilation: 0.1
+cmaes_lookahead_1: -0.5
+cmaes_lookahead_2: 2
 
 #traj_planner
 num_traj: 10

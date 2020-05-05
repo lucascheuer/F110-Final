@@ -22,7 +22,6 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     nh_.getParam("/horizon", hori);
     nh_.getParam("/occgrid_size", og_size);
     nh_.getParam("/occgrid_disc", discrete);
-    
 
     ros::NodeHandle nh_(nh);
     // OccGrid occ_grid_(nh, og_size,discrete);

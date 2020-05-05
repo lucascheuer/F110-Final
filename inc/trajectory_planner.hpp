@@ -41,7 +41,6 @@ class TrajectoryPlanner
         // PurePursuit pure_pursuit;
         std::vector<PurePursuit> lanes_;
         void SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid);
-        float cmaes_lookahead;
         int horizon_;
         void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories_;

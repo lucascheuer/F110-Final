@@ -3,7 +3,7 @@
 
 using namespace std;
 
-vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose)
+vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
 {
     geometry_msgs::TransformStamped world_to_car_msg_stamped = Transforms::WorldToCarTransform(pose);
     float carAngle = Transforms::getCarOrientation(pose);
@@ -20,7 +20,7 @@ vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose)
         pair<float, float> transformedPoint = Transforms::TransformPoint(point, world_to_car_msg_stamped);
         float x = transformedPoint.first;
         float y = transformedPoint.second;
-        if (x>0) {
+        if ((inFront && x>0) || (!inFront && x<0)) {
             distances.push_back(sqrt(x*x+y*y));
         } else {
             distances.push_back(numeric_limits<float>::max());
@@ -28,7 +28,7 @@ vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose)
     }
     return distances;
 }
-PurePursuit::PurePursuit(float lookahead) : lookahead_(lookahead)
+PurePursuit::PurePursuit(float lookahead1, float lookahead2) : lookahead_1_(lookahead1), lookahead_2_(lookahead2)
 {
 }
 
@@ -38,7 +38,6 @@ PurePursuit::~PurePursuit()
 bool PurePursuit::readCMA_ES(string filename)
 {
     string path = ros::package::getPath("milestone-3")+"/"+filename;
-    // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
@@ -67,10 +66,17 @@ bool PurePursuit::readCMA_ES(string filename)
     return true;
 }
 
-int PurePursuit::getClosestIdx(vector<float> &distances, float lookahead)
+int PurePursuit::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
 {
     float minDistance = numeric_limits<float>::max();
     float argminDist = -1;
+    vector<float> distances;
+    if (lookahead < 0) {
+        distances = getWaypointDistances(pose, false);
+    } else {
+        distances = getWaypointDistances(pose, true);
+    }
+    lookahead = abs(lookahead);
     for (int i = 0; i < distances.size(); i++) {
         float currentDistance = distances[i] - lookahead;
         float ori = waypoints_[i].ori();
@@ -107,11 +113,13 @@ vector<pair<float,float>> PurePursuit::getPairPoints()
 
 bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
-    vector<float> distances = getWaypointDistances(pose);
-    int startingIdx = getClosestIdx(distances, 0);
-    int endingIdx = getClosestIdx(distances, lookahead_);
+    int startingIdx = getClosestIdx(pose, lookahead_1_);
+    int endingIdx = getClosestIdx(pose, lookahead_2_);
+    if (startingIdx > endingIdx) {
+        swap(startingIdx, endingIdx);
+    }
     std::cout << "Starting: " << startingIdx << "\tEnding: " << endingIdx << std::endl;
-    for (int i = startingIdx; i < endingIdx; i++) {
+    for (int i = startingIdx; i < endingIdx; i=(i+1)%waypoints_.size()) {
         if (!occ_grid.CheckCollision(waypoints_[i].getPair(),waypoints_[i+1].getPair())) {
             return false;
         }
