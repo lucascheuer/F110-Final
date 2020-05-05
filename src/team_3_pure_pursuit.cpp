@@ -29,7 +29,7 @@ private:
     bool printed = false;
     const float LOOKAHEAD_REF = 1.2;
     const float BIG_FLOAT = 9999999;
-    const float MAX_VELOCITY = 4.5;
+    const float MAX_VELOCITY = 3;
     const float MAX_ANGLE = .41;
     float leftSideDistance;
     bool successfulRead;
@@ -37,12 +37,12 @@ public:
     PurePursuit() : successfulRead(false) {
         n = ros::NodeHandle();
         // sim
-        poseSubscriber = n.subscribe("/odom", 1, &PurePursuit::pose_callback, this);
+        poseSubscriber = n.subscribe("/opp_odom", 1, &PurePursuit::pose_callback, this);
 //         scanSubscriber = n.subscribe("scan", 1, &PurePursuit::scan_callback, this);
 
         // real
         //poseSubscriber = n.subscribe("pf/pose/odom", 1, &PurePursuit::pose_callback, this);
-        drivePublisher = n.advertise<ackermann_msgs::AckermannDriveStamped>("/drive", 10);
+        drivePublisher = n.advertise<ackermann_msgs::AckermannDriveStamped>("/opp_drive", 10);
         getWaypoints();
         vis_pub_mult = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10 );
         vis_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10 );
@@ -185,6 +185,7 @@ public:
         float angle = 1/curvature;
         // TODO: publish drive message, don't forget to limit the steering angle between -0.4189 and 0.4189 radians
         ackermann_msgs::AckermannDriveStamped drive_msg;
+        drive_msg.header.stamp = ros::Time::now();
         drive_msg.drive.steering_angle = angle;
         angle = (angle>MAX_ANGLE) ? MAX_ANGLE : angle;
         angle = (angle<-MAX_ANGLE) ? -MAX_ANGLE : angle;
