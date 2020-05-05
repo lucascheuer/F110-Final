@@ -115,6 +115,14 @@ bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &o
 {
     int startingIdx = getClosestIdx(pose, lookahead_1_);
     int endingIdx = getClosestIdx(pose, lookahead_2_);
+    // we're truly screwed of there's no point in front and behind us
+    if (startingIdx == -1 && endingIdx == -1) {
+        return false;
+    } else if (startingIdx == -1) {
+        startingIdx = (endingIdx-6)%waypoints_.size();
+    } else if (endingIdx == -1) {
+        endingIdx = (startingIdx+6)%waypoints_.size();
+    }
     if (endingIdx < startingIdx) {
         endingIdx += waypoints_.size();
     }
