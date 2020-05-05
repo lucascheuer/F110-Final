@@ -14,13 +14,15 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
 {   
 
     int horizon;
+    float lookahead_1, lookahead_2;
     nh.getParam("/horizon", horizon);
     nh.getParam("/num_traj", num_traj);
     nh.getParam("/MAX_HORIZON", MAX_HORIZON);
     nh.getParam("/close_weight", close_weight);
+    nh.getParam("/cmaes_lookahead_1", lookahead_1);
+    nh.getParam("/cmaes_lookahead_2", lookahead_2);
     std::string lane_file;
     std::string lane_name;
-    PurePursuit temporary_trajectory(2);
     int lane_number = 0;
     
     while(true)
@@ -29,6 +31,7 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
         lane_number++;
         if (nh.getParam(lane_name, lane_file))
         {
+            PurePursuit temporary_trajectory(lookahead_1, lookahead_2);
             temporary_trajectory.readCMA_ES(lane_file);
             lanes_.push_back(temporary_trajectory);
         } else
