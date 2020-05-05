@@ -22,8 +22,9 @@ private:
 public:
     PurePursuit(float lookahead);
     ~PurePursuit();
+    vector<pair<float,float>> getPairPoints();
     bool readCMA_ES(string filename);
-    bool isPathCollisionFree(const geometry_msgs::Pose &pose, OccGrid &occ_grid);
+    bool isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid);
     int getClosestIdx(vector<float> &distances, float lookahead);
     pair<float,float> findClosest(pair<float,float> &globalPoint);
 };

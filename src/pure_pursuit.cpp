@@ -29,7 +29,9 @@ vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose)
     return distances;
 }
 PurePursuit::PurePursuit(float lookahead) : lookahead_(lookahead)
-{}
+{
+}
+
 PurePursuit::~PurePursuit()
 {}
 
@@ -94,8 +96,16 @@ pair<float,float> PurePursuit::findClosest(pair<float,float> &globalPoint)
     return closest;
 }
 
+vector<pair<float,float>> PurePursuit::getPairPoints()
+{
+    vector<pair<float,float>> points;
+    for (auto itr = waypoints_.begin(); itr != waypoints_.end(); itr++) {
+        points.push_back(itr->getPair());
+    }
+    return points;
+}
 
-bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose &pose, OccGrid &occ_grid)
+bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
     vector<float> distances = getWaypointDistances(pose);
     int startingIdx = getClosestIdx(distances, 0);

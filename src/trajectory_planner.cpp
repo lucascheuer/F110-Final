@@ -9,8 +9,8 @@
 
 using namespace std;
 namespace fs = experimental::filesystem;
-TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
-
+// FIXME: change lookahead to var
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : pure_pursuit(2)
 {   
     int horizon;
     nh.getParam("/horizon", horizon);
@@ -18,7 +18,7 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
     nh.getParam("/MAX_HORIZON", MAX_HORIZON);
     nh.getParam("/close_weight", close_weight);
     
-    successfulRead_ = false;
+    pure_pursuit.readCMA_ES("fooxx.csv");
     horizon_ = horizon;
     traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
     ROS_INFO("planner created");
@@ -49,31 +49,6 @@ void TrajectoryPlanner::readTrajectories()
         exit(0);
     }
 }
-
-void TrajectoryPlanner::readCMA_ES()
-{
-    string path = ros::package::getPath("milestone-3")+"/fooxx.csv";
-    // string path = "/home/saumya/team3_ws/src/F110-Final/fooxx.csv";
-    cout << path << endl;
-    ifstream input(path);
-    string coordX, coordY;
-    if (input.is_open()) {
-        while(getline(input,coordX,',')) {
-            getline(input,coordY);
-            cmaes_traj.push_back(pair<float,float>(stof(coordX),stof(coordY)));
-        }
-    }
-    else {
-        cout << "Please run this from the root catkin_ws directory" << endl;
-        exit(0);
-    }    
-        // cout<<"got trajectories";
-        // cout<<cmaes_traj.size();
-    // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
-    
-
-}
-
 
 pair<float,float> TrajectoryPlanner::carPoint2miniWorld(float x, float y, const geometry_msgs::Pose &current_pose)
 {
@@ -159,7 +134,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         {
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
-            pair<float,float> temp = findClosest(end_point);
+            pair<float,float> temp = pure_pursuit.findClosest(end_point);
             float dist1 = Transforms::calcDist(end_point,temp);
             float dist2 = Transforms::calcDist(temp,car_pose);
             
@@ -198,8 +173,8 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
     double dy = (trajectories_world[MAX_HORIZON * best + 1].second) - (trajectories_world[MAX_HORIZON * best].second);
     double ori = atan2(dy, dx);
     push.SetOri(ori);
-    best_cmaes_trajectory_.clear();
-    best_cmaes_trajectory_.push_back(push);
+    best_minipath.clear();
+    best_minipath.push_back(push);
     for (int ii =  1; ii < horizon_; ++ii)
     {
         push.SetX(trajectories_world[MAX_HORIZON * best + ii].first);
@@ -208,7 +183,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         dy = (trajectories_world[MAX_HORIZON * best + ii].second) - (trajectories_world[MAX_HORIZON * best + ii - 1].second);
         ori = atan2(dy, dx);
         push.SetOri(ori);
-        best_cmaes_trajectory_.push_back(push);
+        best_minipath.push_back(push);
     }
     best_cmaes_point_.SetX(trajectories_world[MAX_HORIZON * best + horizon_-1].first);
     best_cmaes_point_.SetY(trajectories_world[MAX_HORIZON * best + horizon_-1].second);
@@ -235,8 +210,9 @@ void TrajectoryPlanner::Visualize()
     colors_.insert(colors_.end(), best_traj_colors.begin(), best_traj_colors.end());
     best_traj_pushed_ = true;
     // best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
-    std::vector<geometry_msgs::Point> cmaes_points = Visualizer::GenerateVizPoints(cmaes_traj);
-    std::vector<std_msgs::ColorRGBA> cmaes_colors = Visualizer::GenerateVizColors(cmaes_traj, 1, 0, 0);
+    auto pts = pure_pursuit.getPairPoints();
+    std::vector<geometry_msgs::Point> cmaes_points = Visualizer::GenerateVizPoints(pts);
+    std::vector<std_msgs::ColorRGBA> cmaes_colors = Visualizer::GenerateVizColors(pts, 1, 0, 0);
     points_.insert(points_.end(), cmaes_points.begin(), cmaes_points.end());
     colors_.insert(colors_.end(), cmaes_colors.begin(), cmaes_colors.end());
     cmaes_pushed_ = true;

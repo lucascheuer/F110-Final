@@ -40,7 +40,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     trajp_.readTrajectories();
     trajp_.trajectory2world(current_pose_);
     trajp_.trajectory2miniworld(current_pose_);
-    trajp_.readCMA_ES();
+
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
     q.diagonal() << q0_, q1_, q2_;
@@ -77,7 +77,7 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
          if (trajp_.best_traj_index> -1) {
-            mpc_.Update(current_state,input_to_pass,trajp_.best_cmaes_trajectory_);
+            mpc_.Update(current_state,input_to_pass,trajp_.best_minipath);
             // }   
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
