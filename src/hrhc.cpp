@@ -49,8 +49,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     r.diagonal() << r0_, r1_;
     Cost cost(q, r);
     Model model;
-    Constraints constraints(nh);
-    mpc_.Init(model, cost, constraints);
+    mpc_.Init(model, cost);
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::drive_loop, this);
     t.detach();
