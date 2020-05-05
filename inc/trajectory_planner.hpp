@@ -40,12 +40,13 @@ class TrajectoryPlanner
         int current_lane_ = 0;
         // PurePursuit pure_pursuit;
         std::vector<PurePursuit> lanes_;
+        double distance_from_switch_;
+        double switch_distance_threshold_;
         void SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid);
         int horizon_;
         void publish_cmaes_closest_marker(float x, float y);
         vector<pair<float,float>> trajectories_;
-        // mode
-
+        geometry_msgs::Pose last_pose_;
         // ros viz stuff
         ros::Publisher traj_pub_;
         std::vector<geometry_msgs::Point> points_;

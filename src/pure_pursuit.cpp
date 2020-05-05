@@ -118,7 +118,7 @@ bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &o
     if (endingIdx < startingIdx) {
         endingIdx += waypoints_.size();
     }
-    std::cout << "Starting: " << startingIdx << "\tEnding: " << endingIdx << std::endl;
+    // std::cout << "Starting: " << startingIdx << "\tEnding: " << endingIdx << std::endl;
     for (int i = startingIdx; i < endingIdx; i++) {
         int idx1 = i%waypoints_.size();
         int idx2 = (i+1)%waypoints_.size();

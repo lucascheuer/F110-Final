@@ -10,7 +10,7 @@
 using namespace std;
 namespace fs = experimental::filesystem;
 // FIXME: change lookahead to var
-TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
+TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch_(0)
 {   
 
     int horizon;
@@ -21,6 +21,8 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh)
     nh.getParam("/close_weight", close_weight);
     nh.getParam("/cmaes_lookahead_1", lookahead_1);
     nh.getParam("/cmaes_lookahead_2", lookahead_2);
+    nh.getParam("/switch_distance_threshold", switch_distance_threshold_);
+    
     std::string lane_file;
     std::string lane_name;
     int lane_number = 0;
@@ -219,15 +221,20 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 
 void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
-    int new_lane = 0;
+    int old_lane = current_lane_;
     for (int lane = 0; lane < lanes_.size(); ++lane)
     {
         if (lane != current_lane_ && lanes_[lane].isPathCollisionFree(pose, occ_grid))
         {
             current_lane_ = lane;
+            if (old_lane < current_lane_)
+            {
+                distance_from_switch_ = 0;
+            }
             break;
         }
     }
+    std::cout << distance_from_switch_ << std::endl;
 }
 
 
@@ -262,11 +269,13 @@ void TrajectoryPlanner::Visualize()
 void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid &occ_grid)
 {
     //trajectory2miniworld(current_pose);
+    distance_from_switch_ += Transforms::calcDist(std::pair<float,float>(last_pose_.position.x, last_pose_.position.y), std::pair<float,float>(current_pose.position.x, current_pose.position.y));
     trajectory2world(current_pose);
-    if (!lanes_[current_lane_].isPathCollisionFree(current_pose, occ_grid))
+
+    if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].isPathCollisionFree(current_pose, occ_grid))
     {
         SelectLane(current_pose, occ_grid);
     }
     best_traj_index = best_traj(occ_grid, current_pose);
-    
+    last_pose_ = current_pose;
 }
