@@ -16,7 +16,7 @@ MPC::MPC(ros::NodeHandle &nh):
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
-    num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_ + horizon_); // dynamics + follow the gap + max/min input + skid limit
+    num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_ + 2 * horizon_); // dynamics + follow the gap + max/min input + skid limit
     
     hessian_.resize(num_variables_, num_variables_);
     gradient_.resize(num_variables_);
@@ -36,11 +36,10 @@ MPC::~MPC()
     ROS_INFO("killing the mpc");
 }
 
-void MPC::Init(Model model, Cost cost, Constraints constraints)
+void MPC::Init(Model model, Cost cost)
 {
     model_ = model;
     cost_ = cost;
-    constraints_ = constraints;
     desired_input_.SetV(4.5);
     desired_input_.SetSteerAng(0);
     CreateHessianMatrix();
@@ -82,6 +81,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
         if (!solver_.updateBounds(lower_bound_, upper_bound_)) std::cout << "bounds failed" << std::endl;
     } else
     {
+        solver_.settings()->setWarmStart(true);
         solver_.settings()->setVerbosity(false);
         solver_.data()->setNumberOfVariables(num_variables_);
         solver_.data()->setNumberOfConstraints(num_constraints_);
@@ -90,8 +90,11 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
         if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
         if (!solver_.data()->setLowerBound(lower_bound_)) std::cout << "lower failed" << std::endl;
         if (!solver_.data()->setUpperBound(upper_bound_)) std::cout << "upper failed" << std::endl;
-        if (!solver_.initSolver()) std::cout << "solver failed" << std::endl;
-        solver_init_ = true;
+        if (!solver_.initSolver())
+        {
+            std::cout << "solver failed" << std::endl;
+            solver_init_ = true;
+        }
     }
     if (!solver_.solve()) {
         ROS_ERROR("solve failed");
@@ -231,10 +234,7 @@ void MPC::CreateLinearConstraintMatrix()
         SparseBlockInit(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), ii*state_size_, (ii - 1) * state_size_);
         SparseBlockInit(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, input_size_), ii*state_size_, num_states_ + (ii - 1) * input_size_);
         SparseBlockInit(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
-        // if (ii < horizon_)
-        // {
-            SparseBlockInit(linear_matrix_, constraints_.slip_constraint(), num_states_ + 2 * (horizon_ + 1) + num_inputs_ + ii - 1, num_states_ + (ii - 1) * input_size_);
-        // }
+        SparseBlockInit(linear_matrix_, constraints_.slip_constraint(), num_states_ + 2 * (horizon_ + 1) + num_inputs_ + ii - 1, num_states_ + (ii - 1) * input_size_);
     }
     
     // l1 A B C

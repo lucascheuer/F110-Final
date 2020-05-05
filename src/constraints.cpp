@@ -26,18 +26,17 @@ Constraints::Constraints(ros::NodeHandle &nh)
     double slip_p2_vel;
     double slip_p2_steer;
     nh.getParam(hrhc_node+"/slip_p1_vel", slip_p1_vel);
-    nh.getParam(hrhc_node+"/slip_p1_steer", slip_p1_vel);
+    nh.getParam(hrhc_node+"/slip_p1_steer", slip_p1_steer);
     nh.getParam(hrhc_node+"/slip_p2_vel", slip_p2_vel);
     nh.getParam(hrhc_node+"/slip_p2_steer", slip_p2_steer);
     
     double slope = (slip_p2_steer - slip_p1_steer) / (slip_p2_vel - slip_p1_vel);
-    slip_constraint_.resize(1, 2);
-    slip_constraint_ << -slope, 1;
-    slip_upper_bound_.resize(1, 1);
-    // slip_upper_bound_ << slope * (-slip_p1_vel) + slip_p1_steer;
-    slip_upper_bound_ << OsqpEigen::INFTY;
-    slip_lower_bound_.resize(1, 1);
-    slip_lower_bound_ << -OsqpEigen::INFTY;
+    slip_constraint_.resize(2, 2);
+    slip_constraint_ << -slope, 1, slope, 1;
+    slip_upper_bound_.resize(2, 1);
+    slip_upper_bound_ << slip_p1_steer - slope*slip_p1_vel, slip_p1_steer - slope*slip_p1_vel;
+    slip_lower_bound_.resize(2, 1);
+    slip_lower_bound_ << -slip_p1_steer + slope*slip_p1_vel, -slip_p1_steer + slope*slip_p1_vel;
     // d = 1.0f;
     // thres_ = 1.5f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
