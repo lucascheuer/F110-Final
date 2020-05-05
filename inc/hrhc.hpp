@@ -27,13 +27,13 @@ class HRHC
         ros::Subscriber scan_sub_;
         ros::Subscriber nav_sub_;
         ros::Subscriber pf_sub_;
-
+        int debug;
         float q0_;
         float q1_;
         float q2_;
         float r0_;
         float r1_;
-
+        std::vector<State> rrt_states;
         ros::Publisher drive_pub_;
         bool firstPoseEstimate = false;
         bool firstScanEstimate = false;
@@ -46,7 +46,7 @@ class HRHC
         State mpc_des_state_;
         std::vector<Input> current_inputs_;
         std::atomic<int> inputs_idx_;
-        
+
         void drive_loop();
         void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);

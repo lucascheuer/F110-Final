@@ -56,7 +56,7 @@ void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 void MPC::Update(State current_state, Input input, std::vector<State> &desired_state_trajectory)
 {
 
-    ROS_INFO("updating MPC");
+    // ROS_INFO("updating MPC");
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
@@ -113,7 +113,6 @@ void MPC::updateSolvedTrajectory()
         // std::cout<<v<<std::endl;
         double angle = full_solution_(i+1);
         if (std::isnan(v) || std::isnan(angle)) {
-            std::cout<<"nannn"<<std::endl;
             return;
         }
         Input input(v, angle);
@@ -146,7 +145,7 @@ void MPC::Visualize()
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
 
-    for (int ii = 0; ii < horizon_-1; ++ii)
+    for (int ii = 0; ii < desired_state_trajectory_.size(); ++ii)
     {
         point.x = desired_state_trajectory_[ii].x();
         point.y = desired_state_trajectory_[ii].y();

@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   roslib
 )
+
 set(CMAKE_PREFIX_PATH /usr/local/lib/cmake)
 find_package(
   OsqpEigen
@@ -40,7 +41,21 @@ include_directories(
   /usr/local/include/eigen3/Eigen
 )
 
-add_executable(hrhc_node node/hrhc_node.cpp src/constraints.cpp src/cost.cpp src/hrhc.cpp src/input.cpp src/model.cpp src/mpc.cpp src/occgrid.cpp src/state.cpp src/trajectory_planner.cpp src/transforms.cpp src/visualizer.cpp)
+add_executable(hrhc_node 
+node/hrhc_node.cpp 
+src/constraints.cpp 
+src/cost.cpp 
+src/hrhc.cpp
+src/input.cpp 
+src/model.cpp 
+src/mpc.cpp 
+src/occgrid.cpp
+src/state.cpp
+src/trajectory_planner.cpp
+src/transforms.cpp
+src/visualizer.cpp
+src/pure_pursuit.cpp
+)
 add_dependencies(hrhc_node ${f110_hrhc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   hrhc_node

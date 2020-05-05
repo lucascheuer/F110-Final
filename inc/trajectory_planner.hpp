@@ -16,8 +16,8 @@ class TrajectoryPlanner
         TrajectoryPlanner();
         TrajectoryPlanner(ros::NodeHandle &nh);
         virtual ~TrajectoryPlanner();
-        void getTrajectories();
-        void getCmaes();
+        void readTrajectories();
+        void readCMA_ES();
         pair<float,float> carPoint2miniWorld(float x, float y, const geometry_msgs::Pose &current_pose);
         pair<float,float> carPoint2World(float x, float y, const geometry_msgs::Pose &current_pose);
         void trajectory2miniworld(const geometry_msgs::Pose &current_pose);
