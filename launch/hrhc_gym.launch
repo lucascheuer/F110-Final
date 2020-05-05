@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="milestone-3" type="hrhc_node" name="ego" output="screen"/>
-  <node pkg="team_3_pure_pursuit" type="purepursuit" name="opp" output="screen"/>
+<node pkg="milestone-3" type="hrhc_node" name="ego" output="screen"/>
+<!-- <node pkg="milestone-3" type="hrhc_node" name="dummy_agent" output="screen"/> -->
+<node pkg="team_3_pure_pursuit" type="purepursuit" name="opp" output="screen"/>
 <rosparam command="load" file="$(find milestone-3)/hrhc_params.yaml"/>
-  <include file="$(find f1tenth_gym_ros)/launch/gym_bridge_host.launch"/>
-  
+<include file="$(find f1tenth_gym_ros)/launch/gym_bridge_host.launch"/>
 </launch>
