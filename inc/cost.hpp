@@ -3,6 +3,8 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
+// Stores the Q and R cost matrices using Eigen matrices
+
 class Cost
 {
     public:

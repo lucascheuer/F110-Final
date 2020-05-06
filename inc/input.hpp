@@ -5,6 +5,8 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
+// Specifies the format for the Input object of velocity and steering angle
+
 class Input
 {
     public:
