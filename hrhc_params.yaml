@@ -5,7 +5,7 @@ q1: 10.0
 q2: 0.0
 
 r0: 0.10
-r1: 10.0
+r1: 5.0
 
 pose_topic: "/odom"
 scan_topic: "/scan"
@@ -19,7 +19,7 @@ occ_discrete: 0.1
 occ_dilation: 0.1
 cmaes_lookahead_1: -1.0
 cmaes_lookahead_2: 2.0
-switch_distance_threshold: 4.0
+switch_distance_threshold: 3.0
 
 #traj_planner
 num_traj: 10
@@ -31,7 +31,7 @@ lane_0: "csv/fooxx.csv"
 lane_1: "csv/fooxx_point25.csv"
 lane_2: "csv/fooxx_point5.csv"
 lane_3: "csv/fooxx_point75.csv"
-lane_4: "csv/fooxx_one.csv"
+lane_4: "csv/fooxx_point75.csv"
 
 # desired input
 des_vel: 4.5

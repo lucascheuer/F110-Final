@@ -34,6 +34,6 @@ public:
     // Helper function for isPathCollisionFree(..)
     int getClosestIdx(const geometry_msgs::Pose pose, float lookahead);
     // Finds the closest point in the CMA-ES trajectory
-    pair<float,float> findClosest(pair<float,float> &globalPoint);
+    pair<pair<float,float>,int> findClosest(pair<float,float> &globalPoint);
 };
 #endif

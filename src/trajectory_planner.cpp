@@ -133,6 +133,7 @@ void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
 {   
     float max_distance = -std::numeric_limits<float>::max();
+    int furtherest_index = -1;
     int best = -1;
     pair<float,float> closest_cmaes;
     pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
@@ -153,20 +154,48 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
         
         // 0 1.44218
 
-                
+        pair<pair<float,float>,int> tp = lanes_[current_lane_].findClosest(car_pose);
+        int ind_car = tp.second;
+        bool check = true;
         if (collision)
         {
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
-            pair<float,float> temp = lanes_[current_lane_].findClosest(end_point);
+            pair<pair<float,float>,int> ans = lanes_[current_lane_].findClosest(end_point);
+            
+            pair <float,float> temp = ans.first;
+            int ind = ans.second;
             float dist1 = Transforms::calcDist(end_point,temp);
             float dist2 = Transforms::calcDist(temp,car_pose);
-            collision = occ_grid.CheckCollision(end_point,temp);    
-            if (dist2-close_weight*dist1>max_distance && collision)
+            collision = occ_grid.CheckCollision(end_point,temp);  
+            float eff_dist = dist2-close_weight*dist1;  
+            bool check;
+            if (ind_car>40)
             {
-                max_distance = dist2-close_weight*dist1;
-                closest_cmaes = temp;
-                best = ii;
+                check = false;
+            }
+            if (eff_dist>max_distance && collision)
+            {
+                if (check)
+                {
+                    if (ind>(furtherest_index-1))
+                    {
+                        max_distance = eff_dist;
+                        closest_cmaes = temp;
+                        best = ii;
+                        furtherest_index = ind; 
+                    }
+                }
+                
+                else
+                {
+                    max_distance = eff_dist;
+                    closest_cmaes = temp;
+                    best = ii;
+                    furtherest_index = ind;
+                }
+                
+                    
             }
         }
         
