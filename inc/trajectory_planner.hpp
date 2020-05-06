@@ -10,6 +10,13 @@
 #include "visualizer.hpp"
 #include "state.hpp"
 #include "trajectory.hpp"
+
+#include <experimental/filesystem>
+#include <fstream>
+#include <tf2/transform_datatypes.h>
+#include <tf/transform_datatypes.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 using namespace std;
 
 // Plans best local path from preset paths for the global paths 

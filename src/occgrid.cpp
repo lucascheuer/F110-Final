@@ -1,7 +1,4 @@
 #include "occgrid.hpp"
-#include <cmath>
-
-
 
 OccGrid::OccGrid(ros::NodeHandle &nh)
 {

@@ -1,6 +1,4 @@
 #include "constraints.hpp"
-#include "visualizer.hpp"
-#include <cmath>
 
 Constraints::Constraints(ros::NodeHandle &nh)
 {

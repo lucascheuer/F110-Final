@@ -1,5 +1,4 @@
 #include "model.hpp"
-#include <cmath>
 
 Model::Model()
 {
