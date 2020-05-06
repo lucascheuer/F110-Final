@@ -28,9 +28,6 @@ public:
     Eigen::MatrixXd slip_upper_bound();
     Eigen::MatrixXd slip_lower_bound();
 
-    Eigen::VectorXd MovedXMax();
-    Eigen::VectorXd MovedXMin();
-
     Eigen::VectorXd l1();
     Eigen::VectorXd l2();
 
@@ -42,8 +39,7 @@ public:
     void SetXLims(State x);
 
     // Finds half spaces using a conical model with a preset FOV
-    void find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg_);
-    float dt;
+    void FindHalfSpaces(State &state,sensor_msgs::LaserScan &scan_msg_);
 
 private:
     Eigen::VectorXd x_max_;
@@ -56,19 +52,17 @@ private:
     Eigen::MatrixXd slip_upper_bound_;
     Eigen::MatrixXd slip_lower_bound_;
     State state_;
-    float d;
-    float thres_;
-    std::pair <float,float> P1_;
-    std::pair <float,float> P2_;
-    std::pair <float,float> P_;
-    std::pair <float,float> P_test_;
+    float d_;
+    float ftg_thresh_;
+    std::pair <float,float> p1_;
+    std::pair <float,float> p2_;
+    std::pair <float,float> p_;
     sensor_msgs::LaserScan scan_msg_;
     ros::Publisher points_pub_;
     float umax_val_;
     float umin_val_;
     float divider_;
     float buffer_;
-    float dt_;
 };
 
 #endif

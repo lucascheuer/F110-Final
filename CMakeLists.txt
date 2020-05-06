@@ -54,7 +54,7 @@ src/state.cpp
 src/trajectory_planner.cpp
 src/transforms.cpp
 src/visualizer.cpp
-src/pure_pursuit.cpp
+src/trajectory.cpp
 )
 add_dependencies(hrhc_node ${f110_hrhc_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(

@@ -9,7 +9,7 @@
 #include "occgrid.hpp"
 #include "visualizer.hpp"
 #include "state.hpp"
-#include "pure_pursuit.hpp"
+#include "trajectory.hpp"
 using namespace std;
 
 // Plans best local path from preset paths for the global paths 
@@ -52,8 +52,7 @@ private:
     State best_cmaes_point_;
     vector<State> best_minipath;
     unsigned int current_lane_ = 0;
-    // PurePursuit pure_pursuit;
-    std::vector<PurePursuit> lanes_;
+    std::vector<Trajectory> lanes_;
     double distance_from_switch_;
     double switch_distance_threshold_;
     // Selects lane based on opponent's position to prevent 

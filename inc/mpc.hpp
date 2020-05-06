@@ -32,13 +32,13 @@ public:
     // Generates pretty lines
     void Visualize();
     // Updates scan_msg content
-    void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
+    void UpdateScan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
 
     // accessor functions
     Constraints constraints();
-    float get_dt();
-    int get_horizon();
-    std::vector<Input> get_solved_trajectory();
+    float dt();
+    int horizon();
+    std::vector<Input> solved_trajectory();
 private:
     int horizon_;
     int input_size_;
@@ -64,9 +64,7 @@ private:
     sensor_msgs::LaserScan scan_msg_;
     Eigen::VectorXd full_solution_;
     OsqpEigen::Solver solver_;
-    ros::Time prev_time_;
     std::vector<Input> solved_trajectory_;
-    int trajectory_idx_;
 
     // ros vis stuff
     ros::NodeHandle nh_;
@@ -96,6 +94,6 @@ private:
     // Pushes lines that create a state and input representation of the car for visualization
     void DrawCar(State &state, Input &input);
     // Converts output of osqp vector into vector of inputs
-    void updateSolvedTrajectory();
+    void UpdateSolvedTrajectory();
 };
 #endif

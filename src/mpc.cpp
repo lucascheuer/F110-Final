@@ -11,8 +11,8 @@ MPC::MPC(ros::NodeHandle &nh):
     double desired_vel, desired_steer;
     nh.getParam("des_vel", desired_vel);
     nh.getParam("des_steer", desired_steer);
-    desired_input_.SetV(desired_vel);
-    desired_input_.SetSteerAng(desired_steer);
+    desired_input_.set_v(desired_vel);
+    desired_input_.set_steer_ang(desired_steer);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -26,7 +26,6 @@ MPC::MPC(ros::NodeHandle &nh):
 
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
-    prev_time_ = ros::Time::now();
     ROS_INFO("mpc created");
 }
 
@@ -36,17 +35,17 @@ MPC::~MPC()
     ROS_INFO("killing the mpc");
 }
 
-float MPC::get_dt()
+float MPC::dt()
 {
     return dt_;
 }
 
-int MPC::get_horizon()
+int MPC::horizon()
 {
     return horizon_;
 }
 
-std::vector<Input> MPC::get_solved_trajectory()
+std::vector<Input> MPC::solved_trajectory()
 {
     return solved_trajectory_;
 }
@@ -62,7 +61,7 @@ void MPC::Init(Model model, Cost cost)
     CreateLowerBound();
 }
 
-void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
+void MPC::UpdateScan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 {
     scan_msg_ = *scan_msg;
 }
@@ -71,11 +70,9 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
 {
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
-    ros::Time curr_time = ros::Time::now();
-    model_.linearize(current_state_, input, dt_);
-    prev_time_ = curr_time;
+    model_.Linearize(current_state_, input, dt_);
     constraints_.set_state(current_state_);
-    constraints_.find_half_spaces(current_state_,scan_msg_);
+    constraints_.FindHalfSpaces(current_state_,scan_msg_);
 
     CreateGradientVector();
     UpdateLinearConstraintMatrix();
@@ -135,13 +132,12 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     else
     {
         full_solution_ = solver_.getSolution();
-        updateSolvedTrajectory();
+        UpdateSolvedTrajectory();
     }
 }
 
-void MPC::updateSolvedTrajectory()
+void MPC::UpdateSolvedTrajectory()
 {
-    trajectory_idx_ = 0;
     solved_trajectory_.clear();//full_solution_.size()-1
     for (int i = num_states_; i < num_states_+15; i+=2)
     {
@@ -162,12 +158,12 @@ void MPC::Visualize()
     Input predicted_input;
     for (int ii = 0; ii < horizon_; ++ii)
     {
-        predicted_state.SetX(full_solution_(ii * state_size_));
-        predicted_state.SetY(full_solution_(ii * state_size_ + 1));
-        predicted_state.SetOri(full_solution_(ii * state_size_ + 2));
+        predicted_state.set_x(full_solution_(ii * state_size_));
+        predicted_state.set_y(full_solution_(ii * state_size_ + 1));
+        predicted_state.set_ori(full_solution_(ii * state_size_ + 2));
 
-        predicted_input.SetV(full_solution_(num_states_ + ii * input_size_));
-        predicted_input.SetSteerAng(full_solution_(num_states_ + ii * input_size_ + 1));
+        predicted_input.set_v(full_solution_(num_states_ + ii * input_size_));
+        predicted_input.set_steer_ang(full_solution_(num_states_ + ii * input_size_ + 1));
 
         DrawCar(predicted_state, predicted_input);
     }
@@ -217,8 +213,6 @@ void MPC::CreateHessianMatrix()
 
 void MPC::CreateGradientVector()
 {
-    // Eigen::VectorXd state_costs;
-    // state_costs.setZero(num_states_, 1);
     for (int ii  = 0; ii < horizon_; ++ii)
     {
         gradient_.block(ii * state_size_, 0, state_size_, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();

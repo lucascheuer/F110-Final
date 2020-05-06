@@ -23,22 +23,22 @@ Eigen::VectorXd State::ToVector()
     return state_vector;
 }
 // Mutators
-void State::SetX(double x)
+void State::set_x(double x)
 {
     x_ = x;
 }
 
-void State::SetY(double y)
+void State::set_y(double y)
 {
     y_ = y;
 }
 
-void State::SetOri(double ori)
+void State::set_ori(double ori)
 {
     ori_ = ori;
 }
 
-std::pair<float,float> State::getPair()
+std::pair<float,float> State::GetPair()
 {
     return std::pair<float,float>(x_,y_);
 }

@@ -18,10 +18,10 @@ public:
     Eigen::VectorXd ToVector();
 
     // setters
-    void SetX(double x);
-    void SetY(double y);
-    void SetOri(double z);
-    std::pair<float,float> getPair();
+    void set_x(double x);
+    void set_y(double y);
+    void set_ori(double ori);
+    std::pair<float,float> GetPair();
     // getters
     double x();
     double y();

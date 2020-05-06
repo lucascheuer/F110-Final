@@ -15,8 +15,8 @@ public:
     virtual ~Input();
     Eigen::VectorXd ToVector();
 
-    void SetV(double v);
-    void SetSteerAng(double steer_ang);
+    void set_v(double v);
+    void set_steer_ang(double steer_ang);
     //getters
     double v();
     double steer_ang();
@@ -25,7 +25,6 @@ private:
     double v_;
     double steer_ang_;
     int size_;
-    // mode
 };
 
 #endif

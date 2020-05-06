@@ -28,16 +28,16 @@ Eigen::MatrixXd Model::c()
     return c_;
 }
 
-void Model::linearize(State &S, Input &I, double dt)
+void Model::Linearize(State &S, Input &I, double dt)
 {
     float L = 0.3302f;
-    a_.resize(3,3);
+    // a_.resize(3,3);
     a_ = Eigen::MatrixXd::Zero(3, 3);
 
-    b_.resize(3,2);
+    // b_.resize(3,2);
     b_ = Eigen::MatrixXd::Zero(3, 2);
 
-    c_.resize(3,1);
+    // c_.resize(3,1);
     c_ = Eigen::MatrixXd::Zero(3, 1);
 
     a_(0,2) = -1*I.v()*sin(S.ori())*dt;

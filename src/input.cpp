@@ -2,17 +2,14 @@
 
 Input::Input(): v_(0), steer_ang_(0), size_(2)
 {
-    // ROS_INFO("input created");
 }
 
 Input::Input(double v, double steer_ang): v_(v), steer_ang_(steer_ang), size_(2)
 {
-    // ROS_INFO("state created");
 }
 
 Input::~Input()
 {
-    // ROS_INFO("killing the input");
 }
 
 Eigen::VectorXd Input::ToVector()
@@ -24,12 +21,12 @@ Eigen::VectorXd Input::ToVector()
 }
 
 // Mutators
-void Input::SetV(double v)
+void Input::set_v(double v)
 {
     v_ = v;
 }
 
-void Input::SetSteerAng(double steer_ang)
+void Input::set_steer_ang(double steer_ang)
 {
     steer_ang_ = steer_ang;
 }
