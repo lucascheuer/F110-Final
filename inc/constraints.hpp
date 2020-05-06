@@ -10,12 +10,15 @@
 #include <sensor_msgs/LaserScan.h>
 #include "visualizer.hpp"
 
+// Stores and manages constraints for running MPC
 
 class Constraints
 {
     public:
         Constraints(ros::NodeHandle &nh);
         virtual ~Constraints();
+
+        // Getters and setters for various constraint parameters
         Eigen::VectorXd x_max();
         Eigen::VectorXd u_max();
         Eigen::VectorXd x_min();
@@ -36,13 +39,11 @@ class Constraints
         void set_x_min(Eigen::VectorXd xmin);
         void set_u_min(Eigen::VectorXd umin);
         void set_state(State &state);
-        void SetXLims(State x); // sets xmax, xmin at +-d
-        
-        // Eigen::VectorXd
-        // void setUlims(float x,float y); 
+        void SetXLims(State x);
+
+        // Finds half spaces using a conical model with a preset FOV
         void find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg_);
         float dt;
-        
 
     private:
         Eigen::VectorXd x_max_;
@@ -68,9 +69,6 @@ class Constraints
         float divider_;
         float buffer_;
         float dt_;
-        // ros::Subscriber scan_sub_;
-        // void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
-        // mode
 };
 
 #endif

@@ -46,10 +46,13 @@
 // other
 #include <Eigen/Geometry>
 
-// Struct defining the Node object in the RRT tree.
-// More fields could be added to thiis struct if more info needed.
-// You can choose to use this or not
 using namespace std;
+
+
+/***************************************************************************
+ *   THIS CLASS IS DEPRECATED!! IT IS NOT USED IN OUR SUBMISSION!!         *
+ *   Included for completeness ONLY                                        *
+ ***************************************************************************/
 
 struct Node {
     double x, y;
@@ -66,7 +69,6 @@ struct Node {
     }
 };
 
-// TODO: make a method to set its params from the HRHC object
 class RRT {
 public:
     RRT(ros::NodeHandle &nh, OccGrid occ_grid);

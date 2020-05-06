@@ -41,6 +41,21 @@ MPC::~MPC()
     ROS_INFO("killing the mpc");
 }
 
+float MPC::get_dt()
+{
+    return dt_;
+}
+
+int MPC::get_horizon()
+{
+    return horizon_;
+}
+
+std::vector<Input> MPC::get_solved_trajectory()
+{
+    return solved_trajectory_;
+}
+
 void MPC::Init(Model model, Cost cost)
 {
     model_ = model;

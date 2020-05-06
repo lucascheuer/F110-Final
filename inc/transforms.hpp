@@ -4,6 +4,9 @@
 #include <geometry_msgs/Pose.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+// Static helper functions for transforming to and from the car frame
+
 class Transforms
 {
     public:

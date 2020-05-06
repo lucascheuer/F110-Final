@@ -15,30 +15,30 @@
 #include "cost.hpp"
 #include "visualizer.hpp"
 
+// Implements Model Predictive Control by minimizing a quadratic programming
+// problem given constraints. Uses OSQP for optimization.
+
 class MPC
 {
     public:
         MPC();
         MPC(ros::NodeHandle &nh);
         virtual ~MPC();
+        // Initializes MPC for its first iteration
         void Init(Model model, Cost cost);
+        // Runs one iteration of MPC given the latest state from callback and last MPC input
+        // Uses desired_state_trajectory for tracking reference
         void Update(State current_state, Input input, std::vector<State> &desired_state_trajectory);
-        
+        // Generates pretty lines
         void Visualize();
+        // Updates scan_msg content
         void update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
+
+        // accessor functions
         Constraints constraints();
-        float get_dt() 
-        {
-            return dt_;
-        }
-        int get_horizon()
-        {
-            return horizon_;
-        }
-        std::vector<Input> get_solved_trajectory()
-        {
-            return solved_trajectory_;
-        }
+        float get_dt();
+        int get_horizon();
+        std::vector<Input> get_solved_trajectory();
     private:
         int horizon_;
         int input_size_;
@@ -74,7 +74,6 @@ class MPC
         std::vector<geometry_msgs::Point> points_;
         std::vector<std_msgs::ColorRGBA> colors_;
 
-        // functions
         void CreateHessianMatrix();
         void CreateGradientVector();
         void CreateLinearConstraintMatrix();
@@ -83,13 +82,10 @@ class MPC
         void CreateUpperBound();
         void UpdateLowerBound();
         void UpdateUpperBound();
-        void DoMPC();
         void SparseBlockInit(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
         void SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
         void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start, int number);
         void DrawCar(State &state, Input &input);
         void updateSolvedTrajectory();
-
-        // mode
 };
 #endif

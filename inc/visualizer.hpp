@@ -4,6 +4,8 @@
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
 
+// Helper class for generating pretty visualizations of various functions
+
 class Visualizer
 {
     public:
