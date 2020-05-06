@@ -9,8 +9,8 @@ MPC::MPC(ros::NodeHandle &nh):
     nh.getParam(car + "/horizon", horizon_);
     nh.getParam(car + "/dt", dt_);
     double desired_vel, desired_steer, q0, q1, q2, r0, r1;
-    nh.getParam(car + "des_vel", desired_vel);
-    nh.getParam(car + "des_steer", desired_steer);
+    nh.getParam(car + "/des_vel", desired_vel);
+    nh.getParam(car + "/des_steer", desired_steer);
     nh.getParam(car + "/q0", q0);
     nh.getParam(car + "/q1", q1);
     nh.getParam(car + "/q2", q2);
