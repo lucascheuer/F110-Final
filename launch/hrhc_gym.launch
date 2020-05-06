@@ -1,20 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-<node pkg="milestone-3" type="hrhc_node" name="opp_" output="screen">
-	<rosparam command="load" file="$(find milestone-3)/opp_params.yaml"/>
-	<!--<param name="umax" type="double" value="4.5"/>
-	<param name="des_vel" type="double" value="4.5"/> -->
-</node>
 <node pkg="milestone-3" type="hrhc_node" name="ego_" output="screen">
 	<rosparam command="load" file="$(find milestone-3)/ego_params.yaml"/>
-	<!--<param name="lane_1" type="str" value="csv/fooxx.csv"/>
-	<param name="lane_2" type="str" value="csv/fooxx.csv"/>
-	<param name="lane_3" type="str" value="csv/fooxx.csv"/>
-	<param name="umax" type="double" value="4.5"/>
-	<param name="des_vel" type="double" value="4.5"/> -->
+
 </node>
-<!-- <node pkg="milestone-3" type="hrhc_node" name="ego" output="screen"/> -->
-<!-- <node pkg="team_3_pure_pursuit" type="purepursuit" name="opp" output="screen"/> -->
-<!--<rosparam command="load" file="$(find milestone-3)/hrhc_params.yaml"/>-->
+
 <include file="$(find f1tenth_gym_ros)/launch/gym_bridge_host.launch"/>
 </launch>
