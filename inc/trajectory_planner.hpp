@@ -63,6 +63,8 @@ private:
     // collision and promote over-taking
     void SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid);
     int horizon_;
+    double lookahead_1_;
+    double lookahead_2_;
     vector<pair<float,float>> trajectories_;
     geometry_msgs::Pose last_pose_;
 

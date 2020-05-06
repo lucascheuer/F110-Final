@@ -8,14 +8,14 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
 {
 
     int horizon;
-    float lookahead_1, lookahead_2;
-    nh.getParam("/horizon", horizon);
-    nh.getParam("/num_traj", num_traj_);
-    nh.getParam("/MAX_HORIZON", max_horizon_);
-    nh.getParam("/close_weight", close_weight);
-    nh.getParam("/cmaes_lookahead_1", lookahead_1);
-    nh.getParam("/cmaes_lookahead_2", lookahead_2);
-    nh.getParam("/switch_distance_threshold", switch_distance_threshold_);
+    std::string car = ros::this_node::getName();
+    nh.getParam(car + "/horizon", horizon);
+    nh.getParam(car + "/num_traj", num_traj_);
+    nh.getParam(car + "/MAX_HORIZON", max_horizon_);
+    nh.getParam(car + "/close_weight", close_weight);
+    nh.getParam(car + "/cmaes_lookahead_1", lookahead_1_);
+    nh.getParam(car + "/cmaes_lookahead_2", lookahead_2_);
+    nh.getParam(car + "/switch_distance_threshold", switch_distance_threshold_);
 
     std::string lane_file;
     std::string lane_name;
@@ -23,11 +23,11 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
 
     while (true)
     {
-        lane_name = "lane_" + std::to_string(lane_number);
+        lane_name = "/lane_" + std::to_string(lane_number);
         lane_number++;
-        if (nh.getParam(lane_name, lane_file))
+        if (nh.getParam(car + lane_name, lane_file))
         {
-            Trajectory temporary_trajectory(lookahead_1, lookahead_2);
+            Trajectory temporary_trajectory;
             temporary_trajectory.ReadCMAES(lane_file);
             lanes_.push_back(temporary_trajectory);
         }
@@ -37,7 +37,9 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
         }
     }
     horizon_ = horizon;
-    traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
+    std::string vis_topic;
+    nh.getParam(car + "/trajectory_vis", vis_topic);
+    traj_pub_ = nh.advertise<visualization_msgs::Marker>(vis_topic, 1);
     ROS_INFO("planner created");
 }
 
@@ -220,7 +222,7 @@ void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_
     unsigned int old_lane = current_lane_;
     for (unsigned int lane = 0; lane < lanes_.size(); ++lane)
     {
-        if (lane != current_lane_ && lanes_[lane].IsPathCollisionFree(pose, occ_grid))
+        if (lane != current_lane_ && lanes_[lane].IsPathCollisionFree(pose, occ_grid, lookahead_1_, lookahead_2_))
         {
             current_lane_ = lane;
             if (old_lane < current_lane_)
@@ -230,7 +232,7 @@ void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_
             break;
         }
     }
-    std::cout << distance_from_switch_ << std::endl;
+    // std::cout << distance_from_switch_ << std::endl;
 }
 
 vector<State> TrajectoryPlanner::best_minipath()
@@ -276,7 +278,7 @@ void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid 
     distance_from_switch_ += Transforms::CalcDist(std::pair<float,float>(last_pose_.position.x, last_pose_.position.y), std::pair<float,float>(current_pose.position.x, current_pose.position.y));
     Trajectory2world(current_pose);
 
-    if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].IsPathCollisionFree(current_pose, occ_grid))
+    if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].IsPathCollisionFree(current_pose, occ_grid, lookahead_1_, lookahead_2_))
     {
         SelectLane(current_pose, occ_grid);
     }

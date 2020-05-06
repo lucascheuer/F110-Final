@@ -2,13 +2,13 @@
 
 Constraints::Constraints(ros::NodeHandle &nh)
 {
-    std::string hrhc_node = "";
-    nh.getParam(hrhc_node+"/umax", umax_val_);
-    nh.getParam(hrhc_node+"/umin", umin_val_);
-    nh.getParam(hrhc_node+"/follow_gap_thresh", ftg_thresh_);
-    nh.getParam(hrhc_node+"/state_lims", d_);
-    nh.getParam(hrhc_node+"/fov_divider", divider_);
-    nh.getParam(hrhc_node+"/buffer", buffer_);
+    std::string car = ros::this_node::getName();
+    nh.getParam(car + "/umax", umax_val_);
+    nh.getParam(car + "/umin", umin_val_);
+    nh.getParam(car + "/follow_gap_thresh", ftg_thresh_);
+    nh.getParam(car + "/state_lims", d_);
+    nh.getParam(car + "/fov_divider", divider_);
+    nh.getParam(car + "/buffer", buffer_);
 
     x_max_.resize(3,1);
     x_max_ << OsqpEigen::INFTY, OsqpEigen::INFTY, OsqpEigen::INFTY; //x,y,ori
@@ -23,10 +23,10 @@ Constraints::Constraints(ros::NodeHandle &nh)
     double slip_p1_steer;
     double slip_p2_vel;
     double slip_p2_steer;
-    nh.getParam(hrhc_node+"/slip_p1_vel", slip_p1_vel);
-    nh.getParam(hrhc_node+"/slip_p1_steer", slip_p1_steer);
-    nh.getParam(hrhc_node+"/slip_p2_vel", slip_p2_vel);
-    nh.getParam(hrhc_node+"/slip_p2_steer", slip_p2_steer);
+    nh.getParam(car + "/slip_p1_vel", slip_p1_vel);
+    nh.getParam(car + "/slip_p1_steer", slip_p1_steer);
+    nh.getParam(car + "/slip_p2_vel", slip_p2_vel);
+    nh.getParam(car + "/slip_p2_steer", slip_p2_steer);
 
     double slope = (slip_p2_steer - slip_p1_steer) / (slip_p2_vel - slip_p1_vel);
     slip_constraint_.resize(2, 2);
@@ -35,7 +35,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     slip_upper_bound_ << slip_p1_steer - slope*slip_p1_vel, slip_p1_steer - slope*slip_p1_vel;
     slip_lower_bound_.resize(2, 1);
     slip_lower_bound_ << -slip_p1_steer + slope*slip_p1_vel, -slip_p1_steer + slope*slip_p1_vel;
-    points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
+    // points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
 }
 
 
@@ -190,45 +190,45 @@ void Constraints::FindHalfSpaces(State &state,sensor_msgs::LaserScan &scan_msg_)
     p_.first = poseX ;//- 0.275 * cos(current_angle);
     p_.second = poseY ;//- 0.275 * sin(current_angle);
 
-    std::vector<geometry_msgs::Point> triangle_points;
-    geometry_msgs::Point p1;
-    p1.x = p1_.first;
-    p1.y = p1_.second;
-    p1.z = 0.1;
-    triangle_points.push_back(p1);
+    // std::vector<geometry_msgs::Point> triangle_points;
+    // geometry_msgs::Point p1;
+    // p1.x = p1_.first;
+    // p1.y = p1_.second;
+    // p1.z = 0.1;
+    // triangle_points.push_back(p1);
 
-    geometry_msgs::Point p2;
-    p2.x = p2_.first;
-    p2.y = p2_.second;
-    p2.z = 0.1;
-    triangle_points.push_back(p2);
+    // geometry_msgs::Point p2;
+    // p2.x = p2_.first;
+    // p2.y = p2_.second;
+    // p2.z = 0.1;
+    // triangle_points.push_back(p2);
 
-    geometry_msgs::Point p;
-    p.x = p_.first;
-    p.y = p_.second;
-    p.z = 0.1;
-    triangle_points.push_back(p);
+    // geometry_msgs::Point p;
+    // p.x = p_.first;
+    // p.y = p_.second;
+    // p.z = 0.1;
+    // triangle_points.push_back(p);
 
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time();
-    marker.ns = "current";
-    marker.id = 0;
-    marker.type = visualization_msgs::Marker::SPHERE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.points = triangle_points;
-    marker.scale.x = 0.25;
-    marker.scale.y = 0.25;
-    marker.scale.z = 0.25;
-    marker.color.a = 2; // Don't forget to set the alpha!
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
-    marker.color.b = 1.0;
-    points_pub_.publish(marker);
+    // visualization_msgs::Marker marker;
+    // marker.header.frame_id = "map";
+    // marker.header.stamp = ros::Time();
+    // marker.ns = "current";
+    // marker.id = 0;
+    // marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    // marker.action = visualization_msgs::Marker::ADD;
+    // marker.pose.orientation.x = 0.0;
+    // marker.pose.orientation.y = 0.0;
+    // marker.pose.orientation.z = 0.0;
+    // marker.pose.orientation.w = 1.0;
+    // marker.points = triangle_points;
+    // marker.scale.x = 0.25;
+    // marker.scale.y = 0.25;
+    // marker.scale.z = 0.25;
+    // marker.color.a = 2; // Don't forget to set the alpha!
+    // marker.color.r = 0.0;
+    // marker.color.g = 0.0;
+    // marker.color.b = 1.0;
+    // points_pub_.publish(marker);
 
     float a1,b1,c1;
     float a2,b2,c2;

@@ -46,6 +46,7 @@ private:
     float discrete_;
     int grid_blocks_;
     float dilation_;
+    
     std::pair<float, float> occ_offset_;
     Eigen::MatrixXf grid_;
     ros::Publisher occ_pub_;

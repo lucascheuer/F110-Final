@@ -65,7 +65,6 @@ private:
     std::vector<Input> solved_trajectory_;
 
     // ros vis stuff
-    ros::NodeHandle nh_;
     ros::Publisher mpc_pub_;
     std::vector<geometry_msgs::Point> points_;
     std::vector<std_msgs::ColorRGBA> colors_;

@@ -3,19 +3,19 @@
 MPC::MPC(ros::NodeHandle &nh):
     input_size_(2),
     state_size_(3),
-    constraints_(nh),
-    nh_(nh)
+    constraints_(nh)
 {
-    nh.getParam("/horizon", horizon_);
-    nh.getParam("/dt", dt_);
+    std::string car = ros::this_node::getName();
+    nh.getParam(car + "/horizon", horizon_);
+    nh.getParam(car + "/dt", dt_);
     double desired_vel, desired_steer, q0, q1, q2, r0, r1;
-    nh.getParam("des_vel", desired_vel);
-    nh.getParam("des_steer", desired_steer);
-    nh_.getParam("/q0", q0);
-    nh_.getParam("/q1", q1);
-    nh_.getParam("/q2", q2);
-    nh_.getParam("/r0", r0);
-    nh_.getParam("/r1", r1);
+    nh.getParam(car + "des_vel", desired_vel);
+    nh.getParam(car + "des_steer", desired_steer);
+    nh.getParam(car + "/q0", q0);
+    nh.getParam(car + "/q1", q1);
+    nh.getParam(car + "/q2", q2);
+    nh.getParam(car + "/r0", r0);
+    nh.getParam(car + "/r1", r1);
     desired_input_.set_v(desired_vel);
     desired_input_.set_steer_ang(desired_steer);
     Eigen::DiagonalMatrix<double, 3> q;
@@ -40,8 +40,9 @@ MPC::MPC(ros::NodeHandle &nh):
     CreateLowerBound();
 
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
-
-    mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
+    std::string vis_topic;
+    nh.getParam(car + "/mpc_vis", vis_topic);
+    mpc_pub_ = nh.advertise<visualization_msgs::Marker>(vis_topic, 1);
     ROS_INFO("mpc created");
 }
 

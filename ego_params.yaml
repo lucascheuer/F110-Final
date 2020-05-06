@@ -7,9 +7,14 @@ q2: 0.0
 r0: 0.10
 r1: 5.0
 
-pose_topic: "/odom"
-scan_topic: "/scan"
-drive_topic: "/drive"
+# sub topics
+pose_topic: "odom"
+scan_topic: "scan"
+# pub topics
+drive_topic: "drive"
+trajectory_vis: "ego_trajectory_vis"
+mpc_vis: "ego_mpc_vis"
+occ_vis: "ego_occ_vis"
 
 horizon: 30
 dt: 0.01
@@ -17,9 +22,9 @@ dt: 0.01
 occ_size: 10
 occ_discrete: 0.12
 occ_dilation: 0.12
-cmaes_lookahead_1: -1.0
-cmaes_lookahead_2: 2.0
-switch_distance_threshold: 3.0
+cmaes_lookahead_1: -0.5
+cmaes_lookahead_2: 0.5
+switch_distance_threshold: 1.0
 
 #traj_planner
 num_traj: 10

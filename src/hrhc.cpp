@@ -4,15 +4,15 @@ HRHC::~HRHC()
 {
     ROS_INFO("Killing HRHC");
 }
-HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
+HRHC:: HRHC(ros::NodeHandle &nh):  nh_(nh), occ_grid_(nh), trajp_(nh), mpc_(nh)
 {
-    std::string pose_topic, scan_topic, drive_topic;
-
-    nh_.getParam("/pose_topic", pose_topic);
-    nh_.getParam("/scan_topic", scan_topic);
-    nh_.getParam("/drive_topic", drive_topic);
-
-    ros::NodeHandle nh_(nh);
+    // ros::NodeHandle nh_(nh);
+    std::string car, pose_topic, scan_topic, drive_topic;
+    car = ros::this_node::getName();
+    nh_.getParam(car + "/pose_topic", pose_topic);
+    nh_.getParam(car + "/scan_topic", scan_topic);
+    nh_.getParam(car + "/drive_topic", drive_topic);
+    std::cout << pose_topic << " " << scan_topic << " " << drive_topic << std::endl;
     odom_sub_ = nh_.subscribe(pose_topic, 1, &HRHC::OdomCallback, this);
     scan_sub_ = nh_.subscribe(scan_topic, 1, &HRHC::ScanCallback, this);
     current_pose_.position.x = 0;
@@ -27,10 +27,10 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     trajp_.Trajectory2world(current_pose_);
 
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
+
     std::thread t(&HRHC::DriveLoop, this);
     t.detach();
-
-    ROS_INFO("Created HRHC");
+    ROS_INFO("%s Created HRHC", car.c_str());
 }
 
 void HRHC::OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg)

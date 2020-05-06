@@ -32,7 +32,8 @@ vector<float> Trajectory::GetWaypointDistances(const geometry_msgs::Pose &pose, 
     }
     return distances;
 }
-Trajectory::Trajectory(float lookahead1, float lookahead2) : lookahead_1_(lookahead1), lookahead_2_(lookahead2)
+
+Trajectory::Trajectory()
 {
 }
 
@@ -132,10 +133,10 @@ vector<pair<float,float>> Trajectory::GetPairPoints()
     return points;
 }
 
-bool Trajectory::IsPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
+bool Trajectory::IsPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid, double lookahead_1, double lookahead_2)
 {
-    int startingIdx = GetClosestIdx(pose, lookahead_1_);
-    int endingIdx = GetClosestIdx(pose, lookahead_2_);
+    int startingIdx = GetClosestIdx(pose, lookahead_1);
+    int endingIdx = GetClosestIdx(pose, lookahead_2);
     // we're truly screwed of there's no point in front and behind us
     if (startingIdx == -1 && endingIdx == -1)
     {

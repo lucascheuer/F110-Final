@@ -4,13 +4,16 @@ OccGrid::OccGrid(ros::NodeHandle &nh)
 {
 
     ROS_INFO("occgrid created");
-    nh.getParam("/occ_size", size_);
-    nh.getParam("/occ_discrete", discrete_);
-    nh.getParam("/occ_dilation", dilation_);
+    std::string car = ros::this_node::getName();
+    nh.getParam(car + "/occ_size", size_);
+    nh.getParam(car + "/occ_discrete", discrete_);
+    nh.getParam(car + "/occ_dilation", dilation_);
+    std::string vis_topic;
+    nh.getParam(car + "/occ_vis", vis_topic);
     grid_blocks_ = size_/discrete_;
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
-    occ_pub_ = nh.advertise<visualization_msgs::Marker>("occ_grid_marker", 100);
+    occ_pub_ = nh.advertise<visualization_msgs::Marker>(vis_topic, 100);
 
 }
 OccGrid::~OccGrid()
