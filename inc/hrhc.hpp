@@ -29,16 +29,15 @@ public:
 private:
     ros::NodeHandle nh_;
     ros::Subscriber scan_sub_;
-    ros::Subscriber nav_sub_;
-    ros::Subscriber pf_sub_;
+    ros::Subscriber odom_sub_;
     float q0_;
     float q1_;
     float q2_;
     float r0_;
     float r1_;
     ros::Publisher drive_pub_;
-    bool firstPoseEstimate = false;
-    bool firstScanEstimate = false;
+    bool first_pose_estimate_ = false;
+    bool first_scan_estimate_ = false;
 
     geometry_msgs::Pose current_pose_;
     std::pair<float, float> occ_offset_;
@@ -50,13 +49,11 @@ private:
     std::atomic<unsigned int> inputs_idx_;
 
     // Infinite loop for publishing /drive messages
-    void drive_loop();
+    void DriveLoop();
     // Updates MPC object and saves the currently solved trajectory
-    void pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg);
+    void OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg);
     // Updates Occupancy grid
-    void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
-    // Sets a goal for MPC for debugging
-    void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr &nav_goal);
+    void ScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
     // Used to provide the next input for /drive
-    Input get_next_input();
+    Input GetNextInput();
 };
