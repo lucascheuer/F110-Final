@@ -52,7 +52,7 @@ void HRHC::OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     {
         first_pose_estimate_ = true;
     }
-    float current_angle = Transforms::getCarOrientation(current_pose_);
+    float current_angle = Transforms::GetCarOrientation(current_pose_);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
 
     trajp_.Update(current_pose_, occ_grid_);

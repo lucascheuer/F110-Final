@@ -5,7 +5,7 @@ using namespace std;
 vector<float> Trajectory::GetWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
 {
     geometry_msgs::TransformStamped world_to_car_msg_stamped = Transforms::WorldToCarTransform(pose);
-    float carAngle = Transforms::getCarOrientation(pose);
+    float carAngle = Transforms::GetCarOrientation(pose);
 
     // need to think about this
     float upperAngle = fmod(carAngle+M_PI/2,M_PI);
@@ -109,7 +109,7 @@ pair<pair<float,float>,int> Trajectory::FindClosest(pair<float,float> &globalPoi
     float min_dist = std::numeric_limits<float>::max();
     for (unsigned int i = 0; i < waypoints_.size(); i++)
     {
-        float distance = Transforms::calcDist(globalPoint,waypoints_[i].GetPair());
+        float distance = Transforms::CalcDist(globalPoint,waypoints_[i].GetPair());
         if (distance<min_dist)
         {
             closest = waypoints_[i].GetPair();

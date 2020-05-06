@@ -143,8 +143,8 @@ int TrajectoryPlanner::BestTrajectory(OccGrid &occ_grid, const geometry_msgs::Po
 
             pair <float,float> temp = ans.first;
             int ind = ans.second;
-            float dist1 = Transforms::calcDist(end_point,temp);
-            float dist2 = Transforms::calcDist(temp,car_pose);
+            float dist1 = Transforms::CalcDist(end_point,temp);
+            float dist2 = Transforms::CalcDist(temp,car_pose);
             collision = occ_grid.CheckCollision(end_point,temp);
             float eff_dist = dist2-close_weight*dist1;
             bool check;
@@ -281,7 +281,7 @@ void TrajectoryPlanner::Visualize()
 void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid &occ_grid)
 {
     //trajectory2miniworld(current_pose);
-    distance_from_switch_ += Transforms::calcDist(std::pair<float,float>(last_pose_.position.x, last_pose_.position.y), std::pair<float,float>(current_pose.position.x, current_pose.position.y));
+    distance_from_switch_ += Transforms::CalcDist(std::pair<float,float>(last_pose_.position.x, last_pose_.position.y), std::pair<float,float>(current_pose.position.x, current_pose.position.y));
     Trajectory2world(current_pose);
 
     if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].IsPathCollisionFree(current_pose, occ_grid))
