@@ -11,7 +11,7 @@ using namespace std;
 namespace fs = experimental::filesystem;
 // FIXME: change lookahead to var
 TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch_(0)
-{   
+{
 
     int horizon;
     float lookahead_1, lookahead_2;
@@ -22,12 +22,12 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
     nh.getParam("/cmaes_lookahead_1", lookahead_1);
     nh.getParam("/cmaes_lookahead_2", lookahead_2);
     nh.getParam("/switch_distance_threshold", switch_distance_threshold_);
-    
+
     std::string lane_file;
     std::string lane_name;
     int lane_number = 0;
-    
-    while(true)
+
+    while (true)
     {
         lane_name = "lane_" + std::to_string(lane_number);
         lane_number++;
@@ -36,7 +36,8 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
             PurePursuit temporary_trajectory(lookahead_1, lookahead_2);
             temporary_trajectory.readCMA_ES(lane_file);
             lanes_.push_back(temporary_trajectory);
-        } else
+        }
+        else
         {
             break;
         }
@@ -59,15 +60,19 @@ void TrajectoryPlanner::readTrajectories()
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;
-    if (input.is_open()) {
-        while(getline(input,coordX,',')) {
+    if (input.is_open())
+    {
+        while (getline(input,coordX,','))
+        {
             getline(input,coordY);
             trajectories_.push_back(pair<float,float>(stof(coordY),stof(coordX)));
         }
         cout<<"got trajectories \n";
         cout<<trajectories_.size();
-    // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
-    } else {
+        // each trajectory has 10 pairs of points, total 100 pairs are present for 10 trajectories
+    }
+    else
+    {
         cout << "Please run this from the root catkin_ws directory" << endl;
         exit(0);
     }
@@ -110,18 +115,18 @@ pair<float,float> TrajectoryPlanner::carPoint2World(float x, float y, const geom
 }
 
 void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_pose)
-{   
+{
     trajectories_mini_world.clear();;
-    for (unsigned int i=0; i<trajectories_.size();i++)
+    for (unsigned int i=0; i<trajectories_.size(); i++)
     {
         trajectories_mini_world.push_back(carPoint2miniWorld(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
     // ROS_INFO("trajectories in world frame");
 }
 void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose)
-{   
+{
     trajectories_world.clear();
-    for (unsigned int i=0; i<trajectories_.size();i++)
+    for (unsigned int i=0; i<trajectories_.size(); i++)
     {
         trajectories_world.push_back(carPoint2World(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
@@ -129,18 +134,18 @@ void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose
 }
 
 int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &current_pose)
-{   
+{
     float max_distance = -std::numeric_limits<float>::max();
     int furtherest_index = -1;
     int best = -1;
     pair<float,float> closest_cmaes;
-    pair<float,float> car_pose (current_pose.position.x,current_pose.position.y);
-    for (int ii= 0;ii<num_traj;ii++)
+    pair<float,float> car_pose(current_pose.position.x,current_pose.position.y);
+    for (int ii= 0; ii<num_traj; ii++)
     {
         bool collision = true;
-        
-        for (int l=0; l<horizon_ - 1;l++)
-        {   
+
+        for (int l=0; l<horizon_ - 1; l++)
+        {
             collision = occ_grid.CheckCollision(trajectories_world[MAX_HORIZON*ii+l],trajectories_world[MAX_HORIZON*ii+l+1]);
             if (!collision)
             {
@@ -149,7 +154,7 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             }
             //cout << l << ",";
         }
-        
+
         // 0 1.44218
 
         pair<pair<float,float>,int> tp = lanes_[current_lane_].findClosest(car_pose);
@@ -159,13 +164,13 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
             pair<pair<float,float>,int> ans = lanes_[current_lane_].findClosest(end_point);
-            
+
             pair <float,float> temp = ans.first;
             int ind = ans.second;
             float dist1 = Transforms::calcDist(end_point,temp);
             float dist2 = Transforms::calcDist(temp,car_pose);
-            collision = occ_grid.CheckCollision(end_point,temp);  
-            float eff_dist = dist2-close_weight*dist1;  
+            collision = occ_grid.CheckCollision(end_point,temp);
+            float eff_dist = dist2-close_weight*dist1;
             bool check;
             if (ind_car>40)
             {
@@ -180,10 +185,10 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
                         max_distance = eff_dist;
                         closest_cmaes = temp;
                         best = ii;
-                        furtherest_index = ind; 
+                        furtherest_index = ind;
                     }
                 }
-                
+
                 else
                 {
                     max_distance = eff_dist;
@@ -191,11 +196,11 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
                     best = ii;
                     furtherest_index = ind;
                 }
-                
-                    
+
+
             }
         }
-        
+
     }
     // cout<<max_distance<<endl;
     // cout<<best<<endl;
@@ -269,7 +274,7 @@ void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_
 void TrajectoryPlanner::Visualize()
 {
     std::vector<pair<float,float>> best_traj;
-    for (int i = MAX_HORIZON*best_traj_index; i<MAX_HORIZON*best_traj_index+horizon_;i++)
+    for (int i = MAX_HORIZON*best_traj_index; i<MAX_HORIZON*best_traj_index+horizon_; i++)
     {
         best_traj.push_back(trajectories_world[i]);
     }

@@ -14,7 +14,8 @@
 
 using namespace std;
 
-class PurePursuit {
+class PurePursuit
+{
 private:
     vector<State> waypoints_;
     float lookahead_1_;

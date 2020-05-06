@@ -11,7 +11,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     nh.getParam(hrhc_node+"/state_lims", d);
     nh.getParam(hrhc_node+"/fov_divider", divider_);
     nh.getParam(hrhc_node+"/buffer", buffer_);
-    
+
     x_max_.resize(3,1);
     x_max_ << OsqpEigen::INFTY, OsqpEigen::INFTY, OsqpEigen::INFTY; //x,y,ori
     x_min_.resize(3,1);
@@ -29,7 +29,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     nh.getParam(hrhc_node+"/slip_p1_steer", slip_p1_steer);
     nh.getParam(hrhc_node+"/slip_p2_vel", slip_p2_vel);
     nh.getParam(hrhc_node+"/slip_p2_steer", slip_p2_steer);
-    
+
     double slope = (slip_p2_steer - slip_p1_steer) / (slip_p2_vel - slip_p1_vel);
     slip_constraint_.resize(2, 2);
     slip_constraint_ << -slope, 1, slope, 1;
@@ -41,7 +41,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
     // thres_ = 1.5f;
     points_pub_ = nh.advertise<visualization_msgs::Marker>("triangle_points", 100);
     // scan_sub_ = nh.subscribe("/scan", 10, &Constraints::scan_callback, this);
-    
+
     // ROS_INFO("constraints created");
 }
 
@@ -53,7 +53,7 @@ Constraints::Constraints(ros::NodeHandle &nh)
 //     // scan_msg_.angle_max = scan_msg->angle_max;
 //     // scan_msg_.angle_min = scan_msg->angle_min;
 //     // scan_msg_.angle_increment = scan_msg->angle_increment;
-    
+
 // }
 
 
@@ -170,11 +170,12 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
     float current_angle = state.ori();
     bool in_gap = 0;
     for (int ii=0; ii<num_scans; ii++)
-    {   float angle = scan_msg_.angle_min + ii * scan_msg_.angle_increment;
+    {
+        float angle = scan_msg_.angle_min + ii * scan_msg_.angle_increment;
         if (angle>-1.571f/divider_ && angle < 1.571f/divider_) // value is pi/2
         {
             if (scan_msg_.ranges[ii] > thres_)
-            {   
+            {
                 if (in_gap)
                 {
                     hi = ii;
@@ -184,7 +185,7 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
                     lo = ii;
                     in_gap = 1;
                 }
-                
+
             }
             else
             {
@@ -197,11 +198,11 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
                 }
             }
             if (hi-lo>max_gap)
-                {
-                    max_gap = hi-lo;
-                    best_hi = hi;
-                    best_lo = lo;
-                }
+            {
+                max_gap = hi-lo;
+                best_hi = hi;
+                best_lo = lo;
+            }
         }
     }
     if (best_hi-best_lo >2*buffer_)
@@ -211,7 +212,7 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
     }
     float angle1 = scan_msg_.angle_min + best_lo * scan_msg_.angle_increment + current_angle;
     float angle2 = scan_msg_.angle_min + best_hi * scan_msg_.angle_increment + current_angle;
-    
+
     P1_.first = scan_msg_.ranges[best_lo] * cos(angle1) + poseX;// - 0.275 * cos(current_angle);
     P1_.second = scan_msg_.ranges[best_lo] * sin(angle1) + poseY;// - 0.275 * sin(current_angle);
 
@@ -273,7 +274,7 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
         b1 = -b1;
         c1 = -c1;
     }
-    
+
     a2 = P_.second - P2_.second;
     b2 = P2_.first - P_.first;
     c2 = P_.first*P2_.second - P_.second*P2_.first;
@@ -287,15 +288,15 @@ void Constraints::find_half_spaces(State &state,sensor_msgs::LaserScan &scan_msg
 
     l1_.resize(3);
     l2_.resize(3);
-    
+
     l1_(0) = a1;
     l1_(1) = b1;
     l1_(2) = c1+0.5;
-    
+
     l2_(0) = a2;
     l2_(1) = b2;
     l2_(2) = c2+0.5;
-    
+
 
 
 }

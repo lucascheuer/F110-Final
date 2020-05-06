@@ -17,13 +17,13 @@ MPC::MPC(ros::NodeHandle &nh):
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
     num_constraints_=(num_states_ + 2 * (horizon_ + 1) + num_inputs_ + 2 * horizon_); // dynamics + follow the gap + max/min input + skid limit
-    
+
     hessian_.resize(num_variables_, num_variables_);
     gradient_.resize(num_variables_);
     linear_matrix_.resize(num_constraints_, num_variables_);
     lower_bound_.resize(num_constraints_);
     upper_bound_.resize(num_constraints_);
-    
+
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
     prev_time_ = ros::Time::now();
@@ -55,7 +55,7 @@ void MPC::Init(Model model, Cost cost)
 {
     model_ = model;
     cost_ = cost;
-    
+
     CreateHessianMatrix();
     CreateLinearConstraintMatrix();
     CreateUpperBound();
@@ -81,7 +81,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.find_half_spaces(current_state_,scan_msg_);
-    
+
     CreateGradientVector();
     UpdateLinearConstraintMatrix();
     UpdateLowerBound();
@@ -90,43 +90,73 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     if (solver_init_)
     {
         // if (!solver_.updateHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
-        if (!solver_.updateGradient(gradient_)) std::cout << "gradient failed" << std::endl;
-        if (!solver_.updateLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
-        if (!solver_.updateBounds(lower_bound_, upper_bound_)) std::cout << "bounds failed" << std::endl;
-    } else
+        if (!solver_.updateGradient(gradient_))
+        {
+            std::cout << "gradient failed" << std::endl;
+        }
+        if (!solver_.updateLinearConstraintsMatrix(linear_matrix_))
+        {
+            std::cout << "linear failed" << std::endl;
+        }
+        if (!solver_.updateBounds(lower_bound_, upper_bound_))
+        {
+            std::cout << "bounds failed" << std::endl;
+        }
+    }
+    else
     {
         solver_.settings()->setWarmStart(true);
         solver_.settings()->setVerbosity(false);
         solver_.data()->setNumberOfVariables(num_variables_);
         solver_.data()->setNumberOfConstraints(num_constraints_);
-        if (!solver_.data()->setHessianMatrix(hessian_)) std::cout << "hessian failed" << std::endl;
-        if (!solver_.data()->setGradient(gradient_)) std::cout << "gradient failed" << std::endl;
-        if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_)) std::cout << "linear failed" << std::endl;
-        if (!solver_.data()->setLowerBound(lower_bound_)) std::cout << "lower failed" << std::endl;
-        if (!solver_.data()->setUpperBound(upper_bound_)) std::cout << "upper failed" << std::endl;
+        if (!solver_.data()->setHessianMatrix(hessian_))
+        {
+            std::cout << "hessian failed" << std::endl;
+        }
+        if (!solver_.data()->setGradient(gradient_))
+        {
+            std::cout << "gradient failed" << std::endl;
+        }
+        if (!solver_.data()->setLinearConstraintsMatrix(linear_matrix_))
+        {
+            std::cout << "linear failed" << std::endl;
+        }
+        if (!solver_.data()->setLowerBound(lower_bound_))
+        {
+            std::cout << "lower failed" << std::endl;
+        }
+        if (!solver_.data()->setUpperBound(upper_bound_))
+        {
+            std::cout << "upper failed" << std::endl;
+        }
         if (!solver_.initSolver())
         {
             std::cout << "solver failed" << std::endl;
             solver_init_ = true;
         }
     }
-    if (!solver_.solve()) {
+    if (!solver_.solve())
+    {
         ROS_ERROR("solve failed");
-    } else {
+    }
+    else
+    {
         full_solution_ = solver_.getSolution();
         updateSolvedTrajectory();
     }
 }
 
 void MPC::updateSolvedTrajectory()
-{ 
+{
     trajectory_idx_ = 0;
     solved_trajectory_.clear();//full_solution_.size()-1
-    for (int i = num_states_; i < num_states_+15; i+=2) {
+    for (int i = num_states_; i < num_states_+15; i+=2)
+    {
         double v = full_solution_(i);
         // std::cout<<v<<std::endl;
         double angle = full_solution_(i+1);
-        if (std::isnan(v) || std::isnan(angle)) {
+        if (std::isnan(v) || std::isnan(angle))
+        {
             return;
         }
         Input input(v, angle);
@@ -136,7 +166,7 @@ void MPC::updateSolvedTrajectory()
 
 void MPC::Visualize()
 {
-    
+
 
     // std::cout << "a" << std::endl << model_.a() << std::endl << std::endl << "b" << std::endl << model_.b() << std::endl <<std::endl;
 
@@ -144,7 +174,7 @@ void MPC::Visualize()
     Input predicted_input;
     for (int ii = 0; ii < horizon_; ++ii)
     {
-        
+
         predicted_state.SetX(full_solution_(ii * state_size_));
         predicted_state.SetY(full_solution_(ii * state_size_ + 1));
         predicted_state.SetOri(full_solution_(ii * state_size_ + 2));
@@ -153,9 +183,9 @@ void MPC::Visualize()
         predicted_input.SetSteerAng(full_solution_(num_states_ + ii * input_size_ + 1));
         // std::cout << "state" << std::endl <<predicted_state.ToVector() << std::endl << std::endl << "input" << std::endl << predicted_input.ToVector() <<std::endl << std::endl;
         DrawCar(predicted_state, predicted_input);
-        
+
     }
-    
+
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
 
@@ -179,7 +209,7 @@ void MPC::Visualize()
         color.b = 0;
         color.a = 1;
         colors_.push_back(color);
-        
+
     }
 
 
@@ -189,11 +219,11 @@ void MPC::Visualize()
 }
 
 void MPC::CreateHessianMatrix()
-{   
+{
     // hessian_.resize(num_variables_, num_variables_);
     hessian_.setZero();
     for (int ii = 0; ii < horizon_ + 1; ++ii) // change for terminal cost
-    {   
+    {
         SparseBlockInit(hessian_, cost_.q(), ii * state_size_, ii * state_size_);
     }
     for (int ii = 0; ii < horizon_; ++ii) // change for terminal cost
@@ -222,20 +252,20 @@ void MPC::CreateLinearConstraintMatrix()
 {
     // here for steering angle vs throttle
     linear_matrix_.setZero();
-    
-    
+
+
     Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
-    a_eye << Eigen::MatrixXd::Identity(state_size_, state_size_) , -Eigen::MatrixXd::Identity(state_size_, state_size_);
+    a_eye << Eigen::MatrixXd::Identity(state_size_, state_size_), -Eigen::MatrixXd::Identity(state_size_, state_size_);
     Eigen::MatrixXd gap_con(2, state_size_);
     gap_con = Eigen::MatrixXd::Ones(2,state_size_);
-    
+
     // std::cout << gap_con << std::endl << std::endl;
     // prediction equality constraint
     // SparseBlockSet(linear_matrix_, Eigen::MatrixXd::Identity(state_size_, state_size_), 0, 0);
     SparseBlockInit(linear_matrix_, gap_con, num_states_, 0);
     // // here for steering angle vs throttle
     // linear_matrix_.resize(num_constraints_, num_variables_);
-    
+
     // Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
     // a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
 
@@ -249,7 +279,7 @@ void MPC::CreateLinearConstraintMatrix()
         SparseBlockInit(linear_matrix_, gap_con, num_states_ + 2 * (ii), (ii)*state_size_);
         SparseBlockInit(linear_matrix_, constraints_.slip_constraint(), num_states_ + 2 * (horizon_ + 1) + num_inputs_ + ii - 1, num_states_ + (ii - 1) * input_size_);
     }
-    
+
     // l1 A B C
     // state and input upper and lower bounds
 
@@ -260,7 +290,7 @@ void MPC::CreateLinearConstraintMatrix()
 void MPC::UpdateLinearConstraintMatrix()
 {
     Eigen::MatrixXd a_eye(state_size_, 2 * state_size_);
-    a_eye << model_.a() , -Eigen::MatrixXd::Identity(state_size_, state_size_);
+    a_eye << model_.a(), -Eigen::MatrixXd::Identity(state_size_, state_size_);
     Eigen::MatrixXd gap_con(2, state_size_);
     gap_con(0, 0) = constraints_.l1()(0);
     gap_con(0, 1) = constraints_.l1()(1);
@@ -297,7 +327,7 @@ void MPC::CreateUpperBound()
 }
 
 void MPC::UpdateLowerBound()
-{   
+{
     lower_bound_.resize(num_constraints_);
     Eigen::VectorXd gap_con(2);
     gap_con(0) = -OsqpEigen::INFTY;//-constraints_.l1()(2);
@@ -362,7 +392,7 @@ void MPC::DrawCar(State &state, Input &input)
     point.y = state.y() + L * sin(state.ori());
     point.z = 0.1;
     points_.push_back(point);
-    
+
     point.x = state.x() + L * cos(state.ori()) - 0.5 * wheel_size * cos(state.ori() + input.steer_ang());
     point.y = state.y() + L * sin(state.ori()) - 0.5 * wheel_size * sin(state.ori() + input.steer_ang());
     point.z = 0.125;
@@ -370,7 +400,7 @@ void MPC::DrawCar(State &state, Input &input)
 
     point.x = state.x() + L * cos(state.ori()) + 0.5 * wheel_size * cos(state.ori() + input.steer_ang());
     point.y = state.y() + L * sin(state.ori()) + 0.5 * wheel_size * sin(state.ori() + input.steer_ang());
-    
+
     point.z = 0.125;
     points_.push_back(point);
 
@@ -382,9 +412,9 @@ void MPC::DrawCar(State &state, Input &input)
     point.y = state.y() + L * 0.5 * sin(state.ori()) + L * 0.5 * (input.v() / constraints_.u_max()(0)) * sin(state.ori());
     point.z = 0.15;
     points_.push_back(point);
-    
 
-    
+
+
     color.r = 0;
     color.g = 0;
     color.b = 1;

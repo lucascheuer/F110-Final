@@ -10,7 +10,7 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     std::string pose_topic, scan_topic, drive_topic;
     int og_size;
     float discrete;
-    
+
     nh_.getParam("/q0", q0_);
     nh_.getParam("/q1", q1_);
     nh_.getParam("/q2", q2_);
@@ -55,21 +55,24 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
 }
 
 void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
-{   
+{
     current_pose_ = odom_msg->pose.pose;
-    if (!firstPoseEstimate) {
+    if (!firstPoseEstimate)
+    {
         firstPoseEstimate = true;
     }
     float current_angle = Transforms::getCarOrientation(current_pose_);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
-    
+
     trajp_.Update(current_pose_, occ_grid_);
     trajp_.Visualize();
     ackermann_msgs::AckermannDriveStamped drive_msg;
-    if (firstScanEstimate){
+    if (firstScanEstimate)
+    {
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
-         if (trajp_.best_traj_index> -1) {
+        if (trajp_.best_traj_index> -1)
+        {
             mpc_.Update(current_state,input_to_pass,trajp_.best_minipath);
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
@@ -80,8 +83,10 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
 
 void HRHC::drive_loop()
 {
-    while(true) {
-        if (firstPoseEstimate && firstScanEstimate) {
+    while (true)
+    {
+        if (firstPoseEstimate && firstScanEstimate)
+        {
             ackermann_msgs::AckermannDriveStamped drive_msg;
             Input input = get_next_input();
             if (trajp_.best_traj_index< 0)
@@ -103,7 +108,8 @@ void HRHC::drive_loop()
 
 Input HRHC::get_next_input()
 {
-    if (inputs_idx_ >= current_inputs_.size()) {
+    if (inputs_idx_ >= current_inputs_.size())
+    {
         // ROS_ERROR("Trajectory complete!");
         return Input(0.5,-0.05);
     }
@@ -113,14 +119,16 @@ Input HRHC::get_next_input()
 void HRHC::scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
     if (firstPoseEstimate)
-    {   
+    {
         if (!firstScanEstimate)
+        {
             firstScanEstimate = true;
-        
+        }
+
         occ_grid_.FillOccGrid(current_pose_, scan_msg);
         occ_grid_.Visualize();
         mpc_.update_scan(scan_msg);
-        
+
     }
 }
 

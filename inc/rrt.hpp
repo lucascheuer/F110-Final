@@ -54,14 +54,15 @@ using namespace std;
  *   Included for completeness ONLY                                        *
  ***************************************************************************/
 
-struct Node {
+struct Node
+{
     double x, y;
     int parent; // index of parent node in the tree vector
     bool is_root = false;
     Node()
     {
     }
-    Node(double _x, double _y, bool root) 
+    Node(double _x, double _y, bool root)
     {
         x = _x;
         y = _y;
@@ -69,7 +70,8 @@ struct Node {
     }
 };
 
-class RRT {
+class RRT
+{
 public:
     RRT(ros::NodeHandle &nh, OccGrid occ_grid);
     virtual ~RRT();
@@ -133,7 +135,7 @@ private:
     vector<pair<float,float>> shortcutPath(vector<pair<float,float>> path);
     float get_distance(pair<float, float> p1, pair<float, float> p2);
 
-    // 
+    //
     void publish_marker(float x, float y);
     visualization_msgs::MarkerArray gen_markers(const vector<pair<float,float>> &points, float r=0, float g=1, float b=0);
     visualization_msgs::Marker gen_path_marker(const vector<pair<float,float>> &path, float r=1, float g=0, float b=0);

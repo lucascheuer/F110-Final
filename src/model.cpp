@@ -54,5 +54,5 @@ void Model::linearize(State &S, Input &I, double dt)
     c_(0,0) = I.v()*S.ori()*sin(S.ori())*dt;
     c_(1,0) = -1*I.v()*S.ori()*cos(S.ori())*dt;
     c_(2,0) = -1*I.steer_ang()*I.v()*pow(cos(I.steer_ang()),-2)*dt/L;
-    
+
 }

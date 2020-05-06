@@ -14,7 +14,7 @@ OccGrid::OccGrid(ros::NodeHandle &nh)
     grid_.resize(grid_blocks_, grid_blocks_);
     grid_ = Eigen::MatrixXf::Zero(grid_blocks_, grid_blocks_);
     occ_pub_ = nh.advertise<visualization_msgs::Marker>("occ_grid_marker", 100);
-    
+
 }
 OccGrid::~OccGrid()
 {
@@ -45,7 +45,8 @@ std::pair<float,float> OccGrid::OccupancyToWorld(std::pair<int,int> grid_point)
 }
 
 
-std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle){
+std::pair<float, float> OccGrid::PolarToCartesian(float range, float angle)
+{
     std::pair<float, float> cartesian;
     cartesian.first = range * cos(angle);
     cartesian.second = range * sin(angle);
@@ -62,7 +63,7 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
     //std::cout << occ_offset_.first << "\t" << occ_offset_.second << std::endl;
     int num_scans = (scan_msg->angle_max - scan_msg->angle_min) / scan_msg->angle_increment + 1;
     for (int ii = 0; ii < num_scans; ++ii)
-    {   
+    {
         float angle = scan_msg->angle_min + ii * scan_msg->angle_increment + current_angle;
         std::pair<float, float> cartesian = PolarToCartesian(scan_msg->ranges[ii], angle);
         cartesian.first += occ_offset_.first;
@@ -72,8 +73,8 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
             for (float y_off = -dilation_; y_off <= dilation_; y_off += discrete_)
             {
                 //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
-                
-                
+
+
                 std::pair<int, int> grid_point = WorldToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
                 if (InGrid(grid_point))
                 {
@@ -121,8 +122,8 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
     if (!(InGrid(first_point_grid) &&
           InGrid(second_point_grid)))
     {
-            ROS_ERROR("Out of grid!");
-            return false;
+        ROS_ERROR("Out of grid!");
+        return false;
     }
     int start_x = first_point_grid.first;
     int start_y = first_point_grid.second;
@@ -142,7 +143,8 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
     if (std::abs(dy) > std::abs(dx))
     {
         if (dy > 0)
-        { // When line has m>1 && m<infinity
+        {
+            // When line has m>1 && m<infinity
             int p = -2*dx + dy; // Initial delta
             int northDelta = -2*dx;
             int northEastDelta = 2*dy - 2*dx;
@@ -151,7 +153,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 if (x>=grid_blocks_||p > 0)
                 {
                     p = p + northDelta;
-                } else {
+                }
+                else
+                {
                     p = p + northEastDelta;
                     x++;
                 }
@@ -162,7 +166,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 }
                 linePoints.push_back(OccupancyToWorld(x,y));
             }
-        } else { // When it spills over to second quadrant, but still has abs(m) > 1
+        }
+        else     // When it spills over to second quadrant, but still has abs(m) > 1
+        {
             int p = 2*dx - dy; // Initial delta
             int southDelta = 2*dx;
             int southEastDelta = 2*(dy + dx);
@@ -171,7 +177,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 if (p < 0)
                 {
                     p = p + southDelta;
-                } else {
+                }
+                else
+                {
                     p = p + southEastDelta;
                     x++;
                 }
@@ -183,7 +191,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 linePoints.push_back(OccupancyToWorld(x,y));
             }
         }
-    } else {
+    }
+    else
+    {
         if (dy > 0)
         {
             int p = 2*dy - dx;
@@ -194,7 +204,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 if (p < 0)
                 {
                     p = p + eastDelta;
-                } else {
+                }
+                else
+                {
                     p = p + northEastDelta;
                     y++;
                 }
@@ -205,7 +217,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 }
                 linePoints.push_back(OccupancyToWorld(x,y));
             }
-        } else {
+        }
+        else
+        {
             int p = 2*dy + dx; // Initial delta
             int eastDelta = 2*dy;
             int southEastDelta = 2*(dy + dx);
@@ -214,7 +228,9 @@ bool OccGrid::CheckCollision(std::pair<float, float> first_point, std::pair<floa
                 if (p > 0)
                 {
                     p = p + eastDelta;
-                } else {
+                }
+                else
+                {
                     p = p + southEastDelta;
                     y--;
                 }

@@ -11,7 +11,8 @@ RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), g
     // TODO: Load parameters from yaml file, you could add your own parameters to the rrt_params.yaml file
     bool DEBUG = true;
     string rrt_node = "/rrt_node";
-    if (DEBUG) {
+    if (DEBUG)
+    {
         rrt_node = "";
     }
 
@@ -30,10 +31,10 @@ RRT::RRT(ros::NodeHandle &nh, OccGrid occ_grid): nh_(nh), occ_grid_(occ_grid), g
     x_dist = uniform_real_distribution<double>(0.4,1.5 * max_goal_distance);
     y_dist = uniform_real_distribution<double>(-max_goal_distance,max_goal_distance);
 
-    goal_pub = nh_.advertise<visualization_msgs::Marker>("goal_marker", 1 );
-    line_pub = nh_.advertise<visualization_msgs::Marker>("path_marker", 1 );
-    tree_pub = nh_.advertise<visualization_msgs::Marker>("tree_marker", 1 );
-    shortcut_pub = nh_.advertise<visualization_msgs::Marker>("shortcut_marker", 1 );
+    goal_pub = nh_.advertise<visualization_msgs::Marker>("goal_marker", 1);
+    line_pub = nh_.advertise<visualization_msgs::Marker>("path_marker", 1);
+    tree_pub = nh_.advertise<visualization_msgs::Marker>("tree_marker", 1);
+    shortcut_pub = nh_.advertise<visualization_msgs::Marker>("shortcut_marker", 1);
 
     // TODO: create a occupancy grid
     ROS_INFO("Created new RRT Object.");
@@ -47,8 +48,10 @@ float RRT::get_distance(pair<float,float> p1, pair<float, float> p2)
 float RRT::getPathLength(vector<pair<float,float>> &path)
 {
     float length = 0;
-    if (path.size()>1) {
-        for (int i = 1; i < path.size(); i++) {
+    if (path.size()>1)
+    {
+        for (int i = 1; i < path.size(); i++)
+        {
             length += get_distance(path[i-1], path[i]);
         }
     }
@@ -65,10 +68,13 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
     float pathTime = pathLength/velocity;
     float deltaT = dt*horizon;
     int steps = pathTime/dt;
-    if (vectorSize > 3) {
+    if (vectorSize > 3)
+    {
         vector<pair<float, float>> stepsPath = smooth_path(rrtPath, steps+2);
-        if (stepsPath.size() >= horizon) {
-            for (int i = 1; i < horizon+1; i++) {
+        if (stepsPath.size() >= horizon)
+        {
+            for (int i = 1; i < horizon+1; i++)
+            {
                 float prev_x = stepsPath[i-1].first;
                 float prev_y = stepsPath[i-1].second;
 
@@ -81,9 +87,12 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
                 state.SetOri(ori);
                 states.push_back(state);
             }
-        } else {
+        }
+        else
+        {
             State lastState;
-            for (int i = 1; i < stepsPath.size(); i++) {
+            for (int i = 1; i < stepsPath.size(); i++)
+            {
                 float prev_x = stepsPath[i-1].first;
                 float prev_y = stepsPath[i-1].second;
 
@@ -97,7 +106,8 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
                 lastState = state;
                 states.push_back(state);
             }
-            for (int i = stepsPath.size(); i < horizon; i++) {
+            for (int i = stepsPath.size(); i < horizon; i++)
+            {
                 states.push_back(lastState);
             }
         }
@@ -107,23 +117,29 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
 
 vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
 {
-    if (path.size()>2) {
+    if (path.size()>2)
+    {
         random_device device;
         mt19937 generator(device());
         uniform_real_distribution<double> t_(0,1);
-        for (int i = 0; i < shortcut_iters; i++) {
-            if (path.size()<3) {
+        for (int i = 0; i < shortcut_iters; i++)
+        {
+            if (path.size()<3)
+            {
                 break;
             }
             uniform_int_distribution<int> distribution(0,path.size()-2);
             int startIdx;
             int endIdx;
-            do {
+            do
+            {
                 startIdx = distribution(generator);
                 endIdx = distribution(generator);
-            } while(startIdx==endIdx);
+            }
+            while (startIdx==endIdx);
             float length = getPathLength(path);
-            if (startIdx > endIdx) {
+            if (startIdx > endIdx)
+            {
                 swap(startIdx, endIdx);
             }
             float start_t = t_(generator);
@@ -132,10 +148,10 @@ vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
             pair<float,float> start_shortcut;
             pair<float,float> end_shortcut;
 
-            start_shortcut.first =  (1-start_t)*path[startIdx].first +start_t*path[startIdx+1].first;
+            start_shortcut.first = (1-start_t)*path[startIdx].first +start_t*path[startIdx+1].first;
             start_shortcut.second = (1-start_t)*path[startIdx].second+start_t*path[startIdx+1].second;
 
-            end_shortcut.first =  (1-end_t)*path[endIdx].first +end_t*path[endIdx+1].first;
+            end_shortcut.first = (1-end_t)*path[endIdx].first +end_t*path[endIdx+1].first;
             end_shortcut.second = (1-end_t)*path[endIdx].second+end_t*path[endIdx+1].second;
 
             vector<pair<float,float>> tempPath(path.begin(),path.begin()+startIdx+1);
@@ -143,8 +159,10 @@ vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
             tempPath.push_back(end_shortcut);
             tempPath.insert(tempPath.end(), path.begin()+endIdx+1, path.end());
 
-            if (isPathCollisionFree(tempPath)) {
-                if (getPathLength(tempPath) < getPathLength(path)) {
+            if (isPathCollisionFree(tempPath))
+            {
+                if (getPathLength(tempPath) < getPathLength(path))
+                {
                     path = tempPath;
                 }
             }
@@ -155,9 +173,11 @@ vector<pair<float,float>> RRT::shortcutPath(vector<pair<float,float>> path)
 
 vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path, int discrete=100)
 {
-    if (path.size()>3) {
+    if (path.size()>3)
+    {
         vector<double> x, y;
-        for (auto itr = path.begin(); itr != path.end(); itr++) {
+        for (auto itr = path.begin(); itr != path.end(); itr++)
+        {
             x.push_back(itr->first);
             y.push_back(itr->second);
         }
@@ -175,7 +195,8 @@ vector<pair<float,float>> RRT::smooth_path(vector<pair<float,float>> path, int d
         vector<double> x_vec(xs.begin(), xs.end()-1);
         vector<double> y_vec(ys.begin(), ys.end()-1);
         vector<pair<float,float>> convertedPath;
-        for (int i = 0; i < x_vec.size(); i++) {
+        for (int i = 0; i < x_vec.size(); i++)
+        {
             convertedPath.push_back(make_pair<float,float>(x_vec[i],y_vec[i]));
         }
         return convertedPath;
@@ -189,7 +210,8 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     occ_grid_ = occ_grid;
     int index = build_tree(carFrameWaypoint, globalFrameWaypoint);
     vector<pair<float,float>> shortPath, prePath;
-    if (index != -1) {
+    if (index != -1)
+    {
         prePath = smooth_path(find_path(tree, tree[index]));
         rrtPath = smooth_path(shortcutPath(prePath));
         // cout << "RRRRT SIZE " << rrtPath.size();
@@ -198,7 +220,7 @@ void RRT::updateRRT(geometry_msgs::Pose &pose_update, OccGrid& occ_grid, std::pa
     visualization_msgs::Marker path_marker = gen_path_marker(prePath);
     visualization_msgs::Marker shortcut_marker = gen_path_marker(rrtPath,0.5,0,0.5);
     visualization_msgs::Marker tree_marker = gen_tree_marker(tree);
-    
+
     tree_pub.publish(tree_marker);
     line_pub.publish(path_marker);
     shortcut_pub.publish(shortcut_marker);
@@ -225,7 +247,8 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
 
     publish_marker(targetWaypointGlobalCoords.first, targetWaypointGlobalCoords.second);
 
-    for (int i = 0; i < rrt_iters; i++) {
+    for (int i = 0; i < rrt_iters; i++)
+    {
         // FIXME: i think this should be from 0,0
         vector<double> x_rand;
         Node x_new;
@@ -247,7 +270,7 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
         //     // ROS_INFO("breaking out coz of shortcircuit %f", angle);
         //     break;
         // } else
-         {
+        {
             x_rand = sample();
             x_nearest_idx = nearest(tree, x_rand);
             x_new =  steer(tree[x_nearest_idx], x_rand);
@@ -282,16 +305,19 @@ int RRT::build_tree(std::pair<float, float> targetWaypoint, std::pair<float, flo
             }
         }
     }
-        
+
     float minDistance = numeric_limits<float>::max();
     int minIndex = -1;
-    for (auto itr = tree.begin(); itr != tree.end(); itr++) {
+    for (auto itr = tree.begin(); itr != tree.end(); itr++)
+    {
         pair<float,float> point(itr->x,itr->y);
         geometry_msgs::TransformStamped transform_msg = Transforms::WorldToCarTransform(current_pose_);
         std::pair<float, float> transformedPoint = Transforms::TransformPoint(point, transform_msg);
-        if (transformedPoint.first > 0) {
+        if (transformedPoint.first > 0)
+        {
             float distance = get_distance(transformedPoint, targetWaypoint);
-            if (distance < minDistance) {
+            if (distance < minDistance)
+            {
                 minDistance = distance;
                 minIndex = itr-tree.begin();
             }
@@ -317,9 +343,11 @@ int RRT::nearest(std::vector<Node> &tree, std::vector<double> &sampled_point)
     float min_dist = 100;
     float curr_dist;
     int nearest_node = 0;
-    for (int i = 0;i<tree.size();i++) {
+    for (int i = 0; i<tree.size(); i++)
+    {
         curr_dist = pow((tree[i]).x-sampled_point[0],2) + pow((tree[i]).y-sampled_point[1],2);
-        if (curr_dist<min_dist) {
+        if (curr_dist<min_dist)
+        {
             min_dist = curr_dist;
             nearest_node = i;
         }
@@ -334,15 +362,19 @@ Node RRT::steer(Node &nearest_node, std::vector<double> &sampled_point)
     double curr_distance = sqrt(pow(nearest_node.x-sampled_point[0],2) + pow(nearest_node.y-sampled_point[1],2));
     Node new_node;
     vector<double> new_point;
-    if (curr_distance > max_expansion_dist){
+    if (curr_distance > max_expansion_dist)
+    {
         new_point.push_back(nearest_node.x + ((sampled_point[0]-nearest_node.x)*max_expansion_dist/curr_distance));
         new_point.push_back(nearest_node.y + ((sampled_point[1]-nearest_node.y)*max_expansion_dist/curr_distance));
-    } else {
+    }
+    else
+    {
         new_point.push_back(sampled_point[0]);
         new_point.push_back(sampled_point[1]);
     }
     float angle = angle_cost(nearest_node, new_point);
-    if (abs(angle)>steer_angle && nearest_node.is_root == false) {
+    if (abs(angle)>steer_angle && nearest_node.is_root == false)
+    {
         double distance = min(curr_distance, max_expansion_dist);
         Node parent = tree[nearest_node.parent];
         double prev_angle = atan2(nearest_node.y-parent.y, nearest_node.x-parent.x);
@@ -373,7 +405,8 @@ bool RRT::is_goal(Node &latest_added_node, double goal_x, double goal_y)
 {
     bool close_enough = false;
     float curr_dist = sqrt(pow(latest_added_node.x-goal_x,2) + pow(latest_added_node.y-goal_y,2));
-    if (curr_dist<goal_epsilon){
+    if (curr_dist<goal_epsilon)
+    {
         close_enough = true;
     }
     return close_enough;
@@ -388,7 +421,7 @@ std::vector<pair<float,float>> RRT::find_path(std::vector<Node> &tree, Node &lat
     nodexy.first = (float)curr_node.x;
     nodexy.second= (float)curr_node.y;
     found_path.push_back(nodexy);
-    while(!curr_node.is_root)
+    while (!curr_node.is_root)
     {
         curr_node = tree[curr_node.parent];
         root = curr_node.is_root;
@@ -423,7 +456,8 @@ double RRT::line_cost(Node &n1, Node &n2)
 
 double RRT::angle_cost(Node &node, vector<double> &p)
 {
-    if (!node.is_root) {
+    if (!node.is_root)
+    {
         pair<float,float> vec1;
         pair<float,float> vec2;
         vec1.first = p[0] - node.x;
@@ -438,7 +472,8 @@ double RRT::angle_cost(Node &node, vector<double> &p)
 
 double RRT::angle_cost(std::vector<Node> &tree, Node &node, Node &p)
 {
-    if (!node.is_root) {
+    if (!node.is_root)
+    {
         pair<float,float> vec1;
         pair<float,float> vec2;
         vec1.first = p.x - node.x;
@@ -620,8 +655,10 @@ visualization_msgs::MarkerArray RRT::gen_markers(const vector<pair<float,float>>
 
 bool RRT::isPathCollisionFree(vector<pair<float,float>> &path)
 {
-    for (int i = 1; i < path.size(); i++) {
-        if (!check_collision(path[i-1],path[i])) {
+    for (int i = 1; i < path.size(); i++)
+    {
+        if (!check_collision(path[i-1],path[i]))
+        {
             return false;
         }
     }
@@ -630,15 +667,20 @@ bool RRT::isPathCollisionFree(vector<pair<float,float>> &path)
 
 bool RRT::isPathCollisionFree()
 {
-    if (rrtPath.size()>1) {
-        for (int i = 1; i < rrtPath.size(); i++) {
+    if (rrtPath.size()>1)
+    {
+        for (int i = 1; i < rrtPath.size(); i++)
+        {
             Node a(rrtPath[i-1].first, rrtPath[i-1].second, false);
             Node b(rrtPath[i].first, rrtPath[i].second, false);
-            if (!check_collision(a, b)) {
+            if (!check_collision(a, b))
+            {
                 return false;
             }
         }
-    } else {
+    }
+    else
+    {
         return false;
     }
     return true;
