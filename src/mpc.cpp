@@ -122,8 +122,12 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
         if (!solver_.initSolver())
         {
             std::cout << "solver failed" << std::endl;
+            
+        } else
+        {
             solver_init_ = true;
         }
+        
     }
     if (!solver_.solve())
     {
