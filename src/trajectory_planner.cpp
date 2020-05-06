@@ -42,7 +42,6 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
             break;
         }
     }
-    // pure_pursuit.readCMA_ES("fooxx.csv");
     horizon_ = horizon;
     traj_pub_ = nh.advertise<visualization_msgs::Marker>("trajectory_planner", 1);
     ROS_INFO("planner created");
@@ -55,8 +54,7 @@ TrajectoryPlanner::~TrajectoryPlanner()
 
 void TrajectoryPlanner::readTrajectories()
 {
-    string path = ros::package::getPath("milestone-3")+"/local_traj_50.csv";
-    // string path = "/home/saumya/team3_ws/src/F110-Final/local_traj_50.csv";
+    string path = ros::package::getPath("milestone-3")+"/csv/local_traj_50.csv";
     cout << path << endl;
     ifstream input(path);
     string coordX, coordY;

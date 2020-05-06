@@ -15,8 +15,8 @@ horizon: 30
 dt: 0.01
 #occ_grid
 occ_size: 10
-occ_discrete: 0.1
-occ_dilation: 0.1
+occ_discrete: 0.12
+occ_dilation: 0.12
 cmaes_lookahead_1: -1.0
 cmaes_lookahead_2: 2.0
 switch_distance_threshold: 3.0
@@ -31,7 +31,6 @@ lane_0: "csv/fooxx.csv"
 lane_1: "csv/fooxx_point25.csv"
 lane_2: "csv/fooxx_point5.csv"
 lane_3: "csv/fooxx_point75.csv"
-lane_4: "csv/fooxx_point75.csv"
 
 # desired input
 des_vel: 4.5
