@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<float> Trajectory::getWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
+vector<float> Trajectory::GetWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
 {
     geometry_msgs::TransformStamped world_to_car_msg_stamped = Transforms::WorldToCarTransform(pose);
     float carAngle = Transforms::getCarOrientation(pose);
@@ -39,7 +39,7 @@ Trajectory::Trajectory(float lookahead1, float lookahead2) : lookahead_1_(lookah
 Trajectory::~Trajectory()
 {}
 
-bool Trajectory::readCMA_ES(string filename)
+bool Trajectory::ReadCMAES(string filename)
 {
     string path = ros::package::getPath("milestone-3")+"/"+filename;
     cout << path << endl;
@@ -75,18 +75,18 @@ bool Trajectory::readCMA_ES(string filename)
     return true;
 }
 
-int Trajectory::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
+int Trajectory::GetClosestIdx(const geometry_msgs::Pose pose, float lookahead)
 {
     float minDistance = numeric_limits<float>::max();
     float argminDist = -1;
     vector<float> distances;
     if (lookahead < 0)
     {
-        distances = getWaypointDistances(pose, false);
+        distances = GetWaypointDistances(pose, false);
     }
     else
     {
-        distances = getWaypointDistances(pose, true);
+        distances = GetWaypointDistances(pose, true);
     }
     lookahead = abs(lookahead);
     for (unsigned int i = 0; i < distances.size(); i++)
@@ -101,7 +101,7 @@ int Trajectory::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
     return argminDist;
 }
 
-pair<pair<float,float>,int> Trajectory::findClosest(pair<float,float> &globalPoint)
+pair<pair<float,float>,int> Trajectory::FindClosest(pair<float,float> &globalPoint)
 {
     pair<pair<float,float>,int> ans;
     pair<float,float> closest;
@@ -122,7 +122,7 @@ pair<pair<float,float>,int> Trajectory::findClosest(pair<float,float> &globalPoi
     return ans;
 }
 
-vector<pair<float,float>> Trajectory::getPairPoints()
+vector<pair<float,float>> Trajectory::GetPairPoints()
 {
     vector<pair<float,float>> points;
     for (auto itr = waypoints_.begin(); itr != waypoints_.end(); itr++)
@@ -132,10 +132,10 @@ vector<pair<float,float>> Trajectory::getPairPoints()
     return points;
 }
 
-bool Trajectory::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
+bool Trajectory::IsPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
-    int startingIdx = getClosestIdx(pose, lookahead_1_);
-    int endingIdx = getClosestIdx(pose, lookahead_2_);
+    int startingIdx = GetClosestIdx(pose, lookahead_1_);
+    int endingIdx = GetClosestIdx(pose, lookahead_2_);
     // we're truly screwed of there's no point in front and behind us
     if (startingIdx == -1 && endingIdx == -1)
     {

@@ -34,7 +34,7 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
         if (nh.getParam(lane_name, lane_file))
         {
             Trajectory temporary_trajectory(lookahead_1, lookahead_2);
-            temporary_trajectory.readCMA_ES(lane_file);
+            temporary_trajectory.ReadCMAES(lane_file);
             lanes_.push_back(temporary_trajectory);
         }
         else
@@ -157,13 +157,13 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 
         // 0 1.44218
 
-        pair<pair<float,float>,int> tp = lanes_[current_lane_].findClosest(car_pose);
+        pair<pair<float,float>,int> tp = lanes_[current_lane_].FindClosest(car_pose);
         int ind_car = tp.second;
         if (collision)
         {
             // cout<<ii<<" no_collision"<<endl;
             pair<float,float> end_point = trajectories_world[MAX_HORIZON*ii + horizon_-1];
-            pair<pair<float,float>,int> ans = lanes_[current_lane_].findClosest(end_point);
+            pair<pair<float,float>,int> ans = lanes_[current_lane_].FindClosest(end_point);
 
             pair <float,float> temp = ans.first;
             int ind = ans.second;
@@ -256,7 +256,7 @@ void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_
     unsigned int old_lane = current_lane_;
     for (unsigned int lane = 0; lane < lanes_.size(); ++lane)
     {
-        if (lane != current_lane_ && lanes_[lane].isPathCollisionFree(pose, occ_grid))
+        if (lane != current_lane_ && lanes_[lane].IsPathCollisionFree(pose, occ_grid))
         {
             current_lane_ = lane;
             if (old_lane < current_lane_)
@@ -292,7 +292,7 @@ void TrajectoryPlanner::Visualize()
     colors_.insert(colors_.end(), best_traj_colors.begin(), best_traj_colors.end());
     best_traj_pushed_ = true;
     // best_traj_pub_.publish(Visualizer::GenerateSphereList(best_traj, 0, 1, 0));
-    auto pts = lanes_[current_lane_].getPairPoints();
+    auto pts = lanes_[current_lane_].GetPairPoints();
     std::vector<geometry_msgs::Point> cmaes_points = Visualizer::GenerateVizPoints(pts);
     std::vector<std_msgs::ColorRGBA> cmaes_colors = Visualizer::GenerateVizColors(pts, 1, 0, 0);
     points_.insert(points_.end(), cmaes_points.begin(), cmaes_points.end());
@@ -312,7 +312,7 @@ void TrajectoryPlanner::Update(const geometry_msgs::Pose &current_pose, OccGrid 
     distance_from_switch_ += Transforms::calcDist(std::pair<float,float>(last_pose_.position.x, last_pose_.position.y), std::pair<float,float>(current_pose.position.x, current_pose.position.y));
     trajectory2world(current_pose);
 
-    if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].isPathCollisionFree(current_pose, occ_grid))
+    if (distance_from_switch_ > switch_distance_threshold_ || !lanes_[current_lane_].IsPathCollisionFree(current_pose, occ_grid))
     {
         SelectLane(current_pose, occ_grid);
     }
