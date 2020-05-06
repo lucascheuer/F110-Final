@@ -8,6 +8,7 @@ Created on Mon Apr 27 10:09:15 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 class CarState:
     x = 0
@@ -82,15 +83,16 @@ if __name__ == "__main__":
     vel_plot = np.array([])
     steer_plot = np.array([])
     slip_angles = np.array([])
-    vel_plot_3 = np.array([])
-    steer_plot_3 = np.array([])
-    slip_angles_3 = np.array([])
-    for vel in velocities:
-        for ang in steering_angles:
+    vel_plot_3, steer_plot_3 = np.meshgrid(velocities, steering_angles)
+    #steer_plot_3 = np.array([])
+    slip_angles_3 = np.zeros(vel_plot_3.shape)
+    for ii, vel in enumerate(velocities):
+        for jj, ang in enumerate(steering_angles):
             slip = get_slip(vel, ang, 0.0000000001)
-            vel_plot_3 = np.append(vel_plot_3, vel)
-            steer_plot_3 = np.append(steer_plot_3, ang)
-            slip_angles_3 = np.append(slip_angles_3, slip)
+            #vel_plot_3 = np.append(vel_plot_3, vel)
+            #steer_plot_3 = np.append(steer_plot_3, ang)
+            #slip_angles_3 = np.append(slip_angles_3, slip)
+            slip_angles_3[ii, jj] = slip
             if (abs(slip + desired_slip) < 0.01):
                 vel_plot = np.append(vel_plot, vel)
                 steer_plot = np.append(steer_plot, ang)
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     ## 3d
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(vel_plot_3, steer_plot_3, slip_angles_3)
+    ax.plot_surface(vel_plot_3, steer_plot_3, slip_angles_3, cmap=cm.coolwarm)
     ax.set_xlabel('Velocity')
     ax.set_ylabel('Steering Angle')
     ax.set_zlabel('Slip Angle')
