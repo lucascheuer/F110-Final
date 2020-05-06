@@ -8,11 +8,6 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
 {
     std::string pose_topic, scan_topic, drive_topic;
 
-    nh_.getParam("/q0", q0_);
-    nh_.getParam("/q1", q1_);
-    nh_.getParam("/q2", q2_);
-    nh_.getParam("/r0", r0_);
-    nh_.getParam("/r1", r1_);
     nh_.getParam("/pose_topic", pose_topic);
     nh_.getParam("/scan_topic", scan_topic);
     nh_.getParam("/drive_topic", drive_topic);
@@ -31,13 +26,6 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     trajp_.ReadTrajectories();
     trajp_.Trajectory2world(current_pose_);
 
-    Eigen::DiagonalMatrix<double, 3> q;
-    Eigen::DiagonalMatrix<double, 2> r;
-    q.diagonal() << q0_, q1_, q2_;
-    r.diagonal() << r0_, r1_;
-    Cost cost(q, r);
-    Model model;
-    mpc_.Init(model, cost);
     drive_pub_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1);
     std::thread t(&HRHC::DriveLoop, this);
     t.detach();

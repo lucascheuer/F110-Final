@@ -8,11 +8,21 @@ MPC::MPC(ros::NodeHandle &nh):
 {
     nh.getParam("/horizon", horizon_);
     nh.getParam("/dt", dt_);
-    double desired_vel, desired_steer;
+    double desired_vel, desired_steer, q0, q1, q2, r0, r1;
     nh.getParam("des_vel", desired_vel);
     nh.getParam("des_steer", desired_steer);
+    nh_.getParam("/q0", q0);
+    nh_.getParam("/q1", q1);
+    nh_.getParam("/q2", q2);
+    nh_.getParam("/r0", r0);
+    nh_.getParam("/r1", r1);
     desired_input_.set_v(desired_vel);
     desired_input_.set_steer_ang(desired_steer);
+    Eigen::DiagonalMatrix<double, 3> q;
+    Eigen::DiagonalMatrix<double, 2> r;
+    q.diagonal() << q0, q1, q2;
+    r.diagonal() << r0, r1;
+    cost_ = Cost(q, r);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -24,7 +34,13 @@ MPC::MPC(ros::NodeHandle &nh):
     lower_bound_.resize(num_constraints_);
     upper_bound_.resize(num_constraints_);
 
+    CreateHessianMatrix();
+    CreateLinearConstraintMatrix();
+    CreateUpperBound();
+    CreateLowerBound();
+
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
+
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
     ROS_INFO("mpc created");
 }
@@ -48,17 +64,6 @@ int MPC::horizon()
 std::vector<Input> MPC::solved_trajectory()
 {
     return solved_trajectory_;
-}
-
-void MPC::Init(Model model, Cost cost)
-{
-    model_ = model;
-    cost_ = cost;
-
-    CreateHessianMatrix();
-    CreateLinearConstraintMatrix();
-    CreateUpperBound();
-    CreateLowerBound();
 }
 
 void MPC::UpdateScan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)

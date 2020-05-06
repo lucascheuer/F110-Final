@@ -30,11 +30,6 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber scan_sub_;
     ros::Subscriber odom_sub_;
-    float q0_;
-    float q1_;
-    float q2_;
-    float r0_;
-    float r1_;
     ros::Publisher drive_pub_;
     bool first_pose_estimate_ = false;
     bool first_scan_estimate_ = false;

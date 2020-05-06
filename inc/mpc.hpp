@@ -24,8 +24,6 @@ public:
     MPC();
     MPC(ros::NodeHandle &nh);
     virtual ~MPC();
-    // Initializes MPC for its first iteration
-    void Init(Model model, Cost cost);
     // Runs one iteration of MPC given the latest state from callback and last MPC input
     // Uses desired_state_trajectory for tracking reference
     void Update(State current_state, Input input, std::vector<State> &desired_state_trajectory);
