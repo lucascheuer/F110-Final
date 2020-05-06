@@ -89,7 +89,7 @@ void HRHC::DriveLoop()
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
-            int dt_ms = mpc_.dt()*1000*2;
+            int dt_ms = 2*mpc_.dt()*1000;
             inputs_idx_++;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }

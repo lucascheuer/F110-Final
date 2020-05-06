@@ -139,7 +139,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
 void MPC::UpdateSolvedTrajectory()
 {
     solved_trajectory_.clear();//full_solution_.size()-1
-    for (int i = num_states_; i < num_states_+15; i+=2)
+    for (int i = num_states_; i < full_solution_.size()-1; i+=2)
     {
         double v = full_solution_(i);
         double angle = full_solution_(i+1);
