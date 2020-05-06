@@ -75,7 +75,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     model_.linearize(current_state_, input, dt_);
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
-    constraints_.find_half_spaces(current_state_,scan_msg_);
+    constraints_.FindHalfSpaces(current_state_,scan_msg_);
 
     CreateGradientVector();
     UpdateLinearConstraintMatrix();
