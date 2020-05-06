@@ -101,7 +101,7 @@ Input HRHC::GetNextInput()
     if (inputs_idx_ >= current_inputs_.size())
     {
         // ROS_ERROR("Trajectory complete!");
-        return Input(0.5,-0.05);
+        return Input(-1,-0.05);
     }
     return current_inputs_[inputs_idx_];
 }

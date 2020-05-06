@@ -3,6 +3,12 @@
 *A project by Arnav Dhamija, Luca Scheuer, Saumya Shah*
 
 ### Installation
+Download our project using:
+
+```
+git clone --single-branch --branch lane-change https://github.com/lucascheuer/F110-Final.git
+```
+
 Our project requires the `osqp` and `osqp-eigen` packages for running our Model Predictive Control (MPC) subroutine. This can be installed by running:
 
 ```
@@ -72,10 +78,3 @@ MPC uses the dynamics of the car to assign costs to states over a horizon of tim
 #### Lane Switching
 
 When racing with an opponent, it's likely that our trajectory will be blocked by the opponent. This can result in all of the aforementioned mini-trajectories being infeasilbe, causing MPC to return no solution. To fix this issue, we have created multiple trajectories parallel to our original trajectory. If the ego car detects its current trajectory is blocked within a defined lookahead distance, we switch to tracking an collision-free concentric trajectory. This improves our overtaking performance.
-
-### Visualizations
-
-### Results
-
-
-
