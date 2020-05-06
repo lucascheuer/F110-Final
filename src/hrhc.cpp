@@ -62,7 +62,7 @@ void HRHC::OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     if (first_scan_estimate_)
     {
         Input input_to_pass = GetNextInput();
-        input_to_pass.SetV(4);
+        input_to_pass.set_v(4);
         if (trajp_.getBestTrajectoryIndex() > -1)
         {
             vector<State> bestMiniPath = trajp_.getBestMinipath();
@@ -84,7 +84,7 @@ void HRHC::DriveLoop()
             Input input = GetNextInput();
             if (trajp_.getBestTrajectoryIndex() < 0)
             {
-                input.SetV(0.5);
+                input.set_v(0.5);
             }
             drive_msg.header.stamp = ros::Time::now();
             drive_msg.drive.speed = input.v();

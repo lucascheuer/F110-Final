@@ -19,7 +19,7 @@ public:
     Eigen::MatrixXd b();
     Eigen::MatrixXd c();
     // Updates a_, b_, c_ about current input and state given dt
-    void linearize(State &S, Input &I, double dt);
+    void Linearize(State &S, Input &I, double dt);
 
 private:
     double time_step_;

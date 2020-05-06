@@ -11,8 +11,8 @@ MPC::MPC(ros::NodeHandle &nh):
     double desired_vel, desired_steer;
     nh.getParam("des_vel", desired_vel);
     nh.getParam("des_steer", desired_steer);
-    desired_input_.SetV(desired_vel);
-    desired_input_.SetSteerAng(desired_steer);
+    desired_input_.set_v(desired_vel);
+    desired_input_.set_steer_ang(desired_steer);
     num_inputs_=(input_size_ * horizon_);
     num_states_=(state_size_ * (horizon_ + 1));
     num_variables_=(num_states_ + num_inputs_);
@@ -72,7 +72,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
     ros::Time curr_time = ros::Time::now();
-    model_.linearize(current_state_, input, dt_);
+    model_.Linearize(current_state_, input, dt_);
     prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.FindHalfSpaces(current_state_,scan_msg_);
@@ -166,8 +166,8 @@ void MPC::Visualize()
         predicted_state.SetY(full_solution_(ii * state_size_ + 1));
         predicted_state.SetOri(full_solution_(ii * state_size_ + 2));
 
-        predicted_input.SetV(full_solution_(num_states_ + ii * input_size_));
-        predicted_input.SetSteerAng(full_solution_(num_states_ + ii * input_size_ + 1));
+        predicted_input.set_v(full_solution_(num_states_ + ii * input_size_));
+        predicted_input.set_steer_ang(full_solution_(num_states_ + ii * input_size_ + 1));
 
         DrawCar(predicted_state, predicted_input);
     }
