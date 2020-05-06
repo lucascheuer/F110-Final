@@ -71,9 +71,10 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     {
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
-        if (trajp_.best_traj_index> -1)
+        if (trajp_.getBestTrajectoryIndex() > -1)
         {
-            mpc_.Update(current_state,input_to_pass,trajp_.best_minipath);
+            vector<State> bestMiniPath = trajp_.getBestMinipath();
+            mpc_.Update(current_state,input_to_pass,bestMiniPath);
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
             inputs_idx_ = 0;
@@ -89,9 +90,8 @@ void HRHC::drive_loop()
         {
             ackermann_msgs::AckermannDriveStamped drive_msg;
             Input input = get_next_input();
-            if (trajp_.best_traj_index< 0)
+            if (trajp_.getBestTrajectoryIndex() < 0)
             {
-                // std::cout<<"cannot"<<std::endl;
                 input.SetV(0.5);
             }
             drive_msg.header.stamp = ros::Time::now();
@@ -100,7 +100,6 @@ void HRHC::drive_loop()
             drive_pub_.publish(drive_msg);
             int dt_ms = mpc_.get_dt()*1000*2;
             inputs_idx_++;
-            // std::cout<<inputs_idx_<< " " << current_inputs_.size() << endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
     }

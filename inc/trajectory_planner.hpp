@@ -41,15 +41,16 @@ public:
     void Visualize();
     // Lane selection and setting of the best trajectory 
     void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
-
-    State best_cmaes_point_;
-    vector<State> best_minipath;
-    int num_traj;
-    int MAX_HORIZON;
-    float close_weight;
-    int best_traj_index;
+    vector<State> getBestMinipath();
+    int getBestTrajectoryIndex();
 
 private:
+    int best_traj_index;
+    float close_weight;
+    int MAX_HORIZON;
+    int num_traj;
+    State best_cmaes_point_;
+    vector<State> best_minipath;
     unsigned int current_lane_ = 0;
     // PurePursuit pure_pursuit;
     std::vector<PurePursuit> lanes_;

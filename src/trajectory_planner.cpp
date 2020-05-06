@@ -269,7 +269,15 @@ void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_
     std::cout << distance_from_switch_ << std::endl;
 }
 
+vector<State> TrajectoryPlanner::getBestMinipath()
+{
+    return best_minipath;
+}
 
+int TrajectoryPlanner::getBestTrajectoryIndex()
+{
+    return best_traj_index;
+}
 
 void TrajectoryPlanner::Visualize()
 {
