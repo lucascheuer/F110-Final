@@ -33,11 +33,11 @@ roslaunch milestone-3 hrhc_gym.launch
 
 Our project is divided into the following directories:
 ```
-csv/ # CMA-ES trajectories, pre-computed minipaths
-inc/ # documented .hpp header files
-launch/ # launch files
-node/ # contains the node which runs our HRHC object
-src/ # .cpp files with definitions of all the functions of functions in header files
+* csv/ - CMA-ES trajectories, pre-computed minipaths
+* inc/ - documented .hpp header files
+* launch/ - launch files
+* node/ - contains the node which runs our HRHC object
+* src/ - .cpp files with definitions of all the functions of functions in header files
 ```
 
 We have the following classes:
