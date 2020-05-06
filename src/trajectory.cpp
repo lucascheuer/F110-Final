@@ -17,7 +17,7 @@ vector<float> Trajectory::GetWaypointDistances(const geometry_msgs::Pose &pose, 
     vector<float> distances;
     for (auto itr = waypoints_.begin(); itr != waypoints_.end(); itr++)
     {
-        pair<float, float> point = itr->getPair();
+        pair<float, float> point = itr->GetPair();
         pair<float, float> transformedPoint = Transforms::TransformPoint(point, world_to_car_msg_stamped);
         float x = transformedPoint.first;
         float y = transformedPoint.second;
@@ -67,9 +67,9 @@ bool Trajectory::ReadCMAES(string filename)
         float y = temp[i].second;
         float ori = atan2(y-prev_y,x-prev_x);
         State state;
-        state.SetX(x);
-        state.SetY(y);
-        state.SetOri(ori);
+        state.set_x(x);
+        state.set_y(y);
+        state.set_ori(ori);
         waypoints_.push_back(state);
     }
     return true;
@@ -109,10 +109,10 @@ pair<pair<float,float>,int> Trajectory::FindClosest(pair<float,float> &globalPoi
     float min_dist = std::numeric_limits<float>::max();
     for (unsigned int i = 0; i < waypoints_.size(); i++)
     {
-        float distance = Transforms::calcDist(globalPoint,waypoints_[i].getPair());
+        float distance = Transforms::calcDist(globalPoint,waypoints_[i].GetPair());
         if (distance<min_dist)
         {
-            closest = waypoints_[i].getPair();
+            closest = waypoints_[i].GetPair();
             min_dist = distance;
             indexx = i;
         }
@@ -127,7 +127,7 @@ vector<pair<float,float>> Trajectory::GetPairPoints()
     vector<pair<float,float>> points;
     for (auto itr = waypoints_.begin(); itr != waypoints_.end(); itr++)
     {
-        points.push_back(itr->getPair());
+        points.push_back(itr->GetPair());
     }
     return points;
 }
@@ -158,7 +158,7 @@ bool Trajectory::IsPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &oc
     {
         int idx1 = i%waypoints_.size();
         int idx2 = (i+1)%waypoints_.size();
-        if (!occ_grid.CheckCollision(waypoints_[idx1].getPair(),waypoints_[idx2].getPair()))
+        if (!occ_grid.CheckCollision(waypoints_[idx1].GetPair(),waypoints_[idx2].GetPair()))
         {
             return false;
         }

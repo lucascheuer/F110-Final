@@ -82,9 +82,9 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
                 float y = stepsPath[i].second;
                 float ori = atan2(y-prev_y,x-prev_x);
                 State state;
-                state.SetX(x);
-                state.SetY(y);
-                state.SetOri(ori);
+                state.set_x(x);
+                state.set_y(y);
+                state.set_ori(ori);
                 states.push_back(state);
             }
         }
@@ -100,9 +100,9 @@ vector<State> RRT::getRRTStates(float dt=0.01, int horizon=50)
                 float y = stepsPath[i].second;
                 float ori = atan2(y-prev_y,x-prev_x);
                 State state;
-                state.SetX(x);
-                state.SetY(y);
-                state.SetOri(ori);
+                state.set_x(x);
+                state.set_y(y);
+                state.set_ori(ori);
                 lastState = state;
                 states.push_back(state);
             }

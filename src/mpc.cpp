@@ -158,9 +158,9 @@ void MPC::Visualize()
     Input predicted_input;
     for (int ii = 0; ii < horizon_; ++ii)
     {
-        predicted_state.SetX(full_solution_(ii * state_size_));
-        predicted_state.SetY(full_solution_(ii * state_size_ + 1));
-        predicted_state.SetOri(full_solution_(ii * state_size_ + 2));
+        predicted_state.set_x(full_solution_(ii * state_size_));
+        predicted_state.set_y(full_solution_(ii * state_size_ + 1));
+        predicted_state.set_ori(full_solution_(ii * state_size_ + 2));
 
         predicted_input.set_v(full_solution_(num_states_ + ii * input_size_));
         predicted_input.set_steer_ang(full_solution_(num_states_ + ii * input_size_ + 1));
