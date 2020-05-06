@@ -60,7 +60,6 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
     float current_angle = atan2(2 * current_pose.orientation.w * current_pose.orientation.z, 1 - 2 * current_pose.orientation.z * current_pose.orientation.z);
     occ_offset_.first = current_pose.position.x + 0.275 * cos(current_angle);
     occ_offset_.second = current_pose.position.y + 0.275 * sin(current_angle);
-    //std::cout << occ_offset_.first << "\t" << occ_offset_.second << std::endl;
     int num_scans = (scan_msg->angle_max - scan_msg->angle_min) / scan_msg->angle_increment + 1;
     for (int ii = 0; ii < num_scans; ++ii)
     {
@@ -72,9 +71,6 @@ void OccGrid::FillOccGrid(const geometry_msgs::Pose &current_pose,const sensor_m
         {
             for (float y_off = -dilation_; y_off <= dilation_; y_off += discrete_)
             {
-                //cartesian = polar_to_cartesian(scan_msg->ranges[ii] + jj, angle);
-
-
                 std::pair<int, int> grid_point = WorldToOccupancy(cartesian.first + x_off, cartesian.second + y_off);
                 if (InGrid(grid_point))
                 {
