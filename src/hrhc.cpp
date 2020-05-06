@@ -67,7 +67,7 @@ void HRHC::OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg)
         {
             vector<State> bestMiniPath = trajp_.getBestMinipath();
             mpc_.Update(current_state,input_to_pass,bestMiniPath);
-            current_inputs_ = mpc_.get_solved_trajectory();
+            current_inputs_ = mpc_.solved_trajectory();
             mpc_.Visualize();
             inputs_idx_ = 0;
         }
@@ -90,7 +90,7 @@ void HRHC::DriveLoop()
             drive_msg.drive.speed = input.v();
             drive_msg.drive.steering_angle = input.steer_ang();
             drive_pub_.publish(drive_msg);
-            int dt_ms = mpc_.get_dt()*1000*2;
+            int dt_ms = mpc_.dt()*1000*2;
             inputs_idx_++;
             std::this_thread::sleep_for(std::chrono::milliseconds(dt_ms));
         }
@@ -118,7 +118,7 @@ void HRHC::ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 
         occ_grid_.FillOccGrid(current_pose_, scan_msg);
         occ_grid_.Visualize();
-        mpc_.update_scan(scan_msg);
+        mpc_.UpdateScan(scan_msg);
 
     }
 }

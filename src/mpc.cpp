@@ -26,7 +26,6 @@ MPC::MPC(ros::NodeHandle &nh):
 
     full_solution_ = Eigen::VectorXd::Zero(num_variables_);
     mpc_pub_ = nh.advertise<visualization_msgs::Marker>("mpc", 1);
-    prev_time_ = ros::Time::now();
     ROS_INFO("mpc created");
 }
 
@@ -36,17 +35,17 @@ MPC::~MPC()
     ROS_INFO("killing the mpc");
 }
 
-float MPC::get_dt()
+float MPC::dt()
 {
     return dt_;
 }
 
-int MPC::get_horizon()
+int MPC::horizon()
 {
     return horizon_;
 }
 
-std::vector<Input> MPC::get_solved_trajectory()
+std::vector<Input> MPC::solved_trajectory()
 {
     return solved_trajectory_;
 }
@@ -62,7 +61,7 @@ void MPC::Init(Model model, Cost cost)
     CreateLowerBound();
 }
 
-void MPC::update_scan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
+void MPC::UpdateScan(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 {
     scan_msg_ = *scan_msg;
 }
@@ -71,9 +70,7 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
 {
     current_state_ = current_state;
     desired_state_trajectory_ = desired_state_trajectory;
-    ros::Time curr_time = ros::Time::now();
     model_.Linearize(current_state_, input, dt_);
-    prev_time_ = curr_time;
     constraints_.set_state(current_state_);
     constraints_.FindHalfSpaces(current_state_,scan_msg_);
 
@@ -135,13 +132,12 @@ void MPC::Update(State current_state, Input input, std::vector<State> &desired_s
     else
     {
         full_solution_ = solver_.getSolution();
-        updateSolvedTrajectory();
+        UpdateSolvedTrajectory();
     }
 }
 
-void MPC::updateSolvedTrajectory()
+void MPC::UpdateSolvedTrajectory()
 {
-    trajectory_idx_ = 0;
     solved_trajectory_.clear();//full_solution_.size()-1
     for (int i = num_states_; i < num_states_+15; i+=2)
     {
@@ -217,8 +213,6 @@ void MPC::CreateHessianMatrix()
 
 void MPC::CreateGradientVector()
 {
-    // Eigen::VectorXd state_costs;
-    // state_costs.setZero(num_states_, 1);
     for (int ii  = 0; ii < horizon_; ++ii)
     {
         gradient_.block(ii * state_size_, 0, state_size_, 1) = -1 * cost_.q() * desired_state_trajectory_[ii].ToVector();
