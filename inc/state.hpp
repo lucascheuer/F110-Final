@@ -4,6 +4,9 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 
+// Defines format of State used for MPC
+// Stores x,y coordinates and orientation of the car
+
 class State
 {
     public:
@@ -11,6 +14,7 @@ class State
         State(double x, double y, double ori);
         virtual ~State();
 
+        // Converts from state to Eigen vector
         Eigen::VectorXd ToVector();
 
         // setters
@@ -28,8 +32,6 @@ class State
         double y_;
         double ori_;
         int size_;
-        //... fill with state variables
-        
 };
 
 #endif
