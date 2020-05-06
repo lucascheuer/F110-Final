@@ -73,19 +73,29 @@ private:
     ros::Publisher mpc_pub_;
     std::vector<geometry_msgs::Point> points_;
     std::vector<std_msgs::ColorRGBA> colors_;
-
+    // Initializes the hessian matrix for costs (which is constant)
     void CreateHessianMatrix();
+    // Updates the gradient vector for costs. The gradient vector is fully updated each time.
     void CreateGradientVector();
+    // Initializes the linear constraint matrix. 
     void CreateLinearConstraintMatrix();
+    // Updated the non-constant parts of the linear constraint matrix
     void UpdateLinearConstraintMatrix();
+    // Creates the upper and lower bound constraints for states and inputs
     void CreateLowerBound();
     void CreateUpperBound();
+    // Updates the non-constant parts of the upper and lower bound constraint vectors
     void UpdateLowerBound();
     void UpdateUpperBound();
+    // Initiliaze a block in a sparse matrix
     void SparseBlockInit(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
+    // Sets an already initialized block in a sparse matrix
     void SparseBlockSet(Eigen::SparseMatrix<double> &modify, const Eigen::MatrixXd &block, int row_start, int col_start);
+    // Sets just the ones of an identity block in a sparse matrix
     void SparseBlockEye(Eigen::SparseMatrix<double> &modify, int size, int row_start, int col_start, int number);
+    // Pushes lines that create a state and input representation of the car for visualization
     void DrawCar(State &state, Input &input);
+    // Converts output of osqp vector into vector of inputs
     void updateSolvedTrajectory();
 };
 #endif
