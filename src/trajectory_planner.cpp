@@ -87,8 +87,6 @@ pair<float,float> TrajectoryPlanner::carPoint2miniWorld(float x, float y, const 
     carPoint.y = y;
     carPoint.z = 0;
     tf2::doTransform(carPoint, worldPoint, car_to_world_stamped);
-    float carPoseX = current_pose.position.x;
-    float carPoseY = current_pose.position.y;
     return pair<float,float>(worldPoint.x, worldPoint.y);
 }
 
@@ -114,7 +112,7 @@ pair<float,float> TrajectoryPlanner::carPoint2World(float x, float y, const geom
 void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_pose)
 {   
     trajectories_mini_world.clear();;
-    for (int i=0; i<trajectories_.size();i++)
+    for (unsigned int i=0; i<trajectories_.size();i++)
     {
         trajectories_mini_world.push_back(carPoint2miniWorld(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
@@ -123,7 +121,7 @@ void TrajectoryPlanner::trajectory2miniworld(const geometry_msgs::Pose &current_
 void TrajectoryPlanner::trajectory2world(const geometry_msgs::Pose &current_pose)
 {   
     trajectories_world.clear();
-    for (int i=0; i<trajectories_.size();i++)
+    for (unsigned int i=0; i<trajectories_.size();i++)
     {
         trajectories_world.push_back(carPoint2World(trajectories_[i].first, trajectories_[i].second,current_pose));
     }
@@ -156,7 +154,6 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 
         pair<pair<float,float>,int> tp = lanes_[current_lane_].findClosest(car_pose);
         int ind_car = tp.second;
-        bool check = true;
         if (collision)
         {
             // cout<<ii<<" no_collision"<<endl;
@@ -251,8 +248,8 @@ int TrajectoryPlanner::best_traj(OccGrid &occ_grid, const geometry_msgs::Pose &c
 
 void TrajectoryPlanner::SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
-    int old_lane = current_lane_;
-    for (int lane = 0; lane < lanes_.size(); ++lane)
+    unsigned int old_lane = current_lane_;
+    for (unsigned int lane = 0; lane < lanes_.size(); ++lane)
     {
         if (lane != current_lane_ && lanes_[lane].isPathCollisionFree(pose, occ_grid))
         {

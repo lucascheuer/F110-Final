@@ -3,7 +3,7 @@
 std::vector<geometry_msgs::Point> Visualizer::GenerateVizPoints(std::vector<std::pair<float,float>> &points)
 {
     std::vector<geometry_msgs::Point> vis_points;
-    for (int ii = 0; ii < points.size(); ii += 1)
+    for (unsigned int ii = 0; ii < points.size(); ii += 1)
     {
         geometry_msgs::Point curr;
         curr.x = points[ii].first;
@@ -16,7 +16,7 @@ std::vector<geometry_msgs::Point> Visualizer::GenerateVizPoints(std::vector<std:
 std::vector<std_msgs::ColorRGBA> Visualizer::GenerateVizColors(std::vector<std::pair<float,float>> &points, float r, float g, float b)
 {
     std::vector<std_msgs::ColorRGBA> vis_colors;
-    for (int ii = 0; ii < points.size(); ii += 1)
+    for (unsigned int ii = 0; ii < points.size(); ii += 1)
     {
         std_msgs::ColorRGBA curr;
         curr.r = r;

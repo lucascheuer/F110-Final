@@ -51,7 +51,7 @@ bool PurePursuit::readCMA_ES(string filename)
         cout << "Please run this from the root catkin_ws directory" << endl;
         return false;
     }
-    for (int i = 0; i < temp.size(); i++) {
+    for (unsigned int i = 0; i < temp.size(); i++) {
         float prev_x = temp[(i-1)%temp.size()].first;
         float prev_y = temp[(i-1)%temp.size()].second;
         float x = temp[i].first;
@@ -77,9 +77,8 @@ int PurePursuit::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
         distances = getWaypointDistances(pose, true);
     }
     lookahead = abs(lookahead);
-    for (int i = 0; i < distances.size(); i++) {
+    for (unsigned int i = 0; i < distances.size(); i++) {
         float currentDistance = distances[i] - lookahead;
-        float ori = waypoints_[i].ori();
         if (currentDistance >= 0 && currentDistance < minDistance) {// && ori >= lowerAngle && ori <= upperAngle) {
             argminDist = i;
             minDistance = currentDistance;
@@ -94,7 +93,7 @@ pair<pair<float,float>,int> PurePursuit::findClosest(pair<float,float> &globalPo
     pair<float,float> closest;
     int indexx;
     float min_dist = std::numeric_limits<float>::max();
-    for (int i=0; i < waypoints_.size();i++) {
+    for (unsigned int i = 0; i < waypoints_.size();i++) {
         float distance = Transforms::calcDist(globalPoint,waypoints_[i].getPair());
         if (distance<min_dist) {
             closest = waypoints_[i].getPair();

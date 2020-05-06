@@ -47,7 +47,7 @@ class HRHC
         MPC mpc_;
         State mpc_des_state_;
         std::vector<Input> current_inputs_;
-        std::atomic<int> inputs_idx_;
+        std::atomic<unsigned int> inputs_idx_;
 
         // Infinite loop for publishing /drive messages
         void drive_loop();

@@ -62,22 +62,15 @@ void HRHC::pf_callback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     }
     float current_angle = Transforms::getCarOrientation(current_pose_);
     State current_state(current_pose_.position.x, current_pose_.position.y, current_angle);
-    // State desired_state(trajp_.best_cmaes_point_., 0, 0);
     
     trajp_.Update(current_pose_, occ_grid_);
     trajp_.Visualize();
-    // cout << trajp_.best_cmaes_point_.ToVector() << endl;
     ackermann_msgs::AckermannDriveStamped drive_msg;
     if (firstScanEstimate){
-        double begin = ros::Time::now().toSec();
-
-        // need to do rrt here
-
         Input input_to_pass = get_next_input();
         input_to_pass.SetV(4);
          if (trajp_.best_traj_index> -1) {
             mpc_.Update(current_state,input_to_pass,trajp_.best_minipath);
-            // }   
             current_inputs_ = mpc_.get_solved_trajectory();
             mpc_.Visualize();
             inputs_idx_ = 0;

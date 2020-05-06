@@ -1,15 +1,10 @@
 #include "mpc.hpp"
 
-// MPC::MPC()constraints_()
-// {
-
-// }
-
 MPC::MPC(ros::NodeHandle &nh):
-    nh_(nh),
-    state_size_(3),
     input_size_(2),
-    constraints_(nh)
+    state_size_(3),
+    constraints_(nh),
+    nh_(nh)
 {
     nh.getParam("/horizon", horizon_);
     nh.getParam("/dt", dt_);
@@ -164,7 +159,7 @@ void MPC::Visualize()
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
 
-    for (int ii = 0; ii < desired_state_trajectory_.size(); ++ii)
+    for (unsigned int ii = 0; ii < desired_state_trajectory_.size(); ++ii)
     {
         point.x = desired_state_trajectory_[ii].x();
         point.y = desired_state_trajectory_[ii].y();
@@ -355,7 +350,6 @@ void MPC::DrawCar(State &state, Input &input)
 {
     float L = 0.3302f;
     float wheel_size = 0.2;
-    float arrow_width = 0.05;
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
 

@@ -4,8 +4,8 @@ project(milestone-3)
 ## Compile as C++11, supported in ROS Kinetic and newer
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS_RELEASE "-g")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Werror -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
