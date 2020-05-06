@@ -23,34 +23,31 @@ public:
     TrajectoryPlanner(ros::NodeHandle &nh);
     virtual ~TrajectoryPlanner();
     // Reads the set of pre calculated trajectories
-    void readTrajectories();
-    // Transform a given point from car frame to occupancy-grid frame
-    pair<float,float> carPoint2miniWorld(float x, float y, const geometry_msgs::Pose &current_pose);
+    void ReadTrajectories();
     // Transforms a given point from car frame to world/map frame
-    pair<float,float> carPoint2World(float x, float y, const geometry_msgs::Pose &current_pose);
+    pair<float,float> CarPoint2World(float x, float y, const geometry_msgs::Pose &current_pose);
     // Transforms trajectory from car frame to occupancy grid frame
-    void trajectory2miniworld(const geometry_msgs::Pose &current_pose);
+    void Trajectory2miniworld(const geometry_msgs::Pose &current_pose);
     // Transforms trajectory from car frame to world/map frame
-    void trajectory2world(const geometry_msgs::Pose &current_pose);
-    vector<pair<float,float>> trajectories_mini_world;
+    void Trajectory2world(const geometry_msgs::Pose &current_pose);
     vector<pair<float,float>> trajectories_world;
     // In any given situation, selects the best trajectory 
     // (close to global path + farthest from car + non-reversing) 
-    int best_traj(OccGrid &occ_grid,const geometry_msgs::Pose &current_pose);
+    int BestTrajectory(OccGrid &occ_grid,const geometry_msgs::Pose &current_pose);
     // Visualization of local trajectory planned with the aimed goal point
     void Visualize();
     // Lane selection and setting of the best trajectory 
     void Update(const geometry_msgs::Pose &pose_msg, OccGrid &occ_grid);
-    vector<State> getBestMinipath();
-    int getBestTrajectoryIndex();
+    vector<State> best_minipath();
+    int best_trajectory_index();
 
 private:
-    int best_traj_index;
+    int best_trajectory_index_;
     float close_weight;
-    int MAX_HORIZON;
-    int num_traj;
+    int max_horizon_;
+    int num_traj_;
     State best_cmaes_point_;
-    vector<State> best_minipath;
+    vector<State> best_minipath_;
     unsigned int current_lane_ = 0;
     std::vector<Trajectory> lanes_;
     double distance_from_switch_;
@@ -59,7 +56,6 @@ private:
     // collision and promote over-taking
     void SelectLane(const geometry_msgs::Pose pose, OccGrid &occ_grid);
     int horizon_;
-    void publish_cmaes_closest_marker(float x, float y);
     vector<pair<float,float>> trajectories_;
     geometry_msgs::Pose last_pose_;
 

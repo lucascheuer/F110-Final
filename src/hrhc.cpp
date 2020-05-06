@@ -28,9 +28,8 @@ HRHC:: HRHC(ros::NodeHandle &nh):  occ_grid_(nh), trajp_(nh), mpc_(nh)
     current_pose_.orientation.z = 0;
     current_pose_.orientation.w = 1;
     // trajp_ = TrajectoryPlanner(nh,10);
-    trajp_.readTrajectories();
-    trajp_.trajectory2world(current_pose_);
-    trajp_.trajectory2miniworld(current_pose_);
+    trajp_.ReadTrajectories();
+    trajp_.Trajectory2world(current_pose_);
 
     Eigen::DiagonalMatrix<double, 3> q;
     Eigen::DiagonalMatrix<double, 2> r;
@@ -63,9 +62,9 @@ void HRHC::OdomCallback(const nav_msgs::Odometry::ConstPtr &odom_msg)
     {
         Input input_to_pass = GetNextInput();
         input_to_pass.set_v(4);
-        if (trajp_.getBestTrajectoryIndex() > -1)
+        if (trajp_.best_trajectory_index() > -1)
         {
-            vector<State> bestMiniPath = trajp_.getBestMinipath();
+            vector<State> bestMiniPath = trajp_.best_minipath();
             mpc_.Update(current_state,input_to_pass,bestMiniPath);
             current_inputs_ = mpc_.solved_trajectory();
             mpc_.Visualize();
@@ -82,7 +81,7 @@ void HRHC::DriveLoop()
         {
             ackermann_msgs::AckermannDriveStamped drive_msg;
             Input input = GetNextInput();
-            if (trajp_.getBestTrajectoryIndex() < 0)
+            if (trajp_.best_trajectory_index() < 0)
             {
                 input.set_v(0.5);
             }
