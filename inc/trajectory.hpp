@@ -1,5 +1,5 @@
-#ifndef PURE_PURSUIT_H
-#define PURE_PURSUIT_H
+#ifndef TRAJECTORY_H
+#define TRAJECTORY_H
 
 #include "transforms.hpp"
 #include "input.hpp"
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-class PurePursuit
+class Trajectory
 {
 private:
     vector<State> waypoints_;
@@ -24,8 +24,8 @@ private:
     // car's position
     vector<float> getWaypointDistances(const geometry_msgs::Pose &pose, bool inFront);
 public:
-    PurePursuit(float lookahead1, float lookahead2);
-    ~PurePursuit();
+    Trajectory(float lookahead1, float lookahead2);
+    ~Trajectory();
     // Converts trajectory of State objects to pairs of X,Y coordinates
     vector<pair<float,float>> getPairPoints();
     // Loads CSV of CMA-ES trajectories

@@ -49,7 +49,7 @@ We have the following classes:
 * Model - linearizes dynamics given a state and input
 * MPC - implements Model Predictive Control using OSQP
 * OccGrid - occupancy grid and helper functions for checking collisions with obstacles
-* PurePursuit - loads CSV for trajectories around the track
+* Trajectory - loads CSV for trajectories around the track
 * RRT (Unused) - improved version of RRT*
 * State - specifies state format (x,y,orientation)
 * TrajectoryPlanner - chooses best mini-path for given trajectory

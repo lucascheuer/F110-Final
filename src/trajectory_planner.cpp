@@ -33,7 +33,7 @@ TrajectoryPlanner::TrajectoryPlanner(ros::NodeHandle &nh) : distance_from_switch
         lane_number++;
         if (nh.getParam(lane_name, lane_file))
         {
-            PurePursuit temporary_trajectory(lookahead_1, lookahead_2);
+            Trajectory temporary_trajectory(lookahead_1, lookahead_2);
             temporary_trajectory.readCMA_ES(lane_file);
             lanes_.push_back(temporary_trajectory);
         }

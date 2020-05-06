@@ -1,9 +1,8 @@
-
-#include "pure_pursuit.hpp"
+#include "trajectory.hpp"
 
 using namespace std;
 
-vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
+vector<float> Trajectory::getWaypointDistances(const geometry_msgs::Pose &pose, bool inFront=true)
 {
     geometry_msgs::TransformStamped world_to_car_msg_stamped = Transforms::WorldToCarTransform(pose);
     float carAngle = Transforms::getCarOrientation(pose);
@@ -33,14 +32,14 @@ vector<float> PurePursuit::getWaypointDistances(const geometry_msgs::Pose &pose,
     }
     return distances;
 }
-PurePursuit::PurePursuit(float lookahead1, float lookahead2) : lookahead_1_(lookahead1), lookahead_2_(lookahead2)
+Trajectory::Trajectory(float lookahead1, float lookahead2) : lookahead_1_(lookahead1), lookahead_2_(lookahead2)
 {
 }
 
-PurePursuit::~PurePursuit()
+Trajectory::~Trajectory()
 {}
 
-bool PurePursuit::readCMA_ES(string filename)
+bool Trajectory::readCMA_ES(string filename)
 {
     string path = ros::package::getPath("milestone-3")+"/"+filename;
     cout << path << endl;
@@ -76,7 +75,7 @@ bool PurePursuit::readCMA_ES(string filename)
     return true;
 }
 
-int PurePursuit::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
+int Trajectory::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
 {
     float minDistance = numeric_limits<float>::max();
     float argminDist = -1;
@@ -102,7 +101,7 @@ int PurePursuit::getClosestIdx(const geometry_msgs::Pose pose, float lookahead)
     return argminDist;
 }
 
-pair<pair<float,float>,int> PurePursuit::findClosest(pair<float,float> &globalPoint)
+pair<pair<float,float>,int> Trajectory::findClosest(pair<float,float> &globalPoint)
 {
     pair<pair<float,float>,int> ans;
     pair<float,float> closest;
@@ -123,7 +122,7 @@ pair<pair<float,float>,int> PurePursuit::findClosest(pair<float,float> &globalPo
     return ans;
 }
 
-vector<pair<float,float>> PurePursuit::getPairPoints()
+vector<pair<float,float>> Trajectory::getPairPoints()
 {
     vector<pair<float,float>> points;
     for (auto itr = waypoints_.begin(); itr != waypoints_.end(); itr++)
@@ -133,7 +132,7 @@ vector<pair<float,float>> PurePursuit::getPairPoints()
     return points;
 }
 
-bool PurePursuit::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
+bool Trajectory::isPathCollisionFree(const geometry_msgs::Pose pose, OccGrid &occ_grid)
 {
     int startingIdx = getClosestIdx(pose, lookahead_1_);
     int endingIdx = getClosestIdx(pose, lookahead_2_);
